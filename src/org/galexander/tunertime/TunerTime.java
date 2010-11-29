@@ -142,7 +142,7 @@ public class TunerTime extends Activity {
 		if (cents >= 50) { cents -= 100; }
 		w_semi_display.setText(NOTE_NAMES[note_index]);
 		w_oct_display.setText(Integer.toString(octave));
-		DecimalFormat cents_fmt = new DecimalFormat("+0c;-0c");
+		DecimalFormat cents_fmt = new DecimalFormat("+00c;-00c");
 		String cents_str = cents_fmt.format(cents);
 		w_cent_display.setText(cents_str);
 

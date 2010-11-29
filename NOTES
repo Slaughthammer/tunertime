@@ -57,8 +57,13 @@ Okay, throwing together the base UI was pretty easy.  It is now fully
 functional, except that it doesn't have the thread that does all the
 stroboscopic stuff.  So it doesn't do anything, in other words.
 
-XXX - implement stroboscope thread
+Unfortunately I can't really test the stroboscope thread in the emulator.
+As near as I have been able to tell from reading, it famously doesn't
+have proper microphone support.  But at least the drawing primitives
+ought to work, so I can test it with gibberish data.
+
 XXX - add layout-land?scape?
+XXX - implement stroboscope thread
 XXX - make sure that when the thing is put to sleep, onPause() kills it
 XXX - make it not go to sleep?
 XXX - add context menu just for help (which maybe should be a URL?)
