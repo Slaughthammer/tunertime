@@ -23,3 +23,42 @@ at all.  The math involved is so simple that it's basically just a big
 copy operation.  Though I think honestly that the entire thread could
 live from start to finish in C, just always hanging in the JNI method
 call to AudioRecord.read(), or into the Surface call to receive a parcel.
+
+I guess I have to design a UI now.  The original has a 3-octave
+stroboscopic view surrounded by buttons:
+   * QUIT (unneeded on android - user will click 'home' or what-have-you)
+   * PAUSE (can be just a tap of the stroboscopic display to pause/unpause, but needs PAUSE notifier!)
+   * CONF -> changes other buttons to be +/- for center A (440Hz +/-1Hz
+     increments), and +/- for stretch factor (5-digit decimal incremented
+     by 25), and RESET (A=440, stretch=0)
+   * +/- for octave, semi, and cent.
+Plus a status display that provides:
+   * A 3     <--- note octave
+   * +0c     <--- cents
+   * A=440   <--- center A frequency
+   * +00005  <--- stretch factor
+
+So I need to do a portrait mode display...
+
+[strobe octave 1] ...
+.....................
+[strobe octave 2] ...
+.....................
+[strobe octave 3] ...
+.....................
+semi+ oct+  cent+ A=440
+ A     3     +0c  str=00025
+semi- oct-  cent- [CONF]
+
+
+...
+
+Okay, throwing together the base UI was pretty easy.  It is now fully
+functional, except that it doesn't have the thread that does all the
+stroboscopic stuff.  So it doesn't do anything, in other words.
+
+XXX - implement stroboscope thread
+XXX - add layout-land?scape?
+XXX - make sure that when the thing is put to sleep, onPause() kills it
+XXX - make it not go to sleep?
+XXX - add context menu just for help (which maybe should be a URL?)
