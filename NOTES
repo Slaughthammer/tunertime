@@ -1,0 +1,25 @@
+November 28, 2010.
+
+This is "ggg", a gglcars-based stroboscopic tuner, but redone for
+Android.  Given a catchy name "TunerTime" (yay!  it's tuner time!)
+because it is eventually destined for release on the Android Market,
+where perhaps one of my programs will be used by more than one person.
+
+Hah.
+
+Anyways, I have figured out what I need to do.
+
+android.media.AudioRecord gives me access to the microphone via read().
+It is, for example, the interface used by sipdroid (open source sip
+phone), so it must be pretty alright at least.  I will call its blocking
+read() function over and over in a separate thread I will spawn for just
+this purpose.  And that separate thread will have a Surface (or
+SurfaceHolder?  I'm not sure) that it will hold onto, and that thread
+will somehow copy pixels from the audio data to the Surface (through a
+Parcel??).  The rest is simple UI garbage.
+
+A real question, though, is whether it is worth keeping any JNI in this
+at all.  The math involved is so simple that it's basically just a big
+copy operation.  Though I think honestly that the entire thread could
+live from start to finish in C, just always hanging in the JNI method
+call to AudioRecord.read(), or into the Surface call to receive a parcel.
