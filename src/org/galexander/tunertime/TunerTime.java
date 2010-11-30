@@ -4,25 +4,28 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.content.*;
 import android.view.*;
-import android.view.*;
+import android.graphics.*;
 import android.widget.TextView;
 import java.text.DecimalFormat;
+import java.lang.*;
 
-public class TunerTime extends Activity {
+public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private int A_freq = 440;
 	private int octave_stretch = 0;
 	private int strobe_cents = 4800;
 
-	SurfaceView w_strobe;
-	View w_main_buttons;
-	TextView w_semi_display;
-	TextView w_oct_display;
-	TextView w_cent_display;
-	TextView w_center_display;
-	TextView w_stretch_display;
-	View w_conf_buttons;
-	TextView w_center_display2;
-	TextView w_stretch_display2;
+	private SurfaceView w_strobe;
+	private View w_main_buttons;
+	private TextView w_semi_display;
+	private TextView w_oct_display;
+	private TextView w_cent_display;
+	private TextView w_center_display;
+	private TextView w_stretch_display;
+	private View w_conf_buttons;
+	private TextView w_center_display2;
+	private TextView w_stretch_display2;
+
+	private Strobe strobe = null;
 
 	private static final String NOTE_NAMES[] = new String[] { "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#" };
 
@@ -32,6 +35,8 @@ public class TunerTime extends Activity {
 		setContentView(R.layout.main);
 
 		w_strobe = (SurfaceView)findViewById(R.id.strobe);
+		w_strobe.getHolder().addCallback(this);
+
 		w_main_buttons = findViewById(R.id.main_buttons);
 		w_semi_display = (TextView)findViewById(R.id.semi_display);
 		w_oct_display = (TextView)findViewById(R.id.oct_display);
@@ -41,18 +46,18 @@ public class TunerTime extends Activity {
 		w_conf_buttons = findViewById(R.id.conf_buttons);
 		w_center_display2 = (TextView)findViewById(R.id.center_display2);
 		w_stretch_display2 = (TextView)findViewById(R.id.stretch_display2);
+
 	}
 	
 	public void onResume() {
 		load_config();
 		do_note(null);
 		update_status();
-		/* XXX - open sound thread */
 		super.onResume();
 	}
 
 	public void onPause() {
-		/* XXX - kill sound thread */
+		stop_strobe();
 		save_config();
 		super.onPause();
 	}
@@ -146,6 +151,10 @@ public class TunerTime extends Activity {
 		String cents_str = cents_fmt.format(cents);
 		w_cent_display.setText(cents_str);
 
+		if (strobe != null) {
+			strobe.setFreq(get_strobe_freq());
+		}
+
 		if (A_freq < 220) {
 			A_freq = 220;
 		} else if (A_freq > 880) {
@@ -159,5 +168,44 @@ public class TunerTime extends Activity {
 		String stretch_str = stretch_fmt.format(octave_stretch);
 		w_stretch_display.setText(stretch_str);
 		w_stretch_display2.setText(stretch_str);
+	}
+
+	private double get_strobe_freq() {
+		double octbase = 2.0+(((double)octave_stretch)*0.00001);
+		double octpow = ((double)(strobe_cents-4800)) / 1200.0;
+		double mult = Math.pow(octbase, octpow);
+		return ((double)A_freq)*mult;
+	}
+
+	private void stop_strobe() {
+		if (strobe == null) {
+			return;
+		}
+		strobe.interrupt();
+		strobe = null;
+	}
+
+		/* interface SurfaceHolder.Callback */
+	public void surfaceCreated(SurfaceHolder h) {
+		/* ignore - no point starting the thread until we have
+		 * dimensions */
+	}
+	public void surfaceChanged(SurfaceHolder h, int format, int width, int height) {
+		if (strobe != null) {
+			/* update existing thread */
+			strobe.setSurface(h, width, height);
+		} else {
+			/* make new thread */
+			strobe = new Strobe();
+			strobe.setSurface(h, width, height);
+			strobe.setFreq(get_strobe_freq());
+			strobe.start();
+		}
+	}
+	public void surfaceDestroyed(SurfaceHolder h) {
+		if (strobe != null) {
+			strobe.setSurface(null, 0, 0);
+			strobe.interrupt();
+		}
 	}
 }

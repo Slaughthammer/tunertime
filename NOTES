@@ -62,7 +62,37 @@ As near as I have been able to tell from reading, it famously doesn't
 have proper microphone support.  But at least the drawing primitives
 ought to work, so I can test it with gibberish data.
 
-XXX - add layout-land?scape?
+...
+
+I couldn't get drawing to work at all.  It seems there are supposed to be
+two options for drawing from a thread.  They are both through
+SurfaceView.  You can then get a SurfaceHolder from that.  From the
+SurfaceHolder, you can access the Surface directly, which appears to
+allow drawing using "Parcel"s somehow??  Or SurfaceHolder will return a
+Canvas (lockCanvas()) object which is supposed to be valid until
+unlockCanvasAndPost().  The latter seems more convenient and would allow
+us to get rid of the surfaceChanged() et al hooks.  But maybe we should
+keep them?  The former seems like it might be more efficient, since it's
+visibly part of a performance-conscious IPC stack (so it had better not
+introduce extra copying, right?).
+
+Anyways, there is surely something mega dumb and wrong in my code,
+because I can't even get it to do a line drawing.
+
+
+November 29, 2010.
+
+Yesterday I absolutely could not get SurfaceHolder to work.  Today it is
+no challenge, though.  I just abandoned my Strobe thread and put together
+a little SurfaceHolder thing in the main activity, and that one worked as
+I expected it would immediately.  I think the problem is that before one
+of the non-lockCanvas() SurfaceHolder calls probably happened in the
+Strobe thread instead of the activity thread, causing it to become
+corrupted from then on.  Or something.  *shrug*
+
+
+
+XXX - basic linedrawing
 XXX - implement stroboscope thread
 XXX - make sure that when the thing is put to sleep, onPause() kills it
 XXX - make it not go to sleep?

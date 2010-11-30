@@ -6,84 +6,54 @@
 #include <assert.h>
 #include <jni.h>
 
-int strobes_paused = 0;
+/* this should match the value in src/org/galexander/tunertime/Strobe.java */
+#define SAMPS_PER_READ 2048
+
+#define NUM_STROBES 3
+
+struct strobe_rec {
+		/* location within bitmap */
+	int height;
+	int y;
+
+		/* center frequency */
+	double freq;
+		/* filter coefficients: */
+	double a0,a1;
+	double b0,b1,b2;
+		/* filter history: */
+	double x0,x1;
+	double y0,y1;
+	signed short filtered[SAMPS_PER_READ];
+	unsigned msamps_per_col;        /* milisamples per column */
+	int curr_samp;                  /* index into snd_buf/filtered */
+	int prev_pos;                   /* position of last strobe point */
+	unsigned samp_max;              /* highest amplitude seen so far */
+	int multiplier;                 /* horizontal scale */
+	int last_cleared_col;
+};
+
+
+static int sample_rate;
+static double base_freq;
+static int width;
+static int height;
+static struct strobe_rec strobes[NUM_STROBES];
+static short snd_buf[SAMPS_PER_READ];
+static int snd_ofs;
+
+static jint *bitmap_ptr;
+
+
+static void println(const char *fmt, ...);
+
+
+#define COLOR_VALUE(r,g,b) (((r)<<16)|((g)<<8)|(b))
+#define DRAW_PIXEL(x,y,c) bitmap_ptr[(x)+((y)*width)] = (c)
 
 
 static void
-ggl_strobe_redraw(struct ggl_widget *widget)
-{
-	struct ggl_strobe *s = (struct ggl_strobe *)widget;
-	/* pass through */
-	if (s->image && s->image->parent.redraw) {
-		s->image->parent.redraw((struct ggl_widget *)s->image);
-	}
-}
-
-static void
-ggl_strobe_resize(struct ggl_widget *widget, ggl_coord *points, int num_points)
-{
-	struct ggl_strobe *s = (struct ggl_strobe *)widget;
-
-	/* update */
-	if (num_points == 2) {
-		s->parent.pos.x = points[0].x;
-		s->parent.pos.y = points[0].y;
-		s->parent.width = points[1].x - points[0].x;
-		s->parent.height = points[1].y - points[0].y;
-	}
-
-	/* pass through */
-	if (s->image && s->image->parent.redraw) {
-		s->image->parent.resize((struct ggl_widget *)s->image, points, num_points);
-	}
-
-	/* then recompute any precomps.. */
-	ggl_strobe_recalc(s);
-}
-
-static void
-ggl_strobe_reattach(struct ggl_widget *widget)
-{
-	struct ggl_strobe *s = (struct ggl_strobe *)widget;
-	if (s->image) {
-		s->image->parent.root = s->parent.root;
-		if (s->image->parent.reattach) {
-			s->image->parent.reattach((struct ggl_widget *)s->image);
-		}
-	}
-}
-
-
-struct ggl_strobe *
-ggl_strobe_new(void)
-{
-	struct ggl_strobe *ret;
-	ret = safe_malloc(sizeof *ret);
-	memset(ret, 0, sizeof *ret);
-	ret->image = ggl_image_new();
-	ret->parent.pos = ret->image->parent.pos;
-	ret->parent.width = ret->image->parent.width;
-	ret->parent.height = ret->image->parent.height;
-	ret->parent.root = ret->image->parent.root;
-	ret->parent.redraw = ggl_strobe_redraw;
-	ret->parent.resize = ggl_strobe_resize;
-	ret->parent.mouse = NULL;
-	ret->parent.destroy = NULL; /* could probably stand to catch, *shrug* */
-	ret->parent.reattach = ggl_strobe_reattach;
-	ret->label[0] = 0;
-	ret->image->label = ret->label;
-	ret->image->label_pos = GGL_GRAV_SW;
-	ret->image->font = gf_normal;
-	ret->image->color = gc_peach;
-	ret->next = active_strobes;
-	ret->freq = 440.0;
-	active_strobes = ret;
-	ggl_strobe_recalc(ret);
-	return ret;
-}
-
-static void
-filter_recalc(struct ggl_strobe *s)
+filter_recalc(struct strobe_rec *s)
 {
 	double R,K;
 	double R2;
@@ -91,8 +61,8 @@ filter_recalc(struct ggl_strobe *s)
 	double freq = s->freq;
 	double bandwidth = freq/20.0;
 
-	freq /= ((double)snd_rate);
-	bandwidth /= ((double)snd_rate);
+	freq /= ((double)sample_rate);
+	bandwidth /= ((double)sample_rate);
 
 	c = cos(2.0*M_PI*freq);
 	R = 1.0-(3.0*bandwidth);
@@ -108,23 +78,40 @@ filter_recalc(struct ggl_strobe *s)
 	s->x1 = s->x2 = s->y1 = s->y2 = 0.0;
 }
 
-void
-ggl_strobe_recalc(struct ggl_strobe *s)
+static void
+strobe_recalc(struct strobe_rec *s)
 {
 	sprintf(s->label, "%.1f", s->freq);
 
 	filter_recalc(s);
 
-	s->msamps_per_col = (snd_rate*1000) / s->freq;
+	s->msamps_per_col = (sample_rate*1000) / s->freq;
 
-	s->multiplier = (s->freq + s->parent.width) / s->parent.width;
+	s->multiplier = (s->freq + width) / width;
 	if (s->multiplier < 1) {
 		s->multiplier = 1;
 	}
 }
 
 static void
-strobe_filter(struct ggl_strobe *s)
+recalculate(void)
+{
+	int i;
+	double freq = base_freq;
+	int sheight = height/NUM_STROBES;
+	int y = 0;
+	for (i = 0; i < NUM_STROBES; i++) {
+		strobes[i].y = y;
+		strobes[i].height = sheight;
+		strobes[i].freq = freq;
+		strobe_recalc(&strobes[i]);
+		freq *= 2.0;
+		y += sheight;
+	}
+}
+
+static void
+strobe_filter(struct strobe_rec *s)
 {
 	double x1,x2,y0,y1,y2;
 	double a0,a1,a2,b1,b2;
@@ -133,7 +120,7 @@ strobe_filter(struct ggl_strobe *s)
 	a0 = s->a0; a1 = s->a1; a2 = s->a2; b1 = s->b1; b2 = s->b2;
 	x1 = s->x1; x2 = s->x2; y1 = s->y1; y2 = s->y2;
 
-	i = s->curr_samp % SND_BUFSAMPS;
+	i = s->curr_samp % SAMPS_PER_READ;
 	while (i != snd_ofs) {
 		double in = snd_buf[i];
 		y0 = ((a0*in) + (a1*x1) + (a2*x2) + (b1*y1) + (b2*y2));
@@ -142,26 +129,26 @@ strobe_filter(struct ggl_strobe *s)
 		y2 = y1;
 		y1 = y0;
 		s->filtered[i] = y0;
-		i = (i+1)%SND_BUFSAMPS;
+		i = (i+1)%SAMPS_PER_READ;
 	}
 
 	s->x1 = x1; s->x2 = x2; s->y1 = y1; s->y2 = y2;
 }
 
 static void
-filled_rect(XImage *image, int x1, int y1, int x2, int y2, unsigned color)
+filled_rect(int x1, int y1, int x2, int y2, unsigned color)
 {
 	int x,y;
 	for (y = y1; y < y2; y++) {
 		for (x = x1; x < x2; x++) {
-			XPutPixel(image, x, y, color);
+			DRAW_PIXEL(x, y, color);
 		}
 	}
 }
 
 #define NUM_CLEAR 25	/* number of columns to clear at once */
 static void
-clear_col(struct ggl_strobe *s, int col)
+clear_col(struct strobe_rec *s, int col)
 {
 	int start_x, stop_x;
 	if (col < s->last_cleared_col) {
@@ -172,7 +159,7 @@ clear_col(struct ggl_strobe *s, int col)
 			/* nothing to do, already cleared */
 			return;
 		}
-	} else if (col+(2*NUM_CLEAR) >= s->last_cleared_col+s->parent.width) {
+	} else if (col+(2*NUM_CLEAR) >= s->last_cleared_col+width) {
 		/* this column has already been cleared, just last_cleared_col
 		 * has looped to zero */
 		return;
@@ -180,30 +167,30 @@ clear_col(struct ggl_strobe *s, int col)
 		
 	start_x = s->last_cleared_col;
 	stop_x = col+NUM_CLEAR;
-	s->last_cleared_col = (stop_x % s->parent.width);
+	s->last_cleared_col = (stop_x % width);
 
 	if (stop_x > s->parent.width) {
-		if (stop_x >= s->parent.width*2) {
+		if (stop_x >= width*2) {
 			start_x = 0;
 			stop_x = 0;
 		}
-		filled_rect(s->image->image, start_x, 0, s->parent.width, s->parent.height, X_COLOR_VALUE(0,0,0));
+		filled_rect(start_x, s->y, width, s->y+s->height, 0x000000);
 		start_x = 0;
-		stop_x -= s->parent.width;
+		stop_x -= width;
 	}
 
 	if (start_x == stop_x) {
 		return;
 	}
-	filled_rect(s->image->image, start_x, 0, stop_x+1, s->parent.height, X_COLOR_VALUE(0,0,0));
+	filled_rect(start_x, s->y, stop_x+1, s->y+s->height, 0x000000);
 }
 
 static void
-strobe_drawnew(struct ggl_strobe *s)
+strobe_drawnew(struct strobe_rec *s)
 {
 	static int exptab[256] = { -1, };
 	unsigned pos = s->prev_pos;
-	unsigned pos_width = s->msamps_per_col*s->parent.width;
+	unsigned pos_width = s->msamps_per_col*width;
 	unsigned color;
 	int samp_max = s->samp_max;
 	int samp_divider = 1+(samp_max/256);
@@ -215,13 +202,13 @@ strobe_drawnew(struct ggl_strobe *s)
 	if (exptab[0] == -1) {
 #define LOG_STEEP 40.0
 		int i;
-		double scale = 65534.0/log(LOG_STEEP*256.0);
+		double scale = 254.0/log(LOG_STEEP*256.0);
 		for (i = 0; i < 256; i++) {
 			exptab[i] = log((i+1.0)*LOG_STEEP)*scale;
 		}
 	}
 
-	i = s->curr_samp % SND_BUFSAMPS;
+	i = s->curr_samp % SAMPS_PER_READ;
 	while (i != snd_ofs) {
 		int samp = s->filtered[i];
 
@@ -234,7 +221,7 @@ strobe_drawnew(struct ggl_strobe *s)
 		pos += 1000;
 		pos %= (pos_width * multiplier);
 		x = pos / (s->msamps_per_col * multiplier);
-		y = ((pos % s->msamps_per_col) * s->parent.height) / s->msamps_per_col;
+		y = ((pos % s->msamps_per_col) * s->height) / s->msamps_per_col;
 		if (x != last_x) {
 			clear_col(s, x);
 			last_x = x;
@@ -242,15 +229,15 @@ strobe_drawnew(struct ggl_strobe *s)
 
 		if (samp >= 0) {
 			int e = exptab[samp];
-			color = X_COLOR_VALUE(e, e/2, e/2);
+			color = COLOR_VALUE(e, e/2, e/2);
 		} else {
 			int e = exptab[-samp];
-			color = X_COLOR_VALUE(e/2, e, e/2);
+			color = COLOR_VALUE(e/2, e, e/2);
 		}
-		XPutPixel(s->image->image, x, y, color);
+		DRAW_PIXEL(x, y+s->y, color);
 
 		s->curr_samp++;
-		i = s->curr_samp%SND_BUFSAMPS;
+		i = s->curr_samp%SAMPS_PER_READ;
 	}
 	s->prev_pos = pos;
 	s->samp_max = samp_max;
@@ -258,21 +245,20 @@ strobe_drawnew(struct ggl_strobe *s)
 
 /* draw a horizontal tic mark at 1 second into the buffer */
 static void
-strobe_draw_htic(struct ggl_strobe *s)
+strobe_draw_htic(struct strobe_rec *s)
 {
 	int x, y;
 	int step;
 	step = s->freq / s->multiplier;
 	for (x = step; x < s->parent.width; x += step) {
 		for (y = (s->parent.height*8)/10; y < s->parent.height; y++) {
-			XPutPixel(s->image->image, x, y,
-				X_COLOR_VALUE(0xffff,0xffff,0xaaaa));
+			DRAW_PIXEL(x, y+s->y, COLOR_VALUE(0xff,0xff,0xaa));
 		}
 	}
 }
 
 static void
-ggl_strobe_newdata(struct ggl_strobe *s)
+strobe_newdata(struct strobe_rec *s)
 {
 	if (s->curr_samp == snd_ofs) {
 		/* not really any new data */
@@ -281,20 +267,170 @@ ggl_strobe_newdata(struct ggl_strobe *s)
 	strobe_filter(s);
 	strobe_drawnew(s);
 	strobe_draw_htic(s);
-	s->image->parent.redraw((struct ggl_widget *)s->image);
 }
 
 void
-strobe_newdata(void)
+newdata(void)
 {
-	struct ggl_strobe *s;
+	int i;
+#if 0 /* XXX - bring back pause?? */
 	if (strobes_paused) {
 		return;
 	}
-	if (!active_strobes) {
+#endif
+	for (i = 0; i < NUM_STROBES; i++) {
+		strobe_newdata(s);
+	}
+}
+
+
+
+static JNIEnv *env;
+
+static jclass cl_system;
+static jclass cl_printstream;
+static jclass cl_strobe;
+static jclass cl_audiorecord;
+
+static jmethodID mid_println;
+static jmethodID mid_st_do_draw;
+static jmethodID mid_st_isinterrupted;
+static jmethodID mid_ar_getsamplerate;
+static jmethodID mid_ar_read;
+
+static jfieldID fid_out;
+static jfieldID fid_st_freq;
+static jfieldID fid_st_freq_changed;
+static jfieldID fid_st_width;
+static jfieldID fid_st_height;
+static jfieldID fid_st_surface_changed;
+static jfieldID fid_st_recorder;
+
+static jintArray bitmap;
+
+
+/* sets up the tokens needed to reference Java things */
+static int
+jni_init(JNIEnv *env_)
+{
+	env = env_;
+#define CLASS(var, id) \
+	cl_##var = (*env)->FindClass(env, id); \
+	if (!cl_##var) return 0;
+#define METHOD(var, mycl, id, sig) \
+	mid_##var = (*env)->GetMethodID(env, cl_##mycl, id, sig); \
+	if (!mid_##var) return 0;
+#define FIELD(var, mycl, id, sig) \
+	fid_##var = (*env)->GetFieldID(env, cl_##mycl, id, sig); \
+	if (!fid_##var) return 0;
+#define STFIELD(var, mycl, id, sig) \
+	fid_##var = (*env)->GetStaticFieldID(env, cl_##mycl, id, sig); \
+	if (!fid_##var) return 0;
+
+
+	CLASS(system, "java/lang/System")
+	CLASS(printstream, "java/io/PrintStream")
+	CLASS(strobe, "org/galexander/tunertime/Strobe")
+	CLASS(audiorecord, "android/media/AudioRecord")
+
+	METHOD(println, printstream, "println", "(Ljava/lang/String;)V")
+	METHOD(st_do_draw, strobe, "do_draw", "([III)I")
+	METHOD(st_isinterrupted, strobe, "isInterrupted", "()Z")
+	METHOD(ar_getsamplerate, audiorecord, "getSampleRate", "()I")
+	METHOD(ar_read, audiorecord, "read", "([SII)I")
+
+	STFIELD(out, system, "out", "Ljava/io/PrintStream;")
+	FIELD(st_freq, strobe, "freq", "D")
+	FIELD(st_freq_changed, strobe, "freq_changed", "Z")
+	FIELD(st_width, strobe, "width", "I")
+	FIELD(st_height, strobe, "height", "I")
+	FIELD(st_surface_changed, strobe, "surface_changed", "Z")
+	FIELD(st_recorder, strobe, "recorder", "Landroid/media/AudioRecord;")
+
+	return 1;
+}
+
+static void
+println(const char *fmt, ...)
+{
+	char buf[1000];
+	va_list ap;
+	va_start(ap, fmt);
+	vsprintf(buf,fmt,ap);
+	va_end(ap);
+	jstring *x = (*env)->NewStringUTF(env, buf);
+	if (!x) return;
+	jobject out = (*env)->GetStaticObjectField(env, cl_system, fid_out);
+	if (!out) return;
+	(*env)->CallVoidMethod(env, out, mid_println, x);
+	(*env)->DeleteLocalRef(env, out);
+	(*env)->DeleteLocalRef(env, x);
+}
+
+
+static void
+resize_bitmap(void)
+{
+	if (bitmap) {
+		(*env)->DeleteLocalRef(env, bitmap);
+	}
+	bitmap = (*env)->NewIntArray(env, width*height);
+}
+
+/* This is the entry point from the Java code...it is a loop that checks for
+ * thread state changes, reads audio, then writes to screen. */
+JNIEXPORT void JNICALL
+Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
+{
+	jshortArray readbuf;
+
+	if (!jni_init(env_)) {
 		return;
 	}
-	for (s = active_strobes; s; s = s->next) {
-		ggl_strobe_newdata(s);
+
+println("into JNI");
+	jobject recorder = (*env)->GetObjectField(env, this, fid_st_recorder);
+	sample_rate = (*env)->CallIntMethod(env, recorder, mid_ar_getsamplerate);
+println("sample_rate=%d\n",sample_rate);
+
+	readbuf = (*env)->NewShortArray(env, SAMPS_PER_READ);
+	
+	while (1) {
+		int num_read;
+
+		/* first, check for any important state changes */
+		if ((*env)->GetBooleanField(env, this, fid_st_freq_changed)) {
+			(*env)->SetBooleanField(env, this, fid_st_freq_changed, JNI_FALSE);
+			base_freq = (*env)->GetDoubleField(env, this, fid_st_freq);
+			recalculate();
+		}
+		if ((*env)->GetBooleanField(env, this, fid_st_surface_changed)) {
+			(*env)->SetBooleanField(env, this, fid_st_surface_changed, JNI_FALSE);
+			width = (*env)->GetIntField(env, this, fid_st_width);
+			height = (*env)->GetIntField(env, this, fid_st_height);
+			recalculate();
+			resize_bitmap();
+		}
+		if ((*env)->CallBooleanMethod(env, this, mid_st_isinterrupted)) {
+			/* thread was interrupted, must be time for it to die */
+println("thread interrupted");
+			return;
+		}
+
+		/* then get sound */
+		num_read = (*env)->CallIntMethod(env, recorder, mid_ar_read, readbuf, 0, SAMPS_PER_READ-snd_ofs);
+println("num_read=%d",num_read);
+		if (num_read <= 0) {
+			return;
+		}
+		(*env)->GetShortArrayRegion(env, readbuf, 0, num_read, snd_buf+snd_ofs);
+		snd_ofs += num_read;
+
+		/* process sound into bitmap */
+		bitmap_ptr = (*env)->GetPrimitiveArrayCritical(env, bitmap, 0);
+		newdata();
+		(*env)->ReleasePrimitiveArrayCritical(env, bitmap, bitmap_ptr, 0);
+		/* send bitmap to surface */
+		(*env)->CallBooleanMethod(env, this, mid_st_do_draw, bitmap, width, height);
 	}
 }
