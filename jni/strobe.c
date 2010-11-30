@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <ggl.h>
 #include <assert.h>
 #include <jni.h>
 
@@ -19,11 +18,11 @@ struct strobe_rec {
 		/* center frequency */
 	double freq;
 		/* filter coefficients: */
-	double a0,a1;
-	double b0,b1,b2;
+	double a0,a1,a2;
+	double b1,b2;
 		/* filter history: */
-	double x0,x1;
-	double y0,y1;
+	double x1,x2;
+	double y1,y2;
 	signed short filtered[SAMPS_PER_READ];
 	unsigned msamps_per_col;        /* milisamples per column */
 	int curr_samp;                  /* index into snd_buf/filtered */
@@ -81,7 +80,8 @@ filter_recalc(struct strobe_rec *s)
 static void
 strobe_recalc(struct strobe_rec *s)
 {
-	sprintf(s->label, "%.1f", s->freq);
+/* XXX - add label display back in someday */
+//	sprintf(s->label, "%.1f", s->freq);
 
 	filter_recalc(s);
 
@@ -154,7 +154,7 @@ clear_col(struct strobe_rec *s, int col)
 	if (col < s->last_cleared_col) {
 		if (col+(2*NUM_CLEAR) < s->last_cleared_col) {
 			/* must have looped to zero */
-			col += s->parent.width;
+			col += width;
 		} else {
 			/* nothing to do, already cleared */
 			return;
@@ -169,7 +169,7 @@ clear_col(struct strobe_rec *s, int col)
 	stop_x = col+NUM_CLEAR;
 	s->last_cleared_col = (stop_x % width);
 
-	if (stop_x > s->parent.width) {
+	if (stop_x > width) {
 		if (stop_x >= width*2) {
 			start_x = 0;
 			stop_x = 0;
@@ -250,8 +250,8 @@ strobe_draw_htic(struct strobe_rec *s)
 	int x, y;
 	int step;
 	step = s->freq / s->multiplier;
-	for (x = step; x < s->parent.width; x += step) {
-		for (y = (s->parent.height*8)/10; y < s->parent.height; y++) {
+	for (x = step; x < width; x += step) {
+		for (y = (s->height*8)/10; y < s->height; y++) {
 			DRAW_PIXEL(x, y+s->y, COLOR_VALUE(0xff,0xff,0xaa));
 		}
 	}
@@ -279,7 +279,7 @@ newdata(void)
 	}
 #endif
 	for (i = 0; i < NUM_STROBES; i++) {
-		strobe_newdata(s);
+		strobe_newdata(&strobes[i]);
 	}
 }
 
