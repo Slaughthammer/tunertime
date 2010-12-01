@@ -90,10 +90,40 @@ of the non-lockCanvas() SurfaceHolder calls probably happened in the
 Strobe thread instead of the activity thread, causing it to become
 corrupted from then on.  Or something.  *shrug*
 
+...
+
+Okay, I'm "done."  And I get this in logcat:
+  W/AudioHardwareALSA( 1890): openInputStream : mInput already exists!!
+
+It sounds kind of like the audio device is busy?  An app called
+"AudioCaps" doesn't believe my device is capable of recording at all.
+Other people say there are all sorts of audio bugs on Samsung devices but
+I kind of think they're full of shit.
+
+I recently installed ("Tricorder"), and it was able to read the audio
+fine when it was first installed.  But now it cannot.  I suspect it left
+the audio device in a bad state.
+
+Indeed, rebooting the device made it get past that hurdle.  Now it seems
+to be dying in the JNI, and/or overflowing due to being too slow to init?
+
+Okay, it all came down to logic errors in the way I handled the buffers.
+Rather pleasing to see that the moment I got something to display at all,
+it was suddenly a perfectly wonderful stroboscopic tuner.  Shows that my
+piano is tuned to about 428Hz, which seems plausible.  I will finally
+have my tuner with me everywhere I go.  If only I could carry around my
+tuning hammer!
+
+A quick check shows that it is consuming about 50% CPU in user-space and
+less than 10% in kernel space, so we are probably not CPU constrained,
+though it seems like porting the spectrum analyzer over (GGH) will cause
+us to really examine that figure a little more closely.
 
 
-XXX - basic linedrawing
-XXX - implement stroboscope thread
-XXX - make sure that when the thing is put to sleep, onPause() kills it
-XXX - make it not go to sleep?
+XXX - add back in label display (means design a font?, or do I give 3 numbers to do_draw() and have it call Canvas.drawText()?)
+XXX - make SAMPS_PER_READ just use the minimum buffer size value (and make the buffer 2* as big)
+XXX - make sound come back after sleeping (probably need to query AudioRecord's state each time)
+XXX - make it turn off the sleeper, or delay it?
 XXX - add context menu just for help (which maybe should be a URL?)
+XXX - check for remaining XXX in jni/* and src/*/*/*/*
+XXX - see what can be done about sound overflows, if fixing buffer sizes doesn't do it

@@ -21,6 +21,7 @@ public class Strobe extends Thread {
 			return;
 		}
 		freq = freq_;
+System.out.println("setting freq_changed (freq="+freq+")");
 		freq_changed = true;
 	}
 
@@ -58,13 +59,16 @@ public class Strobe extends Thread {
 
 	public void run() {
 System.out.println("strobe start");
-		if (!sound_start()) {
-			return;
+		try {
+			if (!sound_start()) {
+				return;
+			}
+			runner();
+		} finally {
+			sound_stop();
 		}
-		runner();
-		sound_stop();
 System.out.println("strobe stop");
-}
+	}
 
 	public boolean sound_start() {
 		if (recorder != null) {
@@ -107,5 +111,9 @@ System.out.println("strobe stop");
 		recorder.stop();
 		recorder.release();
 		recorder = null;
+	}
+
+	static {
+		System.loadLibrary("strobe-jni");
 	}
 }

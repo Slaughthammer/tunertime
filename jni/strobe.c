@@ -7,6 +7,8 @@
 
 /* this should match the value in src/org/galexander/tunertime/Strobe.java */
 #define SAMPS_PER_READ 2048
+/* this must be bigger than SAMPS_PER_READ */
+#define SND_BUFSAMPS 4096
 
 #define NUM_STROBES 3
 
@@ -23,7 +25,9 @@ struct strobe_rec {
 		/* filter history: */
 	double x1,x2;
 	double y1,y2;
-	signed short filtered[SAMPS_PER_READ];
+		/* filter output: */
+	signed short filtered[SND_BUFSAMPS];
+
 	unsigned msamps_per_col;        /* milisamples per column */
 	int curr_samp;                  /* index into snd_buf/filtered */
 	int prev_pos;                   /* position of last strobe point */
@@ -38,7 +42,7 @@ static double base_freq;
 static int width;
 static int height;
 static struct strobe_rec strobes[NUM_STROBES];
-static short snd_buf[SAMPS_PER_READ];
+static short snd_buf[SND_BUFSAMPS];
 static int snd_ofs;
 
 static jint *bitmap_ptr;
@@ -75,6 +79,7 @@ filter_recalc(struct strobe_rec *s)
 	s->b2 = -R2;
 
 	s->x1 = s->x2 = s->y1 = s->y2 = 0.0;
+println("recalc inner: %f,%f,%f,%f,%f", s->a0, s->a1, s->a2, s->b1, s->b2);
 }
 
 static void
@@ -91,6 +96,7 @@ strobe_recalc(struct strobe_rec *s)
 	if (s->multiplier < 1) {
 		s->multiplier = 1;
 	}
+println("recalc outer: %d,%d",(int)s->msamps_per_col, (int)s->multiplier);
 }
 
 static void
@@ -100,6 +106,7 @@ recalculate(void)
 	double freq = base_freq;
 	int sheight = height/NUM_STROBES;
 	int y = 0;
+println("recalculate:%f (%d,%d)",base_freq, width,height);
 	for (i = 0; i < NUM_STROBES; i++) {
 		strobes[i].y = y;
 		strobes[i].height = sheight;
@@ -120,16 +127,17 @@ strobe_filter(struct strobe_rec *s)
 	a0 = s->a0; a1 = s->a1; a2 = s->a2; b1 = s->b1; b2 = s->b2;
 	x1 = s->x1; x2 = s->x2; y1 = s->y1; y2 = s->y2;
 
-	i = s->curr_samp % SAMPS_PER_READ;
+	i = s->curr_samp % SND_BUFSAMPS;
 	while (i != snd_ofs) {
 		double in = snd_buf[i];
 		y0 = ((a0*in) + (a1*x1) + (a2*x2) + (b1*y1) + (b2*y2));
+//XXXprintln("[%d]in=%f,y0=%f", (int)i, in, y0);
 		x2 = x1;
 		x1 = in;
 		y2 = y1;
 		y1 = y0;
 		s->filtered[i] = y0;
-		i = (i+1)%SAMPS_PER_READ;
+		i = (i+1)%SND_BUFSAMPS;
 	}
 
 	s->x1 = x1; s->x2 = x2; s->y1 = y1; s->y2 = y2;
@@ -208,7 +216,7 @@ strobe_drawnew(struct strobe_rec *s)
 		}
 	}
 
-	i = s->curr_samp % SAMPS_PER_READ;
+	i = s->curr_samp % SND_BUFSAMPS;
 	while (i != snd_ofs) {
 		int samp = s->filtered[i];
 
@@ -237,7 +245,7 @@ strobe_drawnew(struct strobe_rec *s)
 		DRAW_PIXEL(x, y+s->y, color);
 
 		s->curr_samp++;
-		i = s->curr_samp%SAMPS_PER_READ;
+		i = s->curr_samp%SND_BUFSAMPS;
 	}
 	s->prev_pos = pos;
 	s->samp_max = samp_max;
@@ -387,16 +395,16 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 	if (!jni_init(env_)) {
 		return;
 	}
+/* XXX - make it use the getMinBufferSize() value for SAMPS_PER_READ, and make it use at least 2*that for the buffer size */
 
 println("into JNI");
 	jobject recorder = (*env)->GetObjectField(env, this, fid_st_recorder);
 	sample_rate = (*env)->CallIntMethod(env, recorder, mid_ar_getsamplerate);
-println("sample_rate=%d\n",sample_rate);
 
 	readbuf = (*env)->NewShortArray(env, SAMPS_PER_READ);
 	
 	while (1) {
-		int num_read;
+		int num_read, to_read;
 
 		/* first, check for any important state changes */
 		if ((*env)->GetBooleanField(env, this, fid_st_freq_changed)) {
@@ -418,18 +426,22 @@ println("thread interrupted");
 		}
 
 		/* then get sound */
-		num_read = (*env)->CallIntMethod(env, recorder, mid_ar_read, readbuf, 0, SAMPS_PER_READ-snd_ofs);
-println("num_read=%d",num_read);
+		to_read = SND_BUFSAMPS-snd_ofs;
+		if (to_read > SAMPS_PER_READ) {
+			to_read = SAMPS_PER_READ;
+		}
+		num_read = (*env)->CallIntMethod(env, recorder, mid_ar_read, readbuf, 0, to_read);
 		if (num_read <= 0) {
 			return;
 		}
 		(*env)->GetShortArrayRegion(env, readbuf, 0, num_read, snd_buf+snd_ofs);
-		snd_ofs += num_read;
+		snd_ofs = (snd_ofs+num_read)%SND_BUFSAMPS;
 
 		/* process sound into bitmap */
 		bitmap_ptr = (*env)->GetPrimitiveArrayCritical(env, bitmap, 0);
 		newdata();
 		(*env)->ReleasePrimitiveArrayCritical(env, bitmap, bitmap_ptr, 0);
+println("filter=%d",(int)strobes[0].filtered[0]);
 		/* send bitmap to surface */
 		(*env)->CallBooleanMethod(env, this, mid_st_do_draw, bitmap, width, height);
 	}
