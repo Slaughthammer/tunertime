@@ -120,7 +120,6 @@ though it seems like porting the spectrum analyzer over (GGH) will cause
 us to really examine that figure a little more closely.
 
 
-XXX - add back in label display (means design a font?, or do I give 3 numbers to do_draw() and have it call Canvas.drawText()?)
 XXX - make it turn off the sleeper, or delay it?
 XXX - add context menu just for help (which maybe should be a URL?)
 XXX - check for remaining XXX in jni/* and src/*/*/*/*

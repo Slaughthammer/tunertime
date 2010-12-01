@@ -1,1 +1,1 @@
-ndk-build && ant debug && adb -e install -r bin/TunerTime-debug.apk 
+ndk-build && ant debug && adb -d install -r bin/TunerTime-debug.apk 

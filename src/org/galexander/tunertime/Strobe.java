@@ -33,6 +33,33 @@ System.out.println("setting freq_changed (freq="+freq+")");
 
 	private native void runner();		/* efficient C loop */
 
+	private Paint label_p = null;
+	private String[] labels = null;
+
+	private void draw_labels(Canvas c) {
+		int y = 0;
+		int strobe_height = height/labels.length;
+
+System.out.println("drawing labels");
+		if (label_p == null) {
+			label_p = new Paint();
+			label_p.setARGB(0xff,0xaa,0xaa,0xff);
+			label_p.setTextAlign(Paint.Align.LEFT);
+			label_p.setTextSize(30);
+			label_p.setTypeface(Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD));
+			label_p.setAntiAlias(true);
+			label_p.setSubpixelText(true);
+		}
+		if (labels == null) {
+			return;
+		}
+System.out.println("drawing labels2");
+		for (int i = 0; i < labels.length; i++) {
+			y += strobe_height;
+			c.drawText(labels[i], 0, y, label_p);
+		}
+	}
+
 	/* Called from JNI to handle all of the Canvas interactions to draw the
 	 * bitmap.  Returns 1 for success, 0 for failure (which means that the
 	 * underlying surface has probably re-sized) */
@@ -50,6 +77,7 @@ System.out.println("setting freq_changed (freq="+freq+")");
 			c.drawBitmap(bitmap, /*offset=*/0, /*stride=*/w,
 					/*x=*/0, /*y=*/0, /*wid=*/w, /*hght=*/h,
 					/*hasAlpha=*/false, /*paint=*/null);
+			draw_labels(c);
 		} finally {
 			holder.unlockCanvasAndPost(c);
 		}

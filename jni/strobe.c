@@ -80,12 +80,10 @@ filter_recalc(struct strobe_rec *s)
 	s->x1 = s->x2 = s->y1 = s->y2 = 0.0;
 }
 
+
 static void
 strobe_recalc(struct strobe_rec *s)
 {
-/* XXX - add label display back in someday */
-//	sprintf(s->label, "%.1f", s->freq);
-
 	filter_recalc(s);
 
 	s->msamps_per_col = (sample_rate*1000) / s->freq;
@@ -108,6 +106,7 @@ recalculate(void)
 		strobes[i].height = sheight;
 		strobes[i].freq = freq;
 		strobe_recalc(&strobes[i]);
+
 		freq *= 2.0;
 		y += sheight;
 	}
@@ -292,6 +291,7 @@ static JNIEnv *env;
 
 static jclass cl_system;
 static jclass cl_printstream;
+static jclass cl_string;
 static jclass cl_strobe;
 static jclass cl_audiorecord;
 
@@ -309,6 +309,7 @@ static jfieldID fid_st_height;
 static jfieldID fid_st_surface_changed;
 static jfieldID fid_st_recorder;
 static jfieldID fid_st_record_bufsz;
+static jfieldID fid_st_labels;
 
 static jintArray bitmap;
 
@@ -334,6 +335,7 @@ jni_init(JNIEnv *env_)
 
 	CLASS(system, "java/lang/System")
 	CLASS(printstream, "java/io/PrintStream")
+	CLASS(string, "java/lang/String")
 	CLASS(strobe, "org/galexander/tunertime/Strobe")
 	CLASS(audiorecord, "android/media/AudioRecord")
 
@@ -351,6 +353,7 @@ jni_init(JNIEnv *env_)
 	FIELD(st_surface_changed, strobe, "surface_changed", "Z")
 	FIELD(st_recorder, strobe, "recorder", "Landroid/media/AudioRecord;")
 	FIELD(st_record_bufsz, strobe, "record_bufsz", "I")
+	FIELD(st_labels, strobe, "labels", "[Ljava/lang/String;")
 
 	return 1;
 }
@@ -380,6 +383,23 @@ resize_bitmap(void)
 		(*env)->DeleteLocalRef(env, bitmap);
 	}
 	bitmap = (*env)->NewIntArray(env, width*height);
+}
+
+static void
+update_labels(jobject this)
+{
+	jobjectArray labels = (*env)->NewObjectArray(env, NUM_STROBES, cl_string, NULL);
+	int i;
+	for (i = 0; i < NUM_STROBES; i++) {
+		jstring lab;
+		char buf[100];
+		sprintf(buf, "%.1f", strobes[i].freq);
+		lab = (*env)->NewStringUTF(env, buf);
+		(*env)->SetObjectArrayElement(env, labels, i, lab);
+		(*env)->DeleteLocalRef(env, lab);
+	}
+	(*env)->SetObjectField(env, this, fid_st_labels, labels);
+	(*env)->DeleteLocalRef(env, labels);
 }
 
 /* This is the entry point from the Java code...it is a loop that checks for
@@ -415,6 +435,7 @@ println("into JNI");
 			(*env)->SetBooleanField(env, this, fid_st_freq_changed, JNI_FALSE);
 			base_freq = (*env)->GetDoubleField(env, this, fid_st_freq);
 			recalculate();
+			update_labels(this);
 		}
 		if ((*env)->GetBooleanField(env, this, fid_st_surface_changed)) {
 			(*env)->SetBooleanField(env, this, fid_st_surface_changed, JNI_FALSE);
@@ -447,7 +468,7 @@ println("thread interrupted");
 			newdata();
 			(*env)->ReleasePrimitiveArrayCritical(env, bitmap, bitmap_ptr, 0);
 			/* send bitmap to surface */
-			(*env)->CallBooleanMethod(env, this, mid_st_do_draw, bitmap, width, height);
+			(*env)->CallIntMethod(env, this, mid_st_do_draw, bitmap, width, height);
 		}
 	}
 }
