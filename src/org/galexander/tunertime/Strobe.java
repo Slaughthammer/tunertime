@@ -13,9 +13,8 @@ public class Strobe extends Thread {
 	private SurfaceHolder holder = null;
 
 	private AudioRecord recorder = null;
+	private int record_bufsz = 0;
 
-	private final static int SAMPS_PER_READ = 2048;
-	
 	public void setFreq(double freq_) {
 		if (freq == freq_) {
 			return;
@@ -74,19 +73,13 @@ System.out.println("strobe stop");
 		if (recorder != null) {
 			sound_stop();
 		}
-		int min_bufsz = AudioRecord.getMinBufferSize(44100,
-				AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
-			/* 2 bytes per sample, 2 read-worths per buffer */
-		int wanted_bufsz = SAMPS_PER_READ*2*2;
-
-		if (wanted_bufsz < min_bufsz) {
-			wanted_bufsz = min_bufsz;
-		}
-
+		record_bufsz = AudioRecord.getMinBufferSize(
+				44100, AudioFormat.CHANNEL_IN_MONO,
+				AudioFormat.ENCODING_PCM_16BIT);
 		recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
 				44100, AudioFormat.CHANNEL_IN_MONO,
 				AudioFormat.ENCODING_PCM_16BIT,
-				wanted_bufsz);
+				record_bufsz*4);
 		if ((recorder.getAudioFormat() !=
 					AudioFormat.ENCODING_PCM_16BIT) ||
 		    (recorder.getChannelCount() != 1)) {
@@ -108,8 +101,10 @@ System.out.println("strobe stop");
 		if (recorder == null) {
 			return;
 		}
-		recorder.stop();
-		recorder.release();
+		try {
+			recorder.stop();
+			recorder.release();
+		} catch (IllegalStateException e) { /* whatever */ }
 		recorder = null;
 	}
 

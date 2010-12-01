@@ -26,6 +26,9 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private TextView w_stretch_display2;
 
 	private Strobe strobe = null;
+	private SurfaceHolder holder = null;
+	private int width = 0;
+	private int height = 0;
 
 	private static final String NOTE_NAMES[] = new String[] { "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#" };
 
@@ -50,13 +53,19 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	}
 	
 	public void onResume() {
+System.out.println("resume");
 		load_config();
 		do_note(null);
 		update_status();
+		if (holder != null) {
+			/* lingering surface must still be valid */
+			start_strobe();
+		}
 		super.onResume();
 	}
 
 	public void onPause() {
+System.out.println("pause");
 		stop_strobe();
 		save_config();
 		super.onPause();
@@ -177,6 +186,16 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		return ((double)A_freq)*mult;
 	}
 
+	private void start_strobe() {
+		if (strobe != null) {
+			stop_strobe();
+		}
+		strobe = new Strobe();
+		strobe.setSurface(holder, width, height);
+		strobe.setFreq(get_strobe_freq());
+		strobe.start();
+	}
+
 	private void stop_strobe() {
 		if (strobe == null) {
 			return;
@@ -189,23 +208,32 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	public void surfaceCreated(SurfaceHolder h) {
 		/* ignore - no point starting the thread until we have
 		 * dimensions */
+System.out.println("created");
+		if (holder != null) {
+			/* we've received a surfaceChanged() already, assume it
+			 * is still valid */
+			start_strobe();
+		}
 	}
-	public void surfaceChanged(SurfaceHolder h, int format, int width, int height) {
+	public void surfaceChanged(SurfaceHolder h, int format, int width_, int height_) {
+System.out.println("changed");
+		holder = h;
+		width = width_;
+		height = height_;
 		if (strobe != null) {
 			/* update existing thread */
 			strobe.setSurface(h, width, height);
 		} else {
-			/* make new thread */
-			strobe = new Strobe();
-			strobe.setSurface(h, width, height);
-			strobe.setFreq(get_strobe_freq());
-			strobe.start();
+			/* start new thread */
+			start_strobe();
 		}
 	}
 	public void surfaceDestroyed(SurfaceHolder h) {
+System.out.println("destroyed");
+		holder = null;
 		if (strobe != null) {
 			strobe.setSurface(null, 0, 0);
-			strobe.interrupt();
+			stop_strobe();
 		}
 	}
 }

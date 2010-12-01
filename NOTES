@@ -121,8 +121,6 @@ us to really examine that figure a little more closely.
 
 
 XXX - add back in label display (means design a font?, or do I give 3 numbers to do_draw() and have it call Canvas.drawText()?)
-XXX - make SAMPS_PER_READ just use the minimum buffer size value (and make the buffer 2* as big)
-XXX - make sound come back after sleeping (probably need to query AudioRecord's state each time)
 XXX - make it turn off the sleeper, or delay it?
 XXX - add context menu just for help (which maybe should be a URL?)
 XXX - check for remaining XXX in jni/* and src/*/*/*/*

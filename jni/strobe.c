@@ -5,10 +5,9 @@
 #include <assert.h>
 #include <jni.h>
 
-/* this should match the value in src/org/galexander/tunertime/Strobe.java */
-#define SAMPS_PER_READ 2048
-/* this must be bigger than SAMPS_PER_READ */
-#define SND_BUFSAMPS 4096
+/* this had better be bigger than record_bufsz, and being too big is kind of
+ * harmless (record_bufsz on my system is just over 4kB, or 2ksamps) */
+#define SND_BUFSAMPS 32768
 
 #define NUM_STROBES 3
 
@@ -79,7 +78,6 @@ filter_recalc(struct strobe_rec *s)
 	s->b2 = -R2;
 
 	s->x1 = s->x2 = s->y1 = s->y2 = 0.0;
-println("recalc inner: %f,%f,%f,%f,%f", s->a0, s->a1, s->a2, s->b1, s->b2);
 }
 
 static void
@@ -96,7 +94,6 @@ strobe_recalc(struct strobe_rec *s)
 	if (s->multiplier < 1) {
 		s->multiplier = 1;
 	}
-println("recalc outer: %d,%d",(int)s->msamps_per_col, (int)s->multiplier);
 }
 
 static void
@@ -106,7 +103,6 @@ recalculate(void)
 	double freq = base_freq;
 	int sheight = height/NUM_STROBES;
 	int y = 0;
-println("recalculate:%f (%d,%d)",base_freq, width,height);
 	for (i = 0; i < NUM_STROBES; i++) {
 		strobes[i].y = y;
 		strobes[i].height = sheight;
@@ -131,7 +127,6 @@ strobe_filter(struct strobe_rec *s)
 	while (i != snd_ofs) {
 		double in = snd_buf[i];
 		y0 = ((a0*in) + (a1*x1) + (a2*x2) + (b1*y1) + (b2*y2));
-//XXXprintln("[%d]in=%f,y0=%f", (int)i, in, y0);
 		x2 = x1;
 		x1 = in;
 		y2 = y1;
@@ -313,6 +308,7 @@ static jfieldID fid_st_width;
 static jfieldID fid_st_height;
 static jfieldID fid_st_surface_changed;
 static jfieldID fid_st_recorder;
+static jfieldID fid_st_record_bufsz;
 
 static jintArray bitmap;
 
@@ -354,6 +350,7 @@ jni_init(JNIEnv *env_)
 	FIELD(st_height, strobe, "height", "I")
 	FIELD(st_surface_changed, strobe, "surface_changed", "Z")
 	FIELD(st_recorder, strobe, "recorder", "Landroid/media/AudioRecord;")
+	FIELD(st_record_bufsz, strobe, "record_bufsz", "I")
 
 	return 1;
 }
@@ -391,18 +388,25 @@ JNIEXPORT void JNICALL
 Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 {
 	jshortArray readbuf;
+	jobject recorder;
+	jint record_bufsz;
 
 	if (!jni_init(env_)) {
 		return;
 	}
-/* XXX - make it use the getMinBufferSize() value for SAMPS_PER_READ, and make it use at least 2*that for the buffer size */
 
 println("into JNI");
-	jobject recorder = (*env)->GetObjectField(env, this, fid_st_recorder);
-	sample_rate = (*env)->CallIntMethod(env, recorder, mid_ar_getsamplerate);
 
-	readbuf = (*env)->NewShortArray(env, SAMPS_PER_READ);
+	memset(strobes, 0, sizeof strobes);
+	bitmap = NULL;
 	
+	recorder = (*env)->GetObjectField(env, this, fid_st_recorder);
+	record_bufsz = (*env)->GetIntField(env, this, fid_st_record_bufsz);
+	sample_rate = (*env)->CallIntMethod(env, recorder, mid_ar_getsamplerate);
+	record_bufsz /= sizeof(snd_buf[0]);	/* was bytes */
+
+	readbuf = (*env)->NewShortArray(env, record_bufsz);
+
 	while (1) {
 		int num_read, to_read;
 
@@ -427,8 +431,8 @@ println("thread interrupted");
 
 		/* then get sound */
 		to_read = SND_BUFSAMPS-snd_ofs;
-		if (to_read > SAMPS_PER_READ) {
-			to_read = SAMPS_PER_READ;
+		if (to_read > record_bufsz) {
+			to_read = record_bufsz;
 		}
 		num_read = (*env)->CallIntMethod(env, recorder, mid_ar_read, readbuf, 0, to_read);
 		if (num_read <= 0) {
@@ -437,12 +441,13 @@ println("thread interrupted");
 		(*env)->GetShortArrayRegion(env, readbuf, 0, num_read, snd_buf+snd_ofs);
 		snd_ofs = (snd_ofs+num_read)%SND_BUFSAMPS;
 
-		/* process sound into bitmap */
-		bitmap_ptr = (*env)->GetPrimitiveArrayCritical(env, bitmap, 0);
-		newdata();
-		(*env)->ReleasePrimitiveArrayCritical(env, bitmap, bitmap_ptr, 0);
-println("filter=%d",(int)strobes[0].filtered[0]);
-		/* send bitmap to surface */
-		(*env)->CallBooleanMethod(env, this, mid_st_do_draw, bitmap, width, height);
+		if (bitmap) {
+			/* process sound into bitmap */
+			bitmap_ptr = (*env)->GetPrimitiveArrayCritical(env, bitmap, 0);
+			newdata();
+			(*env)->ReleasePrimitiveArrayCritical(env, bitmap, bitmap_ptr, 0);
+			/* send bitmap to surface */
+			(*env)->CallBooleanMethod(env, this, mid_st_do_draw, bitmap, width, height);
+		}
 	}
 }
