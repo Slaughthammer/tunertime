@@ -120,7 +120,29 @@ though it seems like porting the spectrum analyzer over (GGH) will cause
 us to really examine that figure a little more closely.
 
 
+November 24, 2013.
+
+I'd kind of like to release this thing publicly.  I need to take care of
+some things.  Like documentation, an icon, and any bug fixes or features
+that might be needed.
+
+First, though, I am perplexed by the mis-implementation of stretch.
+TunerTime.get_strobe_freq() determines the frequency of the lowest strobe
+and honors the stretch.  But for the octave strobes, the stretch factor
+is ignored (jni/strobe.c:recalculate() just does * 2.0).  This seems
+wrong to me, I think especially the octave strobes should represent the
+stretch, so you can tell more easily if you got the right value.
+
+Surprisingly, ggg (the gglcars version) has the same flaw.  However, ggd
+(the original fft that grew to have a strobe feature) behaves as I would
+expect.  Which supports the idea, because ggd is the one that I actually
+used for piano tuning...
+
+XXX - stretch factor should influence octave strobes?
+XXX - add help
+XXX - write document
+XXX - make icon
+
 XXX - make it turn off the sleeper, or delay it?
 XXX - add context menu just for help (which maybe should be a URL?)
-XXX - check for remaining XXX in jni/* and src/*/*/*/*
 XXX - see what can be done about sound overflows, if fixing buffer sizes doesn't do it
