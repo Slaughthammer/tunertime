@@ -1,0 +1,122 @@
+<html><head><title>TunerTime User's Manual</title></head>
+<body>
+
+<!-- XXX: add a google play link, and a URL image -->
+
+<h1>TunerTime</h1>
+
+<p>TunerTime is an Android application for tuning pianos.  It is based
+on the same principle as a
+<a href="http://en.wikipedia.org/wiki/Electronic_tuner#Strobe_tuner">strobe
+tuner</a>.</p>
+
+<p>TunerTime can be used to tune any instrument, but it is specially designed
+for piano.  TunerTime is very precise -- if you want to, you can easily
+tune an instrument to within 1/4Hz of the target (subject to the
+limitations of the instrument itself).</p>
+
+<p>One thing TunerTime does not do is automatically determine the
+frequency of a note that it hears.  You tell TunerTime which frequency
+you are aiming for, and it tells you how close you are getting.  If you
+want a more convenient tuner (especially for guitars or wind
+instruments), there are many other apps for that.</p>
+
+<p>It's unfortunate that it's kind of complicated to understand at the
+beginning.  I think it is a very powerful and usable tuner, but the
+learning curve is pretty steep.  If you do a lot of tuning, for example
+of pianos or accordions or pipes, then I think this is a very useful tool
+and well worth the learning experience.  I hope my exposition of its
+operation here is not too discouraging.</p>
+
+<p>I had <em>Piano Servicing Tuning & Rebuilding</em> by Arthur A.
+Reblitz and a very old piano by my side while I was writing this
+software.  I have since used it to help me tune 4 pianos, and I wouldn't
+change a thing about it.</p>
+
+<p>Yeah, TunerTime is a dumb name for this program.  You should say it as
+if you were saying "it's tuner time." The same way you might say "it's
+dinner time," but perhaps with less anticipatory salivation.</p>
+
+<h2>Strobe principle</h2>
+
+<p>In an electro-mechanical spinning-disk strobe tuner, you select the
+note by controlling the rotation of a patterned disk.  Suppose you select
+440Hz.  When it is up to speed, there is a band on the wheel which is
+rotating at exactly the right speed so that the pattern repeats 440 times
+a second.  There are also other bands with a tighter or looser pattern on
+them so that they are repeating at a harmonic (a multiple) of 440 Hz,
+generally by octave.</p>
+
+<p>At the same time, there is a strobe light behind the wheel that is
+controlled by a microphone.  Whenever the microphone picks up a burst of
+noise, the light brightens.  If the microphone is picking up 440
+bursts every second, then the light will shine on the disk at the same
+point in the pattern each time.  The disk will appear to be stopped.</p>
+
+<p>If the bursts are coming slightly too fast -- say 441 times a second --
+then each time the light comes on, the wheel will be not quite as far
+into the pattern as it was at the previous burst.  The wheel will appear
+to be spinning backwards.</p>
+
+<p>If the bursts are coming slightly too slow -- say 439 times a second --
+then each time the light comes on, the wheel will be a little further
+into the pattern than it was at the previous burst.  The wheel will
+appear to be spinning forwards.</p>
+
+<p>If the bursts are coming at a radically different frequency -- say 300
+times a second -- then it will be hard to discern a pattern, though there
+may be a misleading signal from some harmonic.</p>
+
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="200" height="200" style="float:right;">
+<path d="
+M10,10 L10,190
+M40,10 L40,190
+M70,10 L70,190
+M100,10 L100,190
+M130,10 L130,190
+M4,50 L16,50 L10,56 L4,50
+M25,100 L18,105 L30,107 L25,100
+" fill="none" stroke="black" />
+<path d="
+M10,190 L40,10
+M40,190 L70,10
+M70,190 L100,10
+M100,190 L130,10
+M130,190 L160,10
+" fill="none" stroke="black" stroke-dasharray="5,10" />
+</svg>
+
+<p>In TunerTime, instead of a light coming on, there are green lines that
+are drawn while there is a burst of sound (and red ones when there is
+not).  And instead of a pattern on a spinning wheel, there is a pattern
+that is traced on the screen.</p>
+
+<p>So as time progresses, TunerTime traces a line from the top of the band
+to the bottom of it, showing green (burst) or red (no burst) as it goes.
+When it gets to the bottom, it jumps back up to the top, but moves a
+little to the right.  When it gets all the way to the right, of course,
+it starts over again on the left side of the screen.</p>
+
+<p>The frequency that is selected controls how long it takes TunerTime to
+draw a single vertical line before moving onto the next one.  If the
+frequency is set to 440Hz, then every second, TunerTime will draw 440
+vertical lines.</p>
+
+<p>If the sound is at precisely 440Hz, then overall the image will be of
+a straight horizontal line.  A burst of noise (green portion) will occur
+at the same time during each vertical trace.</p>
+
+<p>If the sound is slightly flat, then the image will be of a descending
+line.  If the sound is slightly sharp, then the image will be of an
+ascending line.</p>
+
+<p>And like a real strobe tuner, TunerTime provides 3 different bands.
+It gives you one band at the base frequency that you selected, and then
+two more at octaves above that.  It can be useful to see the higher
+harmonics, and also it is just convenient so you do not have to step
+through the octaves as much.</p>
+
+
+<h2>Functional description</h2>
+
+</body></html>
