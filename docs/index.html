@@ -116,7 +116,68 @@ two more at octaves above that.  It can be useful to see the higher
 harmonics, and also it is just convenient so you do not have to step
 through the octaves as much.</p>
 
+<p>One thing TunerTime shows that a strobe tuner does not is a trend over
+time.  Instead of simply looking at it and saying subjectively, "it is
+spinning faster than it was", you can see a second or two of history of
+it.  This can have a few uses, as you shall see later.</p>
 
 <h2>Functional description</h2>
 
+<img src="screen01.png" style="float:right;">
+<p>Here's a description of the functional parts of the TunerTime user
+interface.  This chapter will teach you what it does, if not quite how to
+actually use it.</p>
+
+<p>At the top of the screen are the 3 bands of the tuner display.  It is
+displaying 110Hz, 220Hz, and 440Hz.  The little yellow lines at the
+bottom of each band mark seconds.  It takes one second to move from the
+far left side of the screen to the yellow mark (and another second to
+reach the second yellow mark if there is one).  This is useful to assign
+a number to how out of tune something is -- if the green line wraps
+around to the top once for every yellow mark, then that means it is
+exactly 1Hz out of tune.  In this example, it happens to be about 7Hz out
+of tune.</p>
+
+<p>Below that and to the left are buttons to select the note.  On the
+left you can adjust the semi-tone ("note").  In the middle you can adjust
+the octave (middle C is in octave 3).  Finally, you can fine-tune the
+cents (100 cents per each semi-tone step).  It is rarely useful to adjust
+the cents, unless you are trying to determine the frequency of something
+you are not tuning.</p>
+
+<p>Note that TunerTime uses the mathematically simple equally tempered
+scale, which is generally the modern standard but you may desire
+something different.</p>
+
+<p>The blue text in the lower right provides the A frequency that was
+chosen as the base of the scale (usually 440Hz, but some people tune to a
+different base), and the stretch factor which controls how large an
+octave is.  The stretch factor will get its own discussion later on.</p>
+
+<p>Finally, the "conf" button in the lower-right corner changes to the
+configuration screen.</p>
+
+<img src="screen02.png" style="float:left;">
+<p>To the left is a screenshot of the configuration mode buttons.  On the
+left you can adjust the frequency of the central A.  Then you can adjust
+the stretch factor.  The "reset" button returns A to 440 and zeroes out
+the stretch factor.  The "note" button changes back to note mode.</p>
+
+<h2 style="clear:both;">Usage</h2>
+
+<p>Here I'm going to show you some sample images from the app with some
+notes about what the display tells us about the sound.  Note that I
+captured these screenshots using a guitar, because my mean wife made me
+get rid of my piano.  But generally all stringed instruments look the
+same in TunerTime. Flutes tend to produce a more perfect spectrum from
+TunerTime's perspective. I haven't tried brass or reed instruments, but their
+tones have more harmonics so I would guess generally they would look
+"messier."</p>
+
+<!-- XXX - capture an image of me beating the phone on something,
+showing that it appears in all frequencies -->
+
+</p>
+
+<p>
 </body></html>
