@@ -1,6 +1,6 @@
 print "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n";
-my $cx = 500;
-my $cy = 500;
+my $cx = 250;
+my $cy = 250;
 my $i;
 for (my $i = 2; $i < 9; $i++) {
 	part($i*30, ($i+1)*30, 2**($i+2));
@@ -17,7 +17,7 @@ sub part {
 			my ($x4,$y4) = ($irad * cos($t2), $irad * sin($t2));
 			$x1 += $cx; $x2 += $cx; $x3 += $cx; $x4 += $cx;
 			$y1 += $cy; $y2 += $cy; $y3 += $cy; $y4 += $cy;
-			print qq|<path d="M$x1,$y1 L$x2,$y2 L$x3,$y3 L$x4,$y4 Z" fill="#f00" stroke="none" />|;
+			print qq|<path d="M$x1,$y1 L$x2,$y2 L$x3,$y3 L$x4,$y4 Z" fill="#f00" stroke="none" />\n|;
 		}
 	}
 }
