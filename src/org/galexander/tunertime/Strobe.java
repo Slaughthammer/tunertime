@@ -6,22 +6,23 @@ import android.graphics.*;
 import android.media.*;
 
 public class Strobe extends Thread {
-	private volatile double freq;
-	private volatile boolean freq_changed = false;
+	private volatile int cents;
+	private volatile boolean cents_changed = false;
 	private volatile int width = 0, height = 0;
 	private volatile boolean surface_changed = false;
 	private SurfaceHolder holder = null;
 
 	private AudioRecord recorder = null;
 	private int record_bufsz = 0;
+	private TunerTime ui = null;
 
-	public void setFreq(double freq_) {
-		if (freq == freq_) {
-			return;
-		}
-		freq = freq_;
-System.out.println("setting freq_changed (freq="+freq+")");
-		freq_changed = true;
+	Strobe(TunerTime ui_) {
+		ui = ui_;
+	}
+
+	public void setCents(int cents_) {
+		cents = cents_;
+		cents_changed = true;
 	}
 
 	public void setSurface(SurfaceHolder holder_, int width_, int height_) {

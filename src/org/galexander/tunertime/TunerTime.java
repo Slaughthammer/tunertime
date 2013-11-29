@@ -161,7 +161,7 @@ System.out.println("pause");
 		w_cent_display.setText(cents_str);
 
 		if (strobe != null) {
-			strobe.setFreq(get_strobe_freq());
+			strobe.setCents(strobe_cents);
 		}
 
 		if (A_freq < 220) {
@@ -179,9 +179,9 @@ System.out.println("pause");
 		w_stretch_display2.setText(stretch_str);
 	}
 
-	private double get_strobe_freq() {
+	public double cents_to_freq(int cents) {
 		double octbase = 2.0+(((double)octave_stretch)*0.00001);
-		double octpow = ((double)(strobe_cents-4800)) / 1200.0;
+		double octpow = ((double)(cents-4800)) / 1200.0;
 		double mult = Math.pow(octbase, octpow);
 		return ((double)A_freq)*mult;
 	}
@@ -190,9 +190,9 @@ System.out.println("pause");
 		if (strobe != null) {
 			stop_strobe();
 		}
-		strobe = new Strobe();
+		strobe = new Strobe(this);
 		strobe.setSurface(holder, width, height);
-		strobe.setFreq(get_strobe_freq());
+		strobe.setCents(strobe_cents);
 		strobe.start();
 	}
 

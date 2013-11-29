@@ -37,7 +37,7 @@ struct strobe_rec {
 
 
 static int sample_rate;
-static double base_freq;
+static int base_cents;
 static int width;
 static int height;
 static struct strobe_rec strobes[NUM_STROBES];
@@ -91,24 +91,6 @@ strobe_recalc(struct strobe_rec *s)
 	s->multiplier = (s->freq + width) / width;
 	if (s->multiplier < 1) {
 		s->multiplier = 1;
-	}
-}
-
-static void
-recalculate(void)
-{
-	int i;
-	double freq = base_freq;
-	int sheight = height/NUM_STROBES;
-	int y = 0;
-	for (i = 0; i < NUM_STROBES; i++) {
-		strobes[i].y = y;
-		strobes[i].height = sheight;
-		strobes[i].freq = freq;
-		strobe_recalc(&strobes[i]);
-
-		freq *= 2.0;
-		y += sheight;
 	}
 }
 
@@ -293,23 +275,26 @@ static jclass cl_system;
 static jclass cl_printstream;
 static jclass cl_string;
 static jclass cl_strobe;
+static jclass cl_tunertime;
 static jclass cl_audiorecord;
 
 static jmethodID mid_println;
 static jmethodID mid_st_do_draw;
 static jmethodID mid_st_isinterrupted;
+static jmethodID mid_tt_cents_to_freq;
 static jmethodID mid_ar_getsamplerate;
 static jmethodID mid_ar_read;
 
 static jfieldID fid_out;
-static jfieldID fid_st_freq;
-static jfieldID fid_st_freq_changed;
+static jfieldID fid_st_cents;
+static jfieldID fid_st_cents_changed;
 static jfieldID fid_st_width;
 static jfieldID fid_st_height;
 static jfieldID fid_st_surface_changed;
 static jfieldID fid_st_recorder;
 static jfieldID fid_st_record_bufsz;
 static jfieldID fid_st_labels;
+static jfieldID fid_st_ui;
 
 static jintArray bitmap;
 
@@ -337,23 +322,26 @@ jni_init(JNIEnv *env_)
 	CLASS(printstream, "java/io/PrintStream")
 	CLASS(string, "java/lang/String")
 	CLASS(strobe, "org/galexander/tunertime/Strobe")
+	CLASS(tunertime, "org/galexander/tunertime/TunerTime")
 	CLASS(audiorecord, "android/media/AudioRecord")
 
 	METHOD(println, printstream, "println", "(Ljava/lang/String;)V")
 	METHOD(st_do_draw, strobe, "do_draw", "([III)I")
 	METHOD(st_isinterrupted, strobe, "isInterrupted", "()Z")
+	METHOD(tt_cents_to_freq, tunertime, "cents_to_freq", "(I)D")
 	METHOD(ar_getsamplerate, audiorecord, "getSampleRate", "()I")
 	METHOD(ar_read, audiorecord, "read", "([SII)I")
 
 	STFIELD(out, system, "out", "Ljava/io/PrintStream;")
-	FIELD(st_freq, strobe, "freq", "D")
-	FIELD(st_freq_changed, strobe, "freq_changed", "Z")
+	FIELD(st_cents, strobe, "cents", "I")
+	FIELD(st_cents_changed, strobe, "cents_changed", "Z")
 	FIELD(st_width, strobe, "width", "I")
 	FIELD(st_height, strobe, "height", "I")
 	FIELD(st_surface_changed, strobe, "surface_changed", "Z")
 	FIELD(st_recorder, strobe, "recorder", "Landroid/media/AudioRecord;")
 	FIELD(st_record_bufsz, strobe, "record_bufsz", "I")
 	FIELD(st_labels, strobe, "labels", "[Ljava/lang/String;")
+	FIELD(st_ui, strobe, "ui", "Lorg/galexander/tunertime/TunerTime;")
 
 	return 1;
 }
@@ -383,6 +371,30 @@ resize_bitmap(void)
 		(*env)->DeleteLocalRef(env, bitmap);
 	}
 	bitmap = (*env)->NewIntArray(env, width*height);
+}
+
+static void
+recalculate(jobject this)
+{
+	int i;
+	int cents = base_cents;
+	int sheight = height/NUM_STROBES;
+	int y = 0;
+	jobject ui;
+
+	ui = (*env)->GetObjectField(env, this, fid_st_ui);
+
+	for (i = 0; i < NUM_STROBES; i++) {
+		strobes[i].y = y;
+		strobes[i].height = sheight;
+		strobes[i].freq = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)cents);
+		strobe_recalc(&strobes[i]);
+
+		cents += 1200;
+		y += sheight;
+	}
+
+	(*env)->DeleteLocalRef(env, ui);
 }
 
 static void
@@ -431,17 +443,17 @@ println("into JNI");
 		int num_read, to_read;
 
 		/* first, check for any important state changes */
-		if ((*env)->GetBooleanField(env, this, fid_st_freq_changed)) {
-			(*env)->SetBooleanField(env, this, fid_st_freq_changed, JNI_FALSE);
-			base_freq = (*env)->GetDoubleField(env, this, fid_st_freq);
-			recalculate();
+		if ((*env)->GetBooleanField(env, this, fid_st_cents_changed)) {
+			(*env)->SetBooleanField(env, this, fid_st_cents_changed, JNI_FALSE);
+			base_cents = (*env)->GetIntField(env, this, fid_st_cents);
+			recalculate(this);
 			update_labels(this);
 		}
 		if ((*env)->GetBooleanField(env, this, fid_st_surface_changed)) {
 			(*env)->SetBooleanField(env, this, fid_st_surface_changed, JNI_FALSE);
 			width = (*env)->GetIntField(env, this, fid_st_width);
 			height = (*env)->GetIntField(env, this, fid_st_height);
-			recalculate();
+			recalculate(this);
 			resize_bitmap();
 		}
 		if ((*env)->CallBooleanMethod(env, this, mid_st_isinterrupted)) {
