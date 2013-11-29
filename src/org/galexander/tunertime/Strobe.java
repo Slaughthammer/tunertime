@@ -41,7 +41,6 @@ public class Strobe extends Thread {
 		int y = 0;
 		int strobe_height = height/labels.length;
 
-System.out.println("drawing labels");
 		if (label_p == null) {
 			label_p = new Paint();
 			label_p.setARGB(0xff,0xaa,0xaa,0xff);
@@ -54,7 +53,6 @@ System.out.println("drawing labels");
 		if (labels == null) {
 			return;
 		}
-System.out.println("drawing labels2");
 		for (int i = 0; i < labels.length; i++) {
 			y += strobe_height;
 			c.drawText(labels[i], 0, y, label_p);
@@ -86,7 +84,6 @@ System.out.println("drawing labels2");
 	}
 
 	public void run() {
-System.out.println("strobe start");
 		try {
 			if (!sound_start()) {
 				return;
@@ -95,7 +92,6 @@ System.out.println("strobe start");
 		} finally {
 			sound_stop();
 		}
-System.out.println("strobe stop");
 	}
 
 	public boolean sound_start() {

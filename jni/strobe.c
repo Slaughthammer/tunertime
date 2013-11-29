@@ -427,8 +427,6 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 		return;
 	}
 
-println("into JNI");
-
 	memset(strobes, 0, sizeof strobes);
 	bitmap = NULL;
 	
@@ -458,7 +456,7 @@ println("into JNI");
 		}
 		if ((*env)->CallBooleanMethod(env, this, mid_st_isinterrupted)) {
 			/* thread was interrupted, must be time for it to die */
-println("thread interrupted");
+			println("thread interrupted");
 			return;
 		}
 

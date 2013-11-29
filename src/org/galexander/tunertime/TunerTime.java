@@ -53,7 +53,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	}
 	
 	public void onResume() {
-System.out.println("resume");
 		load_config();
 		do_note(null);
 		update_status();
@@ -65,7 +64,6 @@ System.out.println("resume");
 	}
 
 	public void onPause() {
-System.out.println("pause");
 		stop_strobe();
 		save_config();
 		super.onPause();
@@ -208,7 +206,6 @@ System.out.println("pause");
 	public void surfaceCreated(SurfaceHolder h) {
 		/* ignore - no point starting the thread until we have
 		 * dimensions */
-System.out.println("created");
 		if (holder != null) {
 			/* we've received a surfaceChanged() already, assume it
 			 * is still valid */
@@ -216,7 +213,6 @@ System.out.println("created");
 		}
 	}
 	public void surfaceChanged(SurfaceHolder h, int format, int width_, int height_) {
-System.out.println("changed");
 		holder = h;
 		width = width_;
 		height = height_;
@@ -229,7 +225,6 @@ System.out.println("changed");
 		}
 	}
 	public void surfaceDestroyed(SurfaceHolder h) {
-System.out.println("destroyed");
 		holder = null;
 		if (strobe != null) {
 			strobe.setSurface(null, 0, 0);
