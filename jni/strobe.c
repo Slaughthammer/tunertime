@@ -175,10 +175,10 @@ strobe_drawnew(struct strobe_rec *s)
 	static int exptab[256] = { -1, };
 	unsigned pos = s->prev_pos;
 	unsigned pos_width = s->msamps_per_col*width;
-	unsigned color;
+	unsigned color, last_color = -1;
 	int samp_max = s->samp_max;
 	int samp_divider = 1+(samp_max/256);
-	int last_x = -1;
+	int last_x = -1, last_y = -1;
 	int x,y;
 	int i;
 	int multiplier = s->multiplier;
@@ -209,6 +209,13 @@ strobe_drawnew(struct strobe_rec *s)
 		if (x != last_x) {
 			clear_col(s, x);
 			last_x = x;
+		} else if (y > last_y+1) {
+			/* if there are more pixels than samples, then fill in
+			 * the in-betweens */
+			int ty;
+			for (ty = last_y+1; ty < y; ty++) {
+				DRAW_PIXEL(last_x, ty+s->y, last_color);
+			}
 		}
 
 		if (samp >= 0) {
@@ -219,6 +226,9 @@ strobe_drawnew(struct strobe_rec *s)
 			color = COLOR_VALUE(e/2, e, e/2);
 		}
 		DRAW_PIXEL(x, y+s->y, color);
+
+		last_y = y;
+		last_color = color;
 
 		s->curr_samp++;
 		i = s->curr_samp%SND_BUFSAMPS;
