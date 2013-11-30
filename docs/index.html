@@ -1,4 +1,11 @@
-<html><head><title>TunerTime User's Manual</title></head>
+<html><head><title>TunerTime User's Manual</title>
+<style type="text/css">
+h2 {
+	clear:both;
+	border-bottom: 1px dashed black;
+}
+</style>
+</head>
 <body>
 
 <!-- XXX: add a google play link, and a URL image -->
@@ -123,12 +130,16 @@ it.  This can have a few uses, as you shall see later.</p>
 
 <h2>Functional description</h2>
 
-<img src="screen01.png" style="float:right;">
+<div style="float:right;">
+<img src="screen01.png">
+<div style="text-align:center;font-weight:bold;">Figure 1</div>
+</div>
 <p>Here's a description of the functional parts of the TunerTime user
 interface.  This chapter will teach you what it does, if not quite how to
 actually use it.</p>
 
-<p>At the top of the screen are the 3 bands of the tuner display.  It is
+<p>See <b>figure 1</b>.  At the top of the screen are the 3 bands of the
+tuner display.  It is
 displaying 110Hz, 220Hz, and 440Hz.  The little yellow lines at the
 bottom of each band mark seconds.  It takes one second to move from the
 far left side of the screen to the yellow mark (and another second to
@@ -152,33 +163,85 @@ something different.</p>
 <p>The blue text in the lower right provides the "middle A" frequency
 that was chosen as the basis of the scale (usually 440Hz, but some people
 tune to a different basis), and the stretch factor which controls how
-large an octave is.  The stretch factor will get its own discussion later
-on.</p>
+large an octave is.</p>
 
 <p>Finally, the "conf" button in the lower-right corner changes to the
 configuration screen.</p>
 
-<img src="screen02.png" style="float:left;">
+<div style="float:left;">
+<img src="screen02.png">
+<div style="text-align:center;font-weight:bold;">Figure 2</div>
+</div>
 <p>To the left is a screenshot of the configuration mode buttons.  On the
 left you can adjust the frequency of the central A.  Then you can adjust
 the stretch factor.  The "reset" button returns A to 440 and zeroes out
 the stretch factor.  The "note" button changes back to note mode.</p>
 
-<h2 style="clear:both;">Usage</h2>
+
+<h2>Stretch factor</h2>
+
+<p>The stretch factor is a specialized adjustment for pianos.  A perfect
+octave has a ratio of two.  That is, to go one octave up, you double the
+frequency.  There is one other important detail: each tone is actually
+composed of a harmonic series.  When you play A 440 Hz on a piano, there
+are tones generated also at harmonic multiples (2x, 3x, 4x, ...) of that
+frequency: 880Hz, 1320Hz, 1760Hz.  At least, in an ideal world.  But in
+the actual world, the piano string's harmonics are usually stretched out
+a small amount.  The first harmonic (2x) may appear at 2.00125x instead
+of a perfect 2x.  I.e., the first harmonic will appear at 440*2.00125 =
+880.55Hz.  This is not very interesting when you play just one
+note, but if you play two notes at once that are spaced an octave apart
+(such as A 440 and A 880), and you tuned the piano to a perfect scale,
+then you may hear an interference pattern (beat notes) between the first
+harmonic of A 440 (880.55Hz) and the fundamental of A 880 (880.00Hz).</p>
+
+<p>Tuning a piano by octaves (two keys that are the same note in the
+scale, but different octaves) is relatively easy to do by ear, so a piano
+tuner will typically adjust for this stretch factor perfectly when doing
+the octaves.  But then they will find that the relationships between the
+notes within the first octave are not quite perfect.  An octave that
+should go from 440Hz to 880Hz instead goes from 440Hz to 880.55Hz, and it
+is best to distribute this 0.55Hz "stretch" across each interval within
+the octave.  And of course tuning within one octave is what you need a
+tuner for for, so it is handy for the tuner be able to do this for
+you.</p>
+
+<p>So to achieve a 2.00125x gap between octaves, you would set the
+stretch factor to 00125.  In general, what I do is I try a few notes
+across the piano's range, and for each one, I fine-tune the "cents"
+adjustment until the top band (the fundamental frequency) of the tuner
+shows a relatively straight line.  Then I fine-tune the "stretch" until
+the second band (the first harmonic) also shows a straight line.  I've
+had pianos with stretch factors as high as 00250 and as low as 00025.</p>
+
+<p>If you look at the guitar tone in <b>figure 1</b>, then you will see
+that the fundamental frequency is about 1/4Hz to 1/2Hz sharp, while the
+first harmonic is actually slightly flat.  That indicates this guitar
+string actually has a negative stretch factor!  Of course, for tuning a
+guitar, I would recommend tuning the lowest string with the tuner and
+then using your ear for the rest, so who cares about the stretch
+factor.  Most guitars have the 5th fret mis-placed by much more than
+1/2Hz anyways.</p>
+
+<p>For more details, see the
+<a href="http://en.wikipedia.org/wiki/Inharmonicity">wikipedia article on
+inharmonicity.</a></p>
+
+
+<h2>Usage</h2>
 
 <p>Here I'm going to show you some sample images from the app with some
 notes about what the display tells us about the sound.  Note that I
 captured these screenshots using a guitar, because my mean wife made me
 get rid of my piano.  But generally all stringed instruments look the
 same in TunerTime. Flutes tend to produce a more perfect spectrum from
-TunerTime's perspective. I haven't tried brass or reed instruments, but their
-tones have more harmonics so I would guess generally they would look
-"messier."</p>
+TunerTime's perspective. I haven't tried brass or reed instruments, but
+their tones have more harmonics so I would guess generally they would
+look "messier."</p>
+
+<p>Let's start with <b>figure 1</b>
 
 <!-- XXX - capture an image of me beating the phone on something,
 showing that it appears in all frequencies -->
 
-</p>
-
-<p>
 </body></html>
