@@ -50,7 +50,7 @@ public class Strobe extends Thread {
 			label_p = new Paint();
 			label_p.setARGB(0xff,0xaa,0xaa,0xff);
 			label_p.setTextAlign(Paint.Align.LEFT);
-			label_p.setTextSize(30);
+			label_p.setTextSize(50);
 			label_p.setTypeface(Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD));
 			label_p.setAntiAlias(true);
 			label_p.setSubpixelText(true);
