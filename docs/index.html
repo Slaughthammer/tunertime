@@ -246,11 +246,165 @@ TunerTime's perspective. I haven't tried brass or reed instruments, but
 their tones have more harmonics so I would guess generally they would
 look "messier."</p>
 
-<p>Let's start with <b>figure 1</b>.  From the left side of the screen to
-the yellow line about halfway across, you see that the red line moves
-from the bottom to the top, representing a 180 degree phase change in
-that time period, or in other words, about 1/2Hz sharp.  
-period.
+<p>It's important that you don't feel like you have to understand any of
+the numeric details here.  I never look at a signal and count and say
+"that is 1/3Hz sharp", I just want to know if it is a lot sharp or a
+little sharp and that is obvious at a glance.  I am just explaining it so
+in detail so you have examples if you really want to understand what it
+means.</p>
+
+<div style="float:right;">
+<img src="screen01.png">
+<div style="text-align:center;font-weight:bold;">Figure 1</div>
+</div>
+<p>Here's a description of the functional parts of the TunerTime user
+interface.  This chapter will teach you what it does, if not quite how to
+actually use it.</p>
+<p>Let's start with <b>figure 1</b> (which I've reproduced here for
+convenience).  The fundamental frequency (top
+band, 329.6Hz) is really the one you want to be in tune.  Looking in
+it from the left side of the screen to
+the yellow line about halfway across, you see that the red strip has
+moved from the bottom half of the band to the top half of the band.
+That's a 180 degree phase change (one half), and represents 1/2Hz sharp.
+It is sharp because the lines are tending upwards.</p>
+
+<p>Then for the second half of the displayed duration, it appears to be a
+little less sharp (maybe only 1/4Hz).  This is common for string
+instruments.  They start out sharp (due to more harmonics in the
+spectrum, I think), and then quickly reach a relatively stable plateau,
+slowly dropping in frequency.</p>
+
+<p>Or in other words, <b>it's a little sharp</b>.</p>
+
+<p>There are also a "wavey shape" to the lines, especially for the second
+half of the duration.  This represents a beat note (though I guess you
+could also describe it as vibrato).  In this case, I am playing the high
+E on my guitar and the low E is resonating passively along with it.  The
+two strings are not in tune with eachother, so there is a beat note
+(interference pattern) between them. I can barely hear the beat note in
+this instance, but the strobe shows it obviously.</p>
+
+<p>Or in other words, <b>there's a beat note</b>.</p>
+
+<p>In the first harmonic (659.3Hz), the drawing cursor (vertical black
+line) happens to be in the middle of the display.  This means that the
+stuff to the right of it is relatively old (about a half second), and
+the stuff to the left of it is slightly more recent.  The stuff
+immediately to the left of the update cursor are the most recent of
+all.  If you watch the program run, this is more obvious than any text
+description could be.</p>
+
+<p>Anyways, at 659.3Hz, you see that it is actually in tune, and then
+decaying *slightly* flat (on the order of 1/8Hz).  The fact that the
+fundamental was sharp while the first harmonic was in tune implies that
+the stretch factor is not set correctly -- in this case the guitar
+seems to want a negative stretch factor.  Ideally, the lines for the
+fundamental and the first harmonic should be roughly parallel to
+eachother.</p>
+
+<p>At the third harmonic, 1318.5Hz, there is basically only noise.
+The lines are not as clearly pronounced.  It's hard to draw much
+information from such a washed out signal.</p>
+
+<p style="clear:both;"></p>
+<div style="clear:both;float:right;">
+<img src="screen03.png">
+<div style="text-align:center;font-weight:bold;">Figure 3</div>
+</div>
+
+<p>Now look at <b>figure 3</b>.  The tuner is set to low A (110Hz),
+but I am strumming the high E string.  So everything the tuner picks up
+is an incidental harmonic that happens to pass through the filters.
+One unusual thing that is apparent right off is that the signal shown
+in the 110Hz screen is actually only inadvertently leaking through the
+filter from a harmonic.</p>
+
+<p>One sure sign of this you can see if you count the red/green
+stripes in any vertical column (such as at the far left of the
+display).  If the proper frequency was being displayed, it would show
+one red and one green, but here we see red green red green red green,
+three of each.  That means it is at 3x the frequency that is
+designated.  This only happens because there wasn't a signal at the
+fundamental frequency, so the only thing that made it through the
+filter is this harmonic and it gets amplified just so something can be
+shown.</p>
+
+<p>Or in other words, <b>anything other than one bright red line and one
+bright green line means it's probably set wrong</b>.</p>
+
+<p>The note at 3x the specified value is called the second harmonic,
+and it happens that the second harmonic of A is in fact E, so this
+makes sense.  The second harmonic is of the same note as the musical
+perfect fifth.</p>
+
+<p>You can also see that it is about 2Hz flat, because each red line
+wraps all the way around twice in the space from the far left to the
+first yellow line.  Note that it looks like the red lines cross 6
+times (you can count the spots where they cross the bottom very
+easily), but that is still only 2Hz because there are three lines.
+That's complicated!  Luckily it doesn't matter.  The important point
+is that it is not actually picking up the proper frequency.</p>
+
+<p>Looking at the upper harmonics (220Hz and 440Hz), you see that it
+is a very faint signal, hard to interpret.  Another sure sign that you
+have the thing set to a different note than the one you are
+playing.</p>
+
+<p style="clear:both;"></p>
+<div style="clear:both;float:right;">
+<img src="screen04.png">
+<div style="text-align:center;font-weight:bold;">Figure 4</div>
+</div>
+
+<p><b>Figure 4</b> is another example where we have set the note
+wrong.  164.8Hz is the low E, but I am playing the high E.</p>
+
+<p>So in the fundamental (164.8Hz), if you look at any single vertical
+line, you will see green red green red, two of each, so it is not the
+right frequency.  In fact, the note is exactly an octave higher than
+164.8Hz.</p>
+
+<p>In the first harmonic (329.6Hz), on the other hand, you see a very
+strong signal that is approximately the right frequency.  It is, in
+fact, about 5.5Hz flat.</p>
+
+<p>Or in other words, <b>it is very flat</b>.</p>
+
+<p>In 659.3Hz, you see a proper signal, though it is also very flat
+(downward sloping). And you can see that it seems weak.  One thing to
+keep in mind is that cellphone microphones are really optimized for a
+narrow frequency range, often as small as 100Hz-500Hz.  High and low
+frequencies do not make it through necessarily.</p>
+
+<p style="clear:both;"></p>
+<div style="clear:both;float:right;">
+<img src="screen05.png">
+<div style="text-align:center;font-weight:bold;">Figure 5</div>
+</div>
+
+<p>See <b>figure 5</b>.  The fundamental here (329.6Hz) is about 1/4Hz
+flat.  You can see a discontinuity on the right side of the screen,
+just to the right of the cursor, which marks the time when I struck
+the string.  It is about 1/4Hz flat, as you can see by the
+slowly-descending line.</p>
+
+<p>Or in other words, <b>it is slightly flat</b>.</p>
+
+<p>The first and third harmonics (659.3Hz and 1318.5Hz, respectively),
+show that it is even more flat in the upper harmonics, which again shows
+that I haven't adjusted the stretch factor.  Also note that the slight
+beat note is much more pronounced in these harmonics.  But mostly the
+important part is that all three bands are each showing one red line and
+one green line, meaning that it is on the right note and getting a fairly
+good signal.</p>
+
+<p style="clear:both;"></p>
+<div style="clear:both;float:right;">
+<img src="screen06.png">
+<div style="text-align:center;font-weight:bold;">Figure 6</div>
+</div>
+
 
 <!-- XXX - capture an image of me beating the phone on something,
 showing that it appears in all frequencies -->
