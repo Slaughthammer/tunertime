@@ -83,7 +83,7 @@ public class Strobe extends Thread {
 			help_label_p.setAntiAlias(true);
 			help_label_p.setSubpixelText(true);
 		}
-		c.drawText("double-click for help",
+		c.drawText("double-tap for help",
 				width/2, height/2, help_label_p);
 	}
 
