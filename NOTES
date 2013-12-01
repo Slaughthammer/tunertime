@@ -138,10 +138,10 @@ Surprisingly, ggg (the gglcars version) has the same flaw.  However, ggd
 expect.  Which supports the idea, because ggd is the one that I actually
 used for piano tuning...
 
-XXX - add help
-XXX - write document
-XXX - make icon
+XXX - document sound of white noise
+XXX - add help splashscreen on the very first startup
+XXX - make clicking the strobe view say "double click for help"
 
-XXX - make it turn off the sleeper, or delay it?
-XXX - add context menu just for help (which maybe should be a URL?)
+XXX - tone generator?
+
 XXX - see what can be done about sound overflows, if fixing buffer sizes doesn't do it
