@@ -6,6 +6,7 @@ import android.content.*;
 import android.view.*;
 import android.graphics.*;
 import android.widget.TextView;
+import android.app.AlertDialog;
 import java.text.DecimalFormat;
 import java.lang.*;
 
@@ -58,7 +59,12 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	}
 	
 	public void onResume() {
-		load_config();
+		if (!load_config()) {			/* first time */
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setMessage("This appears to be your first visit to TunerTime.  If you get confused, double-tap on the strobe display for help.");
+			builder.setPositiveButton("OK", null);
+			builder.show();
+		}
 		do_note(null);
 		update_status();
 		if (holder != null) {
@@ -74,11 +80,14 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		super.onPause();
 	}
 
-	private void load_config() {
+	/* returns true if there was already a config, or false if this is the
+	 * first time. */
+	private boolean load_config() {
 		SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
 		A_freq = prefs.getInt("A_freq", 440);
 		octave_stretch = prefs.getInt("octave_stretch", 0);
 		strobe_cents = prefs.getInt("strobe_cents", 4800);
+		return prefs.getBoolean("already_launched", false);
 	}
 
 	private void save_config() {
@@ -87,6 +96,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		editor.putInt("A_freq", A_freq);
 		editor.putInt("octave_stretch", octave_stretch);
 		editor.putInt("strobe_cents", strobe_cents);
+		editor.putBoolean("already_launched", true);
 		editor.commit();
 	}
 
