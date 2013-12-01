@@ -39,6 +39,11 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 		w_strobe = (SurfaceView)findViewById(R.id.strobe);
 		w_strobe.getHolder().addCallback(this);
+		w_strobe.setOnClickListener(new View.OnClickListener() {
+				public void onClick(View v) {
+					if (strobe != null) { strobe.click(); }
+				}
+			});
 
 		w_main_buttons = findViewById(R.id.main_buttons);
 		w_semi_display = (TextView)findViewById(R.id.semi_display);
