@@ -302,7 +302,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		harm2_mult = range_limit(harm2_mult, 1, 20);
 
 		if (strobe != null) {
-			strobe.setCents(strobe_cents);
+			strobe.setCents(strobe_cents, harm1_mult, harm2_mult);
 		}
 
 		int note_index = ((strobe_cents+50)%1200)/100;
@@ -338,9 +338,10 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		harm2_display.setText(Integer.toString(harm2_mult));
 	}
 
-	public double cents_to_freq(int cents) {
+	public double cents_to_freq(int cents, int harm_mult) {
 		double octbase = 2.0+(((double)octave_stretch)*0.00001);
 		double octpow = ((double)(cents-4800)) / 1200.0;
+		octpow += Math.log((double)harm_mult) / Math.log(2.0d);
 		double mult = Math.pow(octbase, octpow);
 		return ((double)A_freq)*mult;
 	}
@@ -351,7 +352,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		}
 		strobe = new Strobe(this);
 		strobe.setSurface(holder, width, height);
-		strobe.setCents(strobe_cents);
+		strobe.setCents(strobe_cents, harm1_mult, harm2_mult);
 		strobe.start();
 	}
 

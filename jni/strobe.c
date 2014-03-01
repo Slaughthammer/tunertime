@@ -38,6 +38,7 @@ struct strobe_rec {
 
 static int sample_rate;
 static int base_cents;
+static int harm1_mult, harm2_mult;
 static int width;
 static int height;
 static struct strobe_rec strobes[NUM_STROBES];
@@ -297,6 +298,8 @@ static jmethodID mid_ar_read;
 
 static jfieldID fid_out;
 static jfieldID fid_st_cents;
+static jfieldID fid_st_harm1_mult;
+static jfieldID fid_st_harm2_mult;
 static jfieldID fid_st_cents_changed;
 static jfieldID fid_st_width;
 static jfieldID fid_st_height;
@@ -338,12 +341,14 @@ jni_init(JNIEnv *env_)
 	METHOD(println, printstream, "println", "(Ljava/lang/String;)V")
 	METHOD(st_do_draw, strobe, "do_draw", "([III)I")
 	METHOD(st_isinterrupted, strobe, "isInterrupted", "()Z")
-	METHOD(tt_cents_to_freq, tunertime, "cents_to_freq", "(I)D")
+	METHOD(tt_cents_to_freq, tunertime, "cents_to_freq", "(II)D")
 	METHOD(ar_getsamplerate, audiorecord, "getSampleRate", "()I")
 	METHOD(ar_read, audiorecord, "read", "([SII)I")
 
 	STFIELD(out, system, "out", "Ljava/io/PrintStream;")
 	FIELD(st_cents, strobe, "cents", "I")
+	FIELD(st_harm1_mult, strobe, "harm1_mult", "I")
+	FIELD(st_harm2_mult, strobe, "harm2_mult", "I")
 	FIELD(st_cents_changed, strobe, "cents_changed", "Z")
 	FIELD(st_width, strobe, "width", "I")
 	FIELD(st_height, strobe, "height", "I")
@@ -395,12 +400,12 @@ recalculate(jobject this)
 	ui = (*env)->GetObjectField(env, this, fid_st_ui);
 
 	for (i = 0; i < NUM_STROBES; i++) {
+		int mult = ((i==0) ? 1 : ((i==1) ? harm1_mult : harm2_mult));
 		strobes[i].y = y;
 		strobes[i].height = sheight;
-		strobes[i].freq = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)cents);
+		strobes[i].freq = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)cents, (jint)mult);
 		strobe_recalc(&strobes[i]);
 
-		cents += 1200;
 		y += sheight;
 	}
 
@@ -454,6 +459,8 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 		if ((*env)->GetBooleanField(env, this, fid_st_cents_changed)) {
 			(*env)->SetBooleanField(env, this, fid_st_cents_changed, JNI_FALSE);
 			base_cents = (*env)->GetIntField(env, this, fid_st_cents);
+			harm1_mult = (*env)->GetIntField(env, this, fid_st_harm1_mult);
+			harm2_mult = (*env)->GetIntField(env, this, fid_st_harm2_mult);
 			recalculate(this);
 			update_labels(this);
 		}

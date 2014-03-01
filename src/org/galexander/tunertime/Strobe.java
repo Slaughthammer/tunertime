@@ -7,6 +7,7 @@ import android.media.*;
 
 public class Strobe extends Thread {
 	private volatile int cents;
+	private volatile int harm1_mult, harm2_mult;
 	private volatile boolean cents_changed = false;
 	private volatile int width = 0, height = 0;
 	private volatile boolean surface_changed = false;
@@ -20,8 +21,10 @@ public class Strobe extends Thread {
 		ui = ui_;
 	}
 
-	public void setCents(int cents_) {
+	public void setCents(int cents_, int harm1_mult_, int harm2_mult_) {
 		cents = cents_;
+		harm1_mult = harm1_mult_;
+		harm2_mult = harm2_mult_;
 		cents_changed = true;
 	}
 
