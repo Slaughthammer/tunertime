@@ -15,7 +15,7 @@
 	    android:text="semi+"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
 	    android:onClick="semi_incr" />
-	<TextView android:id="@+id/semi_display"
+	<TextView android:id="@+id/semi_display2"
 	    android:layout_width="fill_parent"
 	    android:layout_height="wrap_content"
 	    android:gravity="center"
@@ -43,7 +43,7 @@
 	    android:text="cent+"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
 	    android:onClick="cent_incr" />
-	<TextView android:id="@+id/cent_display"
+	<TextView android:id="@+id/cent_display2"
 	    android:layout_width="fill_parent"
 	    android:layout_height="wrap_content"
 	    android:gravity="center"
@@ -64,19 +64,19 @@
 	android:layout_height="fill_parent"
 	android:layout_weight="1"
 	android:orientation="vertical">
-	<Button
+	<Button android:id="@+id/temper_save"
 	    android:layout_width="fill_parent"
 	    android:layout_height="1dp"
 	    android:layout_weight="1"
 	    android:text="save"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="temper_save" />
-	<Button
+	    android:onClick="do_temper_save" />
+	<Button android:id="@+id/temper_enable"
 	    android:layout_width="fill_parent"
 	    android:layout_height="1dp"
 	    android:layout_weight="1"
 	    android:text="enable"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="temper_enable" />
+	    android:onClick="do_temper_enable" />
     </LinearLayout>
 </LinearLayout>

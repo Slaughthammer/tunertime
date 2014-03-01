@@ -4,9 +4,6 @@ import java.lang.*;
 import android.view.*;
 import android.graphics.*;
 import android.media.*;
-import android.text.format.Time;
-import android.content.Intent;
-import android.net.Uri;
 
 public class Strobe extends Thread {
 	private volatile int cents;
@@ -18,8 +15,6 @@ public class Strobe extends Thread {
 	private AudioRecord recorder = null;
 	private int record_bufsz = 0;
 	private TunerTime ui = null;
-
-	private long help_time = 0;
 
 	Strobe(TunerTime ui_) {
 		ui = ui_;
@@ -64,29 +59,6 @@ public class Strobe extends Thread {
 		}
 	}
 
-	private Paint help_label_p = null;
-
-	private void draw_help_label(Canvas c) {
-		if (help_time == 0) {
-			return;
-		}
-		if (help_time < now()) {
-			help_time = 0;
-			return;
-		}
-		if (help_label_p == null) {
-			help_label_p = new Paint();
-			help_label_p.setARGB(0xff,0x00,0x00,0xaa);
-			help_label_p.setTextAlign(Paint.Align.CENTER);
-			help_label_p.setTextSize(60);
-			help_label_p.setTypeface(Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD));
-			help_label_p.setAntiAlias(true);
-			help_label_p.setSubpixelText(true);
-		}
-		c.drawText("double-tap for help",
-				width/2, height/2, help_label_p);
-	}
-
 	/* Called from JNI to handle all of the Canvas interactions to draw the
 	 * bitmap.  Returns 1 for success, 0 for failure (which means that the
 	 * underlying surface has probably re-sized) */
@@ -105,7 +77,6 @@ public class Strobe extends Thread {
 					/*x=*/0, /*y=*/0, /*wid=*/w, /*hght=*/h,
 					/*hasAlpha=*/false, /*paint=*/null);
 			draw_labels(c);
-			draw_help_label(c);
 		} finally {
 			holder.unlockCanvasAndPost(c);
 		}
@@ -149,23 +120,6 @@ public class Strobe extends Thread {
 			return false;
 		}
 		return true;
-	}
-
-	public void click() {
-		if (help_time != 0) {
-			Intent i = new Intent(Intent.ACTION_VIEW);
-			i.setData(Uri.parse("http://galexander.org/software/tunertime/"));
-			ui.startActivity(i);
-			help_time = 0;
-		} else {
-			help_time = now() + 3000;
-		}
-	}
-
-	private long now() {	/* in milliseconds since epoch */
-		Time t = new Time();
-		t.setToNow();
-		return t.toMillis(true);
 	}
 
 	private void sound_stop() {

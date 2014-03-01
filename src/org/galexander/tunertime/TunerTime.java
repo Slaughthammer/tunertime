@@ -14,17 +14,31 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private int A_freq = 440;
 	private int octave_stretch = 0;
 	private int strobe_cents = 4800;
+	private int harm1_mult = 2;
+	private int harm2_mult = 4;
+	private int temper[] = new int[12];
+	private boolean temper_enabled;
 
 	private SurfaceView w_strobe;
-	private View w_main_buttons;
-	private TextView w_semi_display;
-	private TextView w_oct_display;
-	private TextView w_cent_display;
-	private TextView w_center_display;
-	private TextView w_stretch_display;
-	private View w_conf_buttons;
-	private TextView w_center_display2;
-	private TextView w_stretch_display2;
+	private ViewGroup buttons_holder;
+	private TextView center_display;
+	private TextView stretch_display;
+	private View note_buttons;
+	private TextView note_semi_display;
+	private TextView note_oct_display;
+	private TextView note_cent_display;
+	private View afreq_buttons;
+	private TextView afreq_center_display;
+	private View stretch_buttons;
+	private TextView stretch_stretch_display;
+	private View temper_buttons;
+	private TextView temper_semi_display;
+	private TextView temper_cent_display;
+	private TextView temper_save_button;
+	private TextView temper_enable_button;
+	private View harm_buttons;
+	private TextView harm1_display;
+	private TextView harm2_display;
 
 	private Strobe strobe = null;
 	private SurfaceHolder holder = null;
@@ -33,39 +47,59 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 	private static final String NOTE_NAMES[] = new String[] { "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#" };
 
-	public void onCreate(Bundle savedInstanceState)
-	{
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main);
 
+		setContentView(R.layout.main);
 		w_strobe = (SurfaceView)findViewById(R.id.strobe);
 		w_strobe.getHolder().addCallback(this);
-		w_strobe.setOnClickListener(new View.OnClickListener() {
-				public void onClick(View v) {
-					if (strobe != null) { strobe.click(); }
-				}
-			});
+		buttons_holder = (ViewGroup)findViewById(R.id.buttons_holder);
+		center_display = (TextView)findViewById(R.id.center_display);
+		stretch_display = (TextView)findViewById(R.id.stretch_display);
 
-		w_main_buttons = findViewById(R.id.main_buttons);
-		w_semi_display = (TextView)findViewById(R.id.semi_display);
-		w_oct_display = (TextView)findViewById(R.id.oct_display);
-		w_cent_display = (TextView)findViewById(R.id.cent_display);
-		w_center_display = (TextView)findViewById(R.id.center_display);
-		w_stretch_display = (TextView)findViewById(R.id.stretch_display);
-		w_conf_buttons = findViewById(R.id.conf_buttons);
-		w_center_display2 = (TextView)findViewById(R.id.center_display2);
-		w_stretch_display2 = (TextView)findViewById(R.id.stretch_display2);
+		LayoutInflater fl8r = (LayoutInflater)getSystemService(
+				Context.LAYOUT_INFLATER_SERVICE);
+		note_buttons = fl8r.inflate(
+				R.layout.note_buttons, buttons_holder, false);
+		note_semi_display = (TextView)note_buttons.findViewByid(
+				R.id.semi_display);
+		note_oct_display = (TextView)note_buttons.findViewByid(
+				R.id.oct_display);
+		note_cent_display = (TextView)note_buttons.findViewByid(
+				R.id.cent_display);
 
+		afreq_buttons = fl8r.inflate(
+				R.layout.afreq_buttons, buttons_holder, false);
+		afreq_center_display = (TextView)afreq_buttons.findViewById(
+				R.id.center_display2);
+
+		stretch_buttons = fl8r.inflate(
+				R.layout.stretch_buttons, buttons_holder,false);
+		stretch_stretch_display = (TextView)stretch_buttons.
+				findViewById(R.id.stretch_display2);
+
+		temper_buttons = fl8r.inflate(
+				R.layout.temper_buttons, buttons_holder, false);
+		temper_semi_display = (TextView)temper_buttons.findViewByid(
+				R.id.semi_display2);
+		temper_cent_display = (TextView)temper_buttons.findViewByid(
+				R.id.cent_display2);
+		temper_save_button = (Button)temper_buttons.findViewById(
+				R.id.temper_save);
+		temper_enable_button = (Button)temper_buttons.findViewById(
+				R.id.temper_enable);
+
+		harm_buttons = fl8r.inflate(
+				R.layout.harm_buttons, buttons_holder, false);
+		harm1_display = (TextView)harm_buttons.findViewById(
+				R.id.harm1_display);
+		harm2_display = (TextView)harm_buttons.findViewById(
+				R.id.harm2_display);
 	}
-	
+
 	public void onResume() {
-		if (!load_config()) {			/* first time */
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setMessage("This appears to be your first visit to TunerTime.  If you get confused, double-tap on the strobe display for help.");
-			builder.setPositiveButton("OK", null);
-			builder.show();
-		}
-		do_note(null);
+		load_config();
+		set_buttons(note_buttons);
 		update_status();
 		if (holder != null) {
 			/* lingering surface must still be valid */
@@ -80,13 +114,26 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		super.onPause();
 	}
 
-	/* returns true if there was already a config, or false if this is the
-	 * first time. */
-	private boolean load_config() {
+	private void load_config() {
 		SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
 		A_freq = prefs.getInt("A_freq", 440);
 		octave_stretch = prefs.getInt("octave_stretch", 0);
 		strobe_cents = prefs.getInt("strobe_cents", 4800);
+		harm1_mult = prefs.getInt("harm1_mult", 2);
+		harm2_mult = prefs.getInt("harm2_mult", 4);
+		temper[0] = prefs.getInt("temper0", 0);
+		temper[1] = prefs.getInt("temper1", 0);
+		temper[2] = prefs.getInt("temper2", 0);
+		temper[3] = prefs.getInt("temper3", 0);
+		temper[4] = prefs.getInt("temper4", 0);
+		temper[5] = prefs.getInt("temper5", 0);
+		temper[6] = prefs.getInt("temper6", 0);
+		temper[7] = prefs.getInt("temper7", 0);
+		temper[8] = prefs.getInt("temper8", 0);
+		temper[9] = prefs.getInt("temper9", 0);
+		temper[10] = prefs.getInt("temper10", 0);
+		temper[11] = prefs.getInt("temper11", 0);
+		temper_enabled = prefs.getBoolean("temper_enabled", false);
 		return prefs.getBoolean("already_launched", false);
 	}
 
@@ -96,8 +143,53 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		editor.putInt("A_freq", A_freq);
 		editor.putInt("octave_stretch", octave_stretch);
 		editor.putInt("strobe_cents", strobe_cents);
-		editor.putBoolean("already_launched", true);
+		editor.putInt("harm1_mult", harm1_mult);
+		editor.putInt("harm2_mult", harm2_mult);
+		editor.putInt("temper0", temper[0]);
+		editor.putInt("temper1", temper[1]);
+		editor.putInt("temper2", temper[2]);
+		editor.putInt("temper3", temper[3]);
+		editor.putInt("temper4", temper[4]);
+		editor.putInt("temper5", temper[5]);
+		editor.putInt("temper6", temper[6]);
+		editor.putInt("temper7", temper[7]);
+		editor.putInt("temper8", temper[8]);
+		editor.putInt("temper9", temper[9]);
+		editor.putInt("temper10", temper[10]);
+		editor.putInt("temper11", temper[11]);
+		editor.putBoolean("temper_enabled", temper_enabled);
 		editor.commit();
+	}
+
+	private void set_buttons(View v) {
+		buttons_holder.removeAllViews();
+		buttons_holder.addView(v);
+	}
+
+
+	public void do_menu(View v) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("File");
+		builder.setItems(new CharSequence[] {
+			"note",
+			"afreq",
+			"stretch",
+			"temper",
+			"harmonics",
+			"help" },
+			new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface d, int id) {
+					switch (id) {
+				case 0: set_buttons(note_buttons);	break;
+				case 1: set_buttons(afreq_buttons);	break;
+				case 2: set_buttons(stretch_buttons);	break;
+				case 3: set_buttons(temper_buttons);	break;
+				case 4: set_buttons(harmonics_buttons);	break;
+				case 5: do_help();			break;
+					}
+				}
+			});
+		builder.show();
 	}
 
 	public void semi_incr(View v) {
@@ -124,10 +216,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		strobe_cents--;
 		update_status();
 	}
-	public void do_conf(View v) {
-		w_conf_buttons.setVisibility(View.VISIBLE);
-		w_main_buttons.setVisibility(View.GONE);
-	}
+
 	public void A_incr(View v) {
 		A_freq++;
 		update_status();
@@ -136,6 +225,11 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		A_freq--;
 		update_status();
 	}
+	public void reset_afreq(View v) {
+		A_freq = 440;
+		update_status();
+	}
+
 	public void stretch_incr(View v) {
 		octave_stretch+=25;
 		update_status();
@@ -144,52 +238,98 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		octave_stretch-=25;
 		update_status();
 	}
-	public void reset_conf(View v) {
-		A_freq = 440;
+	public void reset_stretch(View v) {
 		octave_stretch = 0;
 		update_status();
 	}
-	public void do_note(View v) {
-		w_main_buttons.setVisibility(View.VISIBLE);
-		w_conf_buttons.setVisibility(View.GONE);
+
+	public void do_temper_save(View v) {
+		int note_index = ((strobe_cents+50)%1200)/100;
+		int cents = strobe_cents%100;
+		temper[note_index] = cents;
+		update_status();
+	}
+	public void do_temper_enable(View v) {
+		temper_enabled = !temper_enabled;
+		update_status();
 	}
 
+	public void harm1_incr(View v) {
+		harm1_mult++;
+		update_status();
+	}
+	public void harm1_decr(View v) {
+		harm1_mult--;
+		update_status();
+	}
+	public void harm2_incr(View v) {
+		harm2_mult++;
+		update_status();
+	}
+	public void harm2_decr(View v) {
+		harm2_mult--;
+		update_status();
+	}
+	public void reset_harm(View v) {
+		harm1_mult = 2;
+		harm2_mult = 4;
+		update_status();
+	}
+
+	private void do_help() {
+		Intent i = new Intent(Intent.ACTION_VIEW);
+		i.setData(Uri.parse("http://galexander.org/software/tunertime/"));
+		startActivity(i);
+	}
+
+	private int range_limit(int val, int lo, int hi) {
+		if (val < lo) {
+			return lo;
+		} else if (val > high) {
+			return high;
+		}
+	}
 		/* note that ranges are checked in update_status() as well,
 		 * because status display is really the only part that will go
 		 * wonkers if the values go out-of-range anyways.  */
 	private void update_status() {
-		if (strobe_cents < 0) {
-			strobe_cents = 0;
-		} else if (strobe_cents > 9600) {
-			strobe_cents = 9600;
-		}
+		strobe_cents = range_limit(strobe_cents, 0, 9600);
+		A_freq = range_limit(A_freq, 220, 880);
+		harm1_mult = range_limit(harm1_mult, 1, 20);
+		harm2_mult = range_limit(harm2_mult, 1, 20);
+
 		int note_index = ((strobe_cents+50)%1200)/100;
 		int octave = (strobe_cents+50)/1200;
 		int cents = strobe_cents%100;
 		if (cents >= 50) { cents -= 100; }
-		w_semi_display.setText(NOTE_NAMES[note_index]);
+		note_semi_display.setText(NOTE_NAMES[note_index]);
+		temper_semi_display.setText(NOTE_NAMES[note_index]);
 		w_oct_display.setText(Integer.toString(octave));
 		DecimalFormat cents_fmt = new DecimalFormat("+00c;-00c");
 		String cents_str = cents_fmt.format(cents);
-		w_cent_display.setText(cents_str);
+		note_cent_display.setText(cents_str);
+		temper_cent_display.setText(cents_str);
+		temper_enable_button.setText(temper_enabled ? "disable"
+							    : "enable");
+		temper_save_button.setBackgroundColor(
+				(cents != temper[note_index])
+					? 0xffffffff : 0xff666666);
 
 		if (strobe != null) {
 			strobe.setCents(strobe_cents);
 		}
 
-		if (A_freq < 220) {
-			A_freq = 220;
-		} else if (A_freq > 880) {
-			A_freq = 880;
-		}
 		String center_str = "A="+Integer.toString(A_freq);
-		w_center_display.setText(center_str);
-		w_center_display2.setText(center_str);
+		center_display.setText(center_str);
+		afreq_center_display.setText(center_str);
 
 		DecimalFormat stretch_fmt = new DecimalFormat("+00000;-00000");
 		String stretch_str = stretch_fmt.format(octave_stretch);
-		w_stretch_display.setText(stretch_str);
-		w_stretch_display2.setText(stretch_str);
+		stretch_display.setText(stretch_str);
+		stretch_stretch_display.setText(stretch_str);
+
+		harm1_display.setText(Integer.toString(harm1_mult);
+		harm2_display.setText(Integer.toString(harm2_mult);
 	}
 
 	public double cents_to_freq(int cents) {
