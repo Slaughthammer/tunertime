@@ -8,95 +8,15 @@
 	android:layout_width="fill_parent"
 	android:layout_height="1dp"
 	android:layout_weight="5" />
-    <LinearLayout android:id="@+id/main_buttons"
+    <LinearLayout
 	android:layout_width="fill_parent"
 	android:layout_height="1dp"
 	android:layout_weight="2"
 	android:orientation="horizontal">
-	<LinearLayout
+	<FrameLayout android:id="@+id/buttons_holder"
 	    android:layout_width="1dp"
 	    android:layout_height="fill_parent"
-	    android:layout_weight="1"
-	    android:orientation="vertical">
-            <Button
-	        android:layout_width="fill_parent"
-		android:layout_height="1dp"
-		android:layout_weight="1"
-		android:text="semi+"
-		android:textAppearance="?android:attr/textAppearanceMedium"
-		android:onClick="semi_incr" />
-	    <TextView android:id="@+id/semi_display"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:gravity="center"
-		android:lines="1"
-		android:singleLine="true"
-		android:textAppearance="?android:attr/textAppearanceLarge" 
-		android:textColor="#fc4" />
-            <Button
-	        android:layout_width="fill_parent"
-		android:layout_height="1dp"
-		android:layout_weight="1"
-		android:text="semi-"
-		android:textAppearance="?android:attr/textAppearanceMedium"
-		android:onClick="semi_decr" />
-	</LinearLayout>
-	<LinearLayout
-	    android:layout_width="1dp"
-	    android:layout_height="fill_parent"
-	    android:layout_weight="1"
-	    android:orientation="vertical">
-            <Button
-	        android:layout_width="fill_parent"
-		android:layout_height="1dp"
-		android:layout_weight="1"
-		android:text="oct+"
-		android:textAppearance="?android:attr/textAppearanceMedium"
-		android:onClick="oct_incr" />
-	    <TextView android:id="@+id/oct_display"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:gravity="center"
-		android:lines="1"
-		android:singleLine="true"
-		android:textAppearance="?android:attr/textAppearanceLarge" 
-		android:textColor="#fc4" />
-            <Button
-	        android:layout_width="fill_parent"
-		android:layout_height="1dp"
-		android:layout_weight="1"
-		android:text="oct-"
-		android:textAppearance="?android:attr/textAppearanceMedium"
-		android:onClick="oct_decr" />
-	</LinearLayout>
-	<LinearLayout
-	    android:layout_width="1dp"
-	    android:layout_height="fill_parent"
-	    android:layout_weight="1"
-	    android:orientation="vertical">
-            <Button
-	        android:layout_width="fill_parent"
-		android:layout_height="1dp"
-		android:layout_weight="1"
-		android:text="cent+"
-		android:textAppearance="?android:attr/textAppearanceMedium"
-		android:onClick="cent_incr" />
-	    <TextView android:id="@+id/cent_display"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:gravity="center"
-		android:lines="1"
-		android:singleLine="true"
-		android:textAppearance="?android:attr/textAppearanceLarge" 
-		android:textColor="#fc4" />
-            <Button
-	        android:layout_width="fill_parent"
-		android:layout_height="1dp"
-		android:layout_weight="1"
-		android:text="cent-"
-		android:textAppearance="?android:attr/textAppearanceMedium"
-		android:onClick="cent_decr" />
-	</LinearLayout>
+	    android:layout_weight="3" />
 	<LinearLayout
 	    android:layout_width="1dp"
 	    android:layout_height="fill_parent"
@@ -122,94 +42,10 @@
 	        android:layout_width="fill_parent"
 		android:layout_height="1dp"
 		android:layout_weight="1"
-		android:text="conf"
+		android:text="menu"
 		android:textColor="#060"
 		android:textAppearance="?android:attr/textAppearanceMedium"
-		android:onClick="do_conf" />
-	</LinearLayout>
-    </LinearLayout>
-    <LinearLayout android:id="@+id/conf_buttons"
-	android:layout_width="fill_parent"
-	android:layout_height="1dp"
-	android:layout_weight="2"
-	android:orientation="horizontal">
-	<LinearLayout
-	    android:layout_width="1dp"
-	    android:layout_height="fill_parent"
-	    android:layout_weight="1"
-	    android:orientation="vertical">
-            <Button
-	        android:layout_width="fill_parent"
-		android:layout_height="1dp"
-		android:layout_weight="1"
-		android:text="A+"
-		android:textAppearance="?android:attr/textAppearanceMedium"
-		android:onClick="A_incr" />
-	    <TextView android:id="@+id/center_display2"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:gravity="center"
-		android:lines="1"
-		android:singleLine="true"
-		android:textAppearance="?android:attr/textAppearanceLarge" 
-		android:textColor="#66F" />
-            <Button
-	        android:layout_width="fill_parent"
-		android:layout_height="1dp"
-		android:layout_weight="1"
-		android:text="A-"
-		android:textAppearance="?android:attr/textAppearanceMedium"
-		android:onClick="A_decr" />
-	</LinearLayout>
-	<LinearLayout
-	    android:layout_width="1dp"
-	    android:layout_height="fill_parent"
-	    android:layout_weight="1"
-	    android:orientation="vertical">
-            <Button
-	        android:layout_width="fill_parent"
-		android:layout_height="1dp"
-		android:layout_weight="1"
-		android:text="stretch+"
-		android:textAppearance="?android:attr/textAppearanceMedium"
-		android:onClick="stretch_incr" />
-	    <TextView android:id="@+id/stretch_display2"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:gravity="center"
-		android:lines="1"
-		android:singleLine="true"
-		android:textAppearance="?android:attr/textAppearanceLarge" 
-		android:textColor="#66F" />
-            <Button
-	        android:layout_width="fill_parent"
-		android:layout_height="1dp"
-		android:layout_weight="1"
-		android:text="stretch-"
-		android:textAppearance="?android:attr/textAppearanceMedium"
-		android:onClick="stretch_decr" />
-	</LinearLayout>
-	<LinearLayout
-	    android:layout_width="1dp"
-	    android:layout_height="fill_parent"
-	    android:layout_weight="1"
-	    android:orientation="vertical">
-            <Button
-	        android:layout_width="fill_parent"
-		android:layout_height="1dp"
-		android:layout_weight="1"
-		android:text="reset"
-		android:textAppearance="?android:attr/textAppearanceMedium"
-		android:textColor="#800"
-		android:onClick="reset_conf" />
-            <Button
-	        android:layout_width="fill_parent"
-		android:layout_height="1dp"
-		android:layout_weight="1"
-		android:text="note"
-		android:textColor="#060"
-		android:textAppearance="?android:attr/textAppearanceMedium"
-		android:onClick="do_note" />
+		android:onClick="do_menu" />
 	</LinearLayout>
     </LinearLayout>
 </LinearLayout>
