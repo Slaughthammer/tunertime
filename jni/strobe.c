@@ -420,7 +420,10 @@ update_labels(jobject this)
 	for (i = 0; i < NUM_STROBES; i++) {
 		jstring lab;
 		char buf[100];
-		sprintf(buf, "%.1f", strobes[i].freq);
+		int mult = ((i==0) ? 1 : ((i==1) ? harm1_mult : harm2_mult));
+		char *ext = ((mult==1) ? "st" : ((mult==2) ? "nd" :
+				((mult==3) ? "rd" : "th")));
+		sprintf(buf, "%7.1f %2d%s", strobes[i].freq, mult, ext);
 		lab = (*env)->NewStringUTF(env, buf);
 		(*env)->SetObjectArrayElement(env, labels, i, lab);
 		(*env)->DeleteLocalRef(env, lab);
