@@ -158,11 +158,11 @@ things to that.
 
 So what I have been leaning towards is that there will be a fixed "menu"
 button on the right side of the screen, and it will bring a pop-up list,
-with "note", "stretch", "A freq", "temper", "harmonics", "help" options.
+with "note", "A freq", "stretch", "temper", "harmonics", "help" options.
 
 note: semi+/- oct+/- cent+/-
-stretch: stretch+/- reset
 A freq: A+/- reset
+stretch: stretch+/- reset
 temper: semi+/- cent+/- save/enable
 harmonics: harm1+/harm1- harm2+/harm2- reset
 help: jump to website
