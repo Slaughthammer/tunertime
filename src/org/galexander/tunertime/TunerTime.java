@@ -6,9 +6,11 @@ import android.content.*;
 import android.view.*;
 import android.graphics.*;
 import android.widget.TextView;
+import android.widget.Button;
 import android.app.AlertDialog;
 import java.text.DecimalFormat;
 import java.lang.*;
+import android.net.Uri;
 
 public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private int A_freq = 440;
@@ -61,11 +63,11 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				Context.LAYOUT_INFLATER_SERVICE);
 		note_buttons = fl8r.inflate(
 				R.layout.note_buttons, buttons_holder, false);
-		note_semi_display = (TextView)note_buttons.findViewByid(
+		note_semi_display = (TextView)note_buttons.findViewById(
 				R.id.semi_display);
-		note_oct_display = (TextView)note_buttons.findViewByid(
+		note_oct_display = (TextView)note_buttons.findViewById(
 				R.id.oct_display);
-		note_cent_display = (TextView)note_buttons.findViewByid(
+		note_cent_display = (TextView)note_buttons.findViewById(
 				R.id.cent_display);
 
 		afreq_buttons = fl8r.inflate(
@@ -80,9 +82,9 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 		temper_buttons = fl8r.inflate(
 				R.layout.temper_buttons, buttons_holder, false);
-		temper_semi_display = (TextView)temper_buttons.findViewByid(
+		temper_semi_display = (TextView)temper_buttons.findViewById(
 				R.id.semi_display2);
-		temper_cent_display = (TextView)temper_buttons.findViewByid(
+		temper_cent_display = (TextView)temper_buttons.findViewById(
 				R.id.cent_display2);
 		temper_save_button = (Button)temper_buttons.findViewById(
 				R.id.temper_save);
@@ -134,7 +136,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		temper[10] = prefs.getInt("temper10", 0);
 		temper[11] = prefs.getInt("temper11", 0);
 		temper_enabled = prefs.getBoolean("temper_enabled", false);
-		return prefs.getBoolean("already_launched", false);
 	}
 
 	private void save_config() {
@@ -184,7 +185,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				case 1: set_buttons(afreq_buttons);	break;
 				case 2: set_buttons(stretch_buttons);	break;
 				case 3: set_buttons(temper_buttons);	break;
-				case 4: set_buttons(harmonics_buttons);	break;
+				case 4: set_buttons(harm_buttons);	break;
 				case 5: do_help();			break;
 					}
 				}
@@ -285,10 +286,12 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private int range_limit(int val, int lo, int hi) {
 		if (val < lo) {
 			return lo;
-		} else if (val > high) {
-			return high;
+		} else if (val > hi) {
+			return hi;
 		}
+		return val;
 	}
+
 		/* note that ranges are checked in update_status() as well,
 		 * because status display is really the only part that will go
 		 * wonkers if the values go out-of-range anyways.  */
@@ -298,26 +301,29 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		harm1_mult = range_limit(harm1_mult, 1, 20);
 		harm2_mult = range_limit(harm2_mult, 1, 20);
 
+		if (strobe != null) {
+			strobe.setCents(strobe_cents);
+		}
+
 		int note_index = ((strobe_cents+50)%1200)/100;
 		int octave = (strobe_cents+50)/1200;
 		int cents = strobe_cents%100;
 		if (cents >= 50) { cents -= 100; }
-		note_semi_display.setText(NOTE_NAMES[note_index]);
-		temper_semi_display.setText(NOTE_NAMES[note_index]);
-		w_oct_display.setText(Integer.toString(octave));
+		String note_name = NOTE_NAMES[note_index];
 		DecimalFormat cents_fmt = new DecimalFormat("+00c;-00c");
 		String cents_str = cents_fmt.format(cents);
+
+		note_semi_display.setText(note_name);
+		note_oct_display.setText(Integer.toString(octave));
 		note_cent_display.setText(cents_str);
+
+		temper_semi_display.setText(note_name);
 		temper_cent_display.setText(cents_str);
 		temper_enable_button.setText(temper_enabled ? "disable"
 							    : "enable");
 		temper_save_button.setBackgroundColor(
 				(cents != temper[note_index])
 					? 0xffffffff : 0xff666666);
-
-		if (strobe != null) {
-			strobe.setCents(strobe_cents);
-		}
 
 		String center_str = "A="+Integer.toString(A_freq);
 		center_display.setText(center_str);
@@ -328,8 +334,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		stretch_display.setText(stretch_str);
 		stretch_stretch_display.setText(stretch_str);
 
-		harm1_display.setText(Integer.toString(harm1_mult);
-		harm2_display.setText(Integer.toString(harm2_mult);
+		harm1_display.setText(Integer.toString(harm1_mult));
+		harm2_display.setText(Integer.toString(harm2_mult));
 	}
 
 	public double cents_to_freq(int cents) {
