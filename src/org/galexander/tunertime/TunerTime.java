@@ -193,12 +193,25 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		builder.show();
 	}
 
+	private void apply_temper() {
+		if (!temper_enabled) {
+			return;
+		}
+
+		int note_index = ((strobe_cents+50)%1200)/100;
+		int octave = (strobe_cents+50)/1200;
+		int cents = temper[note_index];
+		strobe_cents = octave*1200 + note_index*100 + cents;
+	}
+
 	public void semi_incr(View v) {
 		strobe_cents += 100;
+		apply_temper();
 		update_status();
 	}
 	public void semi_decr(View v) {
 		strobe_cents -= 100;
+		apply_temper();
 		update_status();
 	}
 	public void oct_incr(View v) {
@@ -246,7 +259,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 	public void do_temper_save(View v) {
 		int note_index = ((strobe_cents+50)%1200)/100;
-		int cents = strobe_cents%100;
+		int cents = (((strobe_cents%100)+50)%100)-50;
 		temper[note_index] = cents;
 		update_status();
 	}
@@ -307,8 +320,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 		int note_index = ((strobe_cents+50)%1200)/100;
 		int octave = (strobe_cents+50)/1200;
-		int cents = strobe_cents%100;
-		if (cents >= 50) { cents -= 100; }
+		int cents = (((strobe_cents%100)+50)%100)-50;
 		String note_name = NOTE_NAMES[note_index];
 		DecimalFormat cents_fmt = new DecimalFormat("+00c;-00c");
 		String cents_str = cents_fmt.format(cents);
