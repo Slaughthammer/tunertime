@@ -138,6 +138,46 @@ Surprisingly, ggg (the gglcars version) has the same flaw.  However, ggd
 expect.  Which supports the idea, because ggd is the one that I actually
 used for piano tuning...
 
+
+March 1, 2014.
+
+I have some feature requests.  One user tuning xylophones wants to be
+able to view harmonics other than 1:2:4 in the 3 graphs.  He says the 6th
+and 10th harmonics are more useful in tuning a xylophone.
+
+Another user doing tempered scales wants a configuration screen to select
+default cent offsets for the 12 semitones of the scale.
+
+These are both easy requests but the UI question is daunting.  Especially
+for the tempering.
+
+The thing is that for configuring the center freq, and the stretch
+factor, it really is nice to be able to see the graphs.  So I cannot
+simply make a classical Android scrolling configuration activity and add
+things to that.
+
+So what I have been leaning towards is that there will be a fixed "menu"
+button on the right side of the screen, and it will bring a pop-up list,
+with "note", "stretch", "A freq", "temper", "harmonics", "help" options.
+
+note: semi+/- oct+/- cent+/-
+stretch: stretch+/- reset
+A freq: A+/- reset
+temper: semi+/- cent+/- save/enable
+harmonics: harm1+/harm1- harm2+/harm2- reset
+help: jump to website
+
+How's that?  I think that's about as good as it'll get...
+
+
+
+XXX - microphone capture apparently fails if you home -> other mic app -> tunertime
+XXX - make menu
+XXX - make stretch page
+XXX - make A freq page
+XXX - make temper page
+XXX - make harmonics page
+
 XXX - document sound of white noise
 
 XXX - tone generator?
