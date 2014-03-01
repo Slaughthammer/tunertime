@@ -331,11 +331,20 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 		temper_semi_display.setText(note_name);
 		temper_cent_display.setText(cents_str);
-		temper_enable_button.setText(temper_enabled ? "disable"
-							    : "enable");
-		temper_save_button.setBackgroundColor(
-				(cents != temper[note_index])
-					? 0xffffffff : 0xff666666);
+		if (cents == temper[note_index]) {
+			temper_save_button.getBackground().setColorFilter(
+				new LightingColorFilter(0xff888888, 0));
+		} else {
+			temper_save_button.getBackground().clearColorFilter();
+		}
+		if (temper_enabled) {
+			temper_enable_button.getBackground().clearColorFilter();
+			temper_enable_button.setText("disable");
+		} else {
+			temper_enable_button.getBackground().setColorFilter(
+				new LightingColorFilter(0xff888888, 0));
+			temper_enable_button.setText("enable");
+		}
 
 		String center_str = "A="+Integer.toString(A_freq);
 		center_display.setText(center_str);
