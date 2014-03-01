@@ -100,6 +100,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	}
 
 	public void onResume() {
+		stop_strobe();
 		load_config();
 		set_buttons(note_buttons);
 		update_status();
@@ -368,9 +369,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	}
 
 	private void start_strobe() {
-		if (strobe != null) {
-			stop_strobe();
-		}
+		stop_strobe();
 		strobe = new Strobe(this);
 		strobe.setSurface(holder, width, height);
 		strobe.setCents(strobe_cents, harm1_mult, harm2_mult);
