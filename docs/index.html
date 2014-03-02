@@ -140,8 +140,8 @@ actually use it.</p>
 
 <p>See <b>figure 1</b>.  At the top of the screen are the 3 bands of the
 tuner display.  It is
-displaying 110Hz (the fundamental), 220Hz (the first harmonic), and 440Hz
-(the third harmonic).  The little yellow lines at the
+displaying the fundamental (329.6Hz), the second harmonic (659.3Hz), and
+the fourth harmonic (1318.5Hz).  The little yellow lines at the
 bottom of each band mark seconds.  It takes one second to move from the
 far left side of the screen to the yellow mark (and another second to
 reach the second yellow mark if there is one).  This is useful to assign
@@ -152,7 +152,7 @@ exactly 1Hz out of tune.</p>
 <p>The different bands generally draw at different speeds.  So the yellow
 marks will be at different positions, the bands will show different
 duration of time (in this case the fundamental shows about 2 seconds, the
-first harmonic shows about 1.3 seconds, and the third harmonic shows
+second harmonic shows about 1.3 seconds, and the fourth harmonic shows
 about 1.2 seconds), and an event in one band will not necessarily be
 directly over the same event in another band.</p>
 
@@ -165,24 +165,61 @@ something.</p>
 
 <p>Note that TunerTime uses the mathematically simple equally tempered
 scale, which is generally the modern standard but you may desire
-something different.</p>
+something different.  You can fine-tune the temperament with the "temper"
+panel.</p>
 
 <p>The blue text in the lower right provides the "middle A" frequency
 that was chosen as the basis of the scale (usually 440Hz, but some people
 tune to a different basis), and the stretch factor which controls how
-large an octave is.</p>
+large an octave is (+00000 means it is the default 2.0 multiplier for an
+octave).</p>
 
-<p>Finally, the "conf" button in the lower-right corner changes to the
-configuration screen.</p>
+<p>Finally, the "menu" button in the lower-right corner lets you select
+from a variety of panels.</p>
 
-<div style="float:left;">
-<img src="screen02.png">
-<div style="text-align:center;font-weight:bold;">Figure 2</div>
-</div>
-<p>To the left is a screenshot of the configuration mode buttons.  On the
-left you can adjust the frequency of the central A.  Then you can adjust
-the stretch factor.  The "reset" button returns A to 440 and zeroes out
-the stretch factor.  The "note" button changes back to note mode.</p>
+<h3>note</h3>
+
+<p>This is the default panel where you can control the semi-tone, octave,
+and cents to select the note that determines the frequency of the
+fundamental. This allows you to select which note you are tuning
+against.</p>
+
+<h3>A freq</h3>
+
+<p>On this panel you can adjust the frequency for the center A (defaults
+to 440Hz), or reset it to the default.</p>
+
+<h3>stretch</h3>
+
+<p>On this panel you can adjust the stretch factor (more on this later),
+or reset it to 0.</p>
+
+<h3>temper</h3>
+
+<p>The temper panel is a little complicated.  You have controls for
+semi-tone and for cents (fine-tuning).  For each note in the scale
+(semi-tone), there is an offset in cents from the default (+00c) which
+defines the tempering of the scale.  When tempering is enabled, this
+offset is applied automatically each time you adjust to a new note.
+"save" locks in the current cents as being the tempering for the current
+semi-tone.  The enable/disable button turns tempering on/off.</p>
+
+<p>So if you wish to use a tempered scale, then first make sure tempering
+is enabled.  Then for the first semi-tone, select the temper you want (in
+cents) and then hit save.  Then select the next semi-tone and repeat the
+process until you have filled in the temper you desire for all twelve
+notes in the scale.</p>
+
+<h3>harmonics</h3>
+
+<p>By default, the 1st (fundamental), 2nd, and 4th harmonics are
+displayed because it is often convenient to see what is happening in
+other octaves.  But if you would find it convenient to view other
+harmonics instead, you can select them on this panel.</p>
+
+<p>Note that the stretch factor is in effect here, so if the stretch
+factor is non-zero then the distance between the fundamental and 2nd
+harmonic will not be exactly a multiple of 2.0.</p>
 
 
 <h2>Stretch factor</h2>
@@ -199,7 +236,7 @@ of a perfect 2x.  I.e., the first harmonic will appear at 440*2.00125 =
 880.55Hz.  This is not very interesting when you play just one
 note, but if you play two notes at once that are spaced an octave apart
 (such as A 440 and A 880), and you tuned the piano to a perfect scale,
-then you may hear an interference pattern (beat notes) between the first
+then you may hear an interference pattern (beat notes) between the second
 harmonic of A 440 (880.55Hz) and the fundamental of A 880 (880.00Hz).</p>
 
 <p>Tuning a piano by octaves (two keys that are the same note in the
@@ -218,12 +255,16 @@ stretch factor to 00125.  In general, what I do is I try a few notes
 across the piano's range, and for each one, I fine-tune the "cents"
 adjustment until the top band (the fundamental frequency) of the tuner
 shows a relatively straight line.  Then I fine-tune the "stretch" until
-the second band (the first harmonic) also shows a straight line.  I've
+the second band (the second harmonic) also shows a straight line.  I've
 had pianos with stretch factors as high as 00250 and as low as 00025.</p>
 
-<p>If you look at the guitar tone in <b>figure 1</b>, then you will see
+<div style="float:right;">
+<img src="screen02.png">
+<div style="text-align:center;font-weight:bold;">Figure 2</div>
+</div>
+<p>If you look at the guitar tone in <b>figure 2</b>, then you will see
 that the fundamental frequency is about 1/4Hz to 1/2Hz sharp, while the
-first harmonic is actually slightly flat.  That indicates this guitar
+second harmonic is actually slightly flat.  That indicates this guitar
 string actually has a negative stretch factor!  Of course, for tuning a
 guitar, I would recommend tuning the lowest string with the tuner and
 then using your ear for the rest, so who cares about the stretch
@@ -258,17 +299,18 @@ little sharp and that is obvious at a glance.  I am just explaining it so
 in detail so you have examples if you really want to understand what it
 means.</p>
 
-<div style="float:right;">
-<img src="screen01.png">
-<div style="text-align:center;font-weight:bold;">Figure 1</div><br>
-</div>
 <p>Here's a description of the functional parts of the TunerTime user
 interface.  This chapter will teach you what it does, if not quite how to
 actually use it.</p>
-<p>Let's start with <b>figure 1</b> (which I've reproduced here for
-convenience).  The fundamental frequency (top
-band, 329.6Hz) is really the one you want to be in tune.  Looking in
-it from the left side of the screen to
+
+<div style="float:right;">
+<img src="screen02.png">
+<div style="text-align:center;font-weight:bold;">Figure 2</div><br>
+</div>
+<p>Let's start with <b>figure 2</b> (which I've reproduced here for
+convenience).  The fundamental frequency (top band, 329.6Hz) is really
+the one you want to be in tune.  Looking in it from the left side of the
+screen to
 the yellow line about halfway across, you see that the red strip has
 moved from the bottom half of the band to the top half of the band.
 That's a 180 degree phase change (one half), and represents 1/2Hz sharp.
@@ -282,7 +324,7 @@ slowly dropping in frequency.</p>
 
 <p>Or in other words, <b>it's a little sharp</b>.</p>
 
-<p>There are also a "wavey shape" to the lines, especially for the second
+<p>There is also a "wavey shape" to the lines, especially for the second
 half of the duration.  This represents a beat note (though I guess you
 could also describe it as vibrato).  In this case, I am playing the high
 E on my guitar and the low E is resonating passively along with it.  The
@@ -292,7 +334,7 @@ this instance, but the strobe shows it obviously.</p>
 
 <p>Or in other words, <b>there's a beat note</b>.</p>
 
-<p>In the first harmonic (659.3Hz), the drawing cursor (vertical black
+<p>In the second harmonic (659.3Hz), the drawing cursor (vertical black
 line) happens to be in the middle of the display.  This means that the
 stuff to the right of it is relatively old (about a half second), and
 the stuff to the left of it is slightly more recent.  The stuff
@@ -302,13 +344,13 @@ description could be.</p>
 
 <p>Anyways, at 659.3Hz, you see that it is actually in tune, and then
 decaying *slightly* flat (on the order of 1/8Hz).  The fact that the
-fundamental was sharp while the first harmonic was in tune implies that
+fundamental was sharp while the second harmonic was in tune implies that
 the stretch factor is not set correctly -- in this case the guitar
 seems to want a negative stretch factor.  Ideally, the lines for the
-fundamental and the first harmonic should be roughly parallel to
+fundamental and the second harmonic should be roughly parallel to
 eachother.</p>
 
-<p>At the third harmonic, 1318.5Hz, there is basically only noise.
+<p>At the fourth harmonic, 1318.5Hz, there is basically only noise.
 The lines are not as clearly pronounced.  It's hard to draw much
 information from such a washed out signal.</p>
 
@@ -338,10 +380,10 @@ shown.</p>
 <p>Or in other words, <b>anything other than one bright red line and one
 bright green line means it's probably set wrong</b>.</p>
 
-<p>The note at 3x the specified value is called the second harmonic,
-and it happens that the second harmonic of A is in fact E, so this
-makes sense.  The second harmonic is of the same note as the musical
-perfect fifth.</p>
+<p>The note at 3x the specified value is called the third harmonic,
+and it happens that the third harmonic of A is in fact E, so this
+makes sense.  The third harmonic is of the same note as the musical
+perfect fifth (and one octave higher).</p>
 
 <p>You can also see that it is about 2Hz flat, because each red line
 wraps all the way around twice in the space from the far left to the
@@ -370,7 +412,7 @@ line, you will see green red green red, two of each, so it is not the
 right frequency.  In fact, the note is exactly an octave higher than
 164.8Hz.</p>
 
-<p>In the first harmonic (329.6Hz), on the other hand, you see a very
+<p>In the second harmonic (329.6Hz), on the other hand, you see a very
 strong signal that is approximately the right frequency.  It is, in
 fact, about 5.5Hz flat.</p>
 
@@ -396,7 +438,7 @@ slowly-descending line.</p>
 
 <p>Or in other words, <b>it is slightly flat</b>.</p>
 
-<p>The first and third harmonics (659.3Hz and 1318.5Hz, respectively),
+<p>The second and fourth harmonics (659.3Hz and 1318.5Hz, respectively),
 show that it is even more flat in the upper harmonics, which again shows
 that I haven't adjusted the stretch factor.  Also note that the slight
 beat note is much more pronounced in these harmonics.  But mostly the
@@ -419,9 +461,10 @@ that the beat notes can have a few different representations.</p>
 displays of a beat note can begin to provide a kind of intuitive sense
 of resonances.</p>
 
-<p>You can also tell that the signal isn't very strong (the third
+<p>You can also tell that the signal isn't very strong (the fourth
 harmonic at 1318.5Hz doesn't come through at all) -- that is
-because the note has already been sounding for a while.</p>
+because the note has already been sounding for a while.  Also, most
+phones filter out high and low frequencies.</p>
 
 <p style="clear:both;"></p>
 <div style="clear:both;float:right;">
