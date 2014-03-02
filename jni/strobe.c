@@ -423,7 +423,7 @@ update_labels(jobject this)
 		int mult = ((i==0) ? 1 : ((i==1) ? harm1_mult : harm2_mult));
 		char *ext = ((mult==1) ? "st" : ((mult==2) ? "nd" :
 				((mult==3) ? "rd" : "th")));
-		sprintf(buf, "%7.1f %2d%s", strobes[i].freq, mult, ext);
+		sprintf(buf, "%2d%s %7.1f", mult, ext, strobes[i].freq);
 		lab = (*env)->NewStringUTF(env, buf);
 		(*env)->SetObjectArrayElement(env, labels, i, lab);
 		(*env)->DeleteLocalRef(env, lab);
