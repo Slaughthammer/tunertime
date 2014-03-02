@@ -174,7 +174,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		builder.setTitle("File");
 		builder.setItems(new CharSequence[] {
 			"note",
-			"afreq",
+			"A freq",
 			"stretch",
 			"temper",
 			"harmonics",
