@@ -170,8 +170,15 @@ help: jump to website
 How's that?  I think that's about as good as it'll get...
 
 
+March 19, 2014.
 
-XXX - microphone capture apparently fails if you home -> other mic app -> tunertime
+It turns out, I forgot to make a landscape layout for the new panel-based
+layout!  That is the cause of about a dozen crashes that users have
+experienced (crash20140318).
+
+XXX - invent landscape mode
+
+XXX - microphone capture apparently fails intermittently if you home -> other mic app -> tunertime
 
 XXX - tone generator?
 XXX - fft
