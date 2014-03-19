@@ -176,7 +176,34 @@ It turns out, I forgot to make a landscape layout for the new panel-based
 layout!  That is the cause of about a dozen crashes that users have
 experienced (crash20140318).
 
+...
+
+Okay, while rotating it a bunch to test the layout, I managed to trigger
+a SIGSEGV in JNI:
+
+   I/DEBUG   (  172):     #00  pc 000019ae  /data/app-lib/org.galexander.tunertime-1/libstrobe-jni.so (Java_org_galexander_tunertime_Strobe_runner+1797)
+
+That was preceded by a ton of:
+
+   E/dalvikvm(28800): JNI ERROR: env->self != thread-self (0x74cb2620 vs. 0x75899460); auto-correcting
+   E/dalvikvm(28800): JNI ERROR: env->self != thread-self (0x74cb2620 vs. 0x75899460); auto-correcting
+   E/dalvikvm(28800): JNI ERROR: env->self != thread-self (0x74cb2620 vs. 0x75899460); auto-correcting
+   E/dalvikvm(28800): JNI ERROR: env->self != thread-self (0x74cb2620 vs. 0x75899460); auto-correcting
+
+with a few different addresses showing up on the lhs of the "vs." No idea
+what that means.
+
+Before the JNI ERRORs, I also got this:
+
+   W/AudioPolicyManagerBase(  177): startInput() input 486 failed: other input already started..
+   E/AudioRecord(28800): start() status -38
+
+Which might be the mysterious record problem reported by a user.  Seems
+like there is a race case between shutting down the old one and starting
+the new one.
+
 XXX - invent landscape mode
+XXX - rotate it a bunch of times to cause a SIGSEGV...
 
 XXX - microphone capture apparently fails intermittently if you home -> other mic app -> tunertime
 
