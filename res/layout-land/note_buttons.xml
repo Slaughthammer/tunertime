@@ -3,6 +3,14 @@
     android:orientation="vertical"
     android:layout_height="fill_parent"
     android:layout_width="fill_parent">
+    <TextView
+	android:layout_height="wrap_content"
+	android:layout_width="fill_parent"
+	android:gravity="center"
+	android:lines="1"
+	android:singleLine="true"
+	android:textAppearance="?android:attr/textAppearanceMedium"
+	android:text="semi" />
     <LinearLayout
 	android:layout_height="1dp"
 	android:layout_width="fill_parent"
@@ -12,12 +20,13 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="semi+"
+	    android:text="+"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
 	    android:onClick="semi_incr" />
 	<TextView android:id="@+id/semi_display"
 	    android:layout_height="fill_parent"
-	    android:layout_width="wrap_content"
+	    android:layout_width="1dp"
+	    android:layout_weight="1"
 	    android:gravity="center"
 	    android:lines="1"
 	    android:singleLine="true"
@@ -27,10 +36,18 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="semi-"
+	    android:text="-"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
 	    android:onClick="semi_decr" />
     </LinearLayout>
+    <TextView
+	android:layout_height="wrap_content"
+	android:layout_width="fill_parent"
+	android:gravity="center"
+	android:lines="1"
+	android:singleLine="true"
+	android:textAppearance="?android:attr/textAppearanceMedium"
+	android:text="oct" />
     <LinearLayout
 	android:layout_height="1dp"
 	android:layout_width="fill_parent"
@@ -40,12 +57,13 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="oct+"
+	    android:text="+"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
 	    android:onClick="oct_incr" />
 	<TextView android:id="@+id/oct_display"
 	    android:layout_height="fill_parent"
-	    android:layout_width="wrap_content"
+	    android:layout_width="1dp"
+	    android:layout_weight="1"
 	    android:gravity="center"
 	    android:lines="1"
 	    android:singleLine="true"
@@ -55,10 +73,18 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="oct-"
+	    android:text="-"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
 	    android:onClick="oct_decr" />
     </LinearLayout>
+    <TextView
+	android:layout_height="wrap_content"
+	android:layout_width="fill_parent"
+	android:gravity="center"
+	android:lines="1"
+	android:singleLine="true"
+	android:textAppearance="?android:attr/textAppearanceMedium"
+	android:text="cent" />
     <LinearLayout
 	android:layout_height="1dp"
 	android:layout_width="fill_parent"
@@ -68,12 +94,13 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="cent+"
+	    android:text="+"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
 	    android:onClick="cent_incr" />
 	<TextView android:id="@+id/cent_display"
 	    android:layout_height="fill_parent"
-	    android:layout_width="wrap_content"
+	    android:layout_width="1dp"
+	    android:layout_weight="1"
 	    android:gravity="center"
 	    android:lines="1"
 	    android:singleLine="true"
@@ -83,7 +110,7 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="cent-"
+	    android:text="-"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
 	    android:onClick="cent_decr" />
     </LinearLayout>

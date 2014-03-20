@@ -176,6 +176,11 @@ It turns out, I forgot to make a landscape layout for the new panel-based
 layout!  That is the cause of about a dozen crashes that users have
 experienced (crash20140318).
 
+Landscape layouts are, as usual, awkward because text tends to be wider
+than it is tall.  But I think changing it from "foo+" / "foo-" buttons to
+just "+" and "-" buttons, with a "foo" header over the whole shebang,
+will probably suffice...
+
 ...
 
 Okay, while rotating it a bunch to test the layout, I managed to trigger

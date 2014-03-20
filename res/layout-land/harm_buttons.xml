@@ -3,6 +3,14 @@
     android:orientation="vertical"
     android:layout_height="fill_parent"
     android:layout_width="fill_parent">
+   <TextView
+	android:layout_height="wrap_content"
+	android:layout_width="fill_parent"
+	android:gravity="center"
+	android:lines="1"
+	android:singleLine="true"
+	android:textAppearance="?android:attr/textAppearanceMedium"
+	android:text="harm1" />
     <LinearLayout
 	android:layout_height="1dp"
 	android:layout_width="fill_parent"
@@ -12,12 +20,13 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="harm1+"
+	    android:text="+"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
 	    android:onClick="harm1_incr" />
 	<TextView android:id="@+id/harm1_display"
 	    android:layout_height="fill_parent"
-	    android:layout_width="wrap_content"
+	    android:layout_width="1dp"
+	    android:layout_weight="1"
 	    android:gravity="center"
 	    android:lines="1"
 	    android:singleLine="true"
@@ -27,10 +36,18 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="harm1-"
+	    android:text="-"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
 	    android:onClick="harm1_decr" />
     </LinearLayout>
+   <TextView
+	android:layout_height="wrap_content"
+	android:layout_width="fill_parent"
+	android:gravity="center"
+	android:lines="1"
+	android:singleLine="true"
+	android:textAppearance="?android:attr/textAppearanceMedium"
+	android:text="harm2" />
     <LinearLayout
 	android:layout_height="1dp"
 	android:layout_width="fill_parent"
@@ -40,12 +57,13 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="harm2+"
+	    android:text="+"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
 	    android:onClick="harm2_incr" />
 	<TextView android:id="@+id/harm2_display"
 	    android:layout_height="fill_parent"
-	    android:layout_width="wrap_content"
+	    android:layout_width="1dp"
+	    android:layout_weight="1"
 	    android:gravity="center"
 	    android:lines="1"
 	    android:singleLine="true"
@@ -55,7 +73,7 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="harm2-"
+	    android:text="-"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
 	    android:onClick="harm2_decr" />
     </LinearLayout>

@@ -347,8 +347,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			temper_enable_button.setText("enable");
 		}
 
-		String center_str = "A="+Integer.toString(A_freq);
-		center_display.setText(center_str);
+		String center_str = Integer.toString(A_freq);
+		center_display.setText("A="+center_str);
 		afreq_center_display.setText(center_str);
 
 		DecimalFormat stretch_fmt = new DecimalFormat("+00000;-00000");
