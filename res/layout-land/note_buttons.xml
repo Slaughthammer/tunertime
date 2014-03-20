@@ -20,9 +20,9 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="+"
+	    android:text="-"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="semi_incr" />
+	    android:onClick="semi_decr" />
 	<TextView android:id="@+id/semi_display"
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
@@ -36,9 +36,9 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="-"
+	    android:text="+"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="semi_decr" />
+	    android:onClick="semi_incr" />
     </LinearLayout>
     <TextView
 	android:layout_height="wrap_content"
@@ -57,9 +57,9 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="+"
+	    android:text="-"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="oct_incr" />
+	    android:onClick="oct_decr" />
 	<TextView android:id="@+id/oct_display"
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
@@ -73,9 +73,9 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="-"
+	    android:text="+"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="oct_decr" />
+	    android:onClick="oct_incr" />
     </LinearLayout>
     <TextView
 	android:layout_height="wrap_content"
@@ -94,9 +94,9 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="+"
+	    android:text="-"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="cent_incr" />
+	    android:onClick="cent_decr" />
 	<TextView android:id="@+id/cent_display"
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
@@ -110,8 +110,8 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="-"
+	    android:text="+"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="cent_decr" />
+	    android:onClick="cent_incr" />
     </LinearLayout>
 </LinearLayout>

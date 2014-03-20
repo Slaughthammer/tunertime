@@ -20,9 +20,9 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="+"
+	    android:text="-"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="harm1_incr" />
+	    android:onClick="harm1_decr" />
 	<TextView android:id="@+id/harm1_display"
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
@@ -36,9 +36,9 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="-"
+	    android:text="+"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="harm1_decr" />
+	    android:onClick="harm1_incr" />
     </LinearLayout>
    <TextView
 	android:layout_height="wrap_content"
@@ -57,9 +57,9 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="+"
+	    android:text="-"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="harm2_incr" />
+	    android:onClick="harm2_decr" />
 	<TextView android:id="@+id/harm2_display"
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
@@ -73,9 +73,9 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="-"
+	    android:text="+"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="harm2_decr" />
+	    android:onClick="harm2_incr" />
     </LinearLayout>
     <Button
 	android:layout_height="1dp"
