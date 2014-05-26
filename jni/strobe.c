@@ -146,7 +146,7 @@ note_filter(struct note_filter_rec *nf)
 	a0 = fk->a0; a1 = fk->a1; a2 = fk->a2; b1 = fk->b1; b2 = fk->b2;
 	x1 = fk->x1; x2 = fk->x2; y1 = fk->y1; y2 = fk->y2;
 
-	i = nf->curr_samp % SND_BUFSAMPS;
+	i = nf->curr_samp;
 	while (i != snd_ofs) {
 		double in = snd_buf[i];
 		y0 = ((a0*in) + (a1*x1) + (a2*x2) + (b1*y1) + (b2*y2));
@@ -154,9 +154,10 @@ note_filter(struct note_filter_rec *nf)
 		x1 = in;
 		y2 = y1;
 		y1 = y0;
-		sum = 0.999*sum + y0;
+		sum = 0.999*sum + fabs(y0);
 		i = (i+1)%SND_BUFSAMPS;
 	}
+	nf->curr_samp = i;
 
 	fk->x1 = x1; fk->x2 = x2; fk->y1 = y1; fk->y2 = y2;
 	nf->output = sum;
