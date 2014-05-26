@@ -61,7 +61,7 @@ static int snd_ofs;
 
 static double fft_r[FFT_SIZE];
 static double fft_i[FFT_SIZE];
-static struct note_filter_rec notefilts[NOTES_NUM];
+static struct note_filter_rec notefilts[NOTES_NUM] = { { 0 } };
 static int nf_curr_samp = 0;			/* input */
 static int nf_curr_ridx = 0;			/* output */
 static int currnote = -1;			/* result of note_filters */
@@ -627,7 +627,6 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 	}
 
 	memset(strobes, 0, sizeof strobes);
-	memset(notefilts, 0, sizeof notefilts);
 	bitmap = NULL;
 
 	init_fft();
