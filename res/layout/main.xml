@@ -38,6 +38,14 @@
 		android:singleLine="true"
 		android:textAppearance="?android:attr/textAppearanceMedium" 
 		android:textColor="#66F" />
+            <Button android:id="@+id/currnote_button"
+	        android:layout_width="fill_parent"
+		android:layout_height="1dp"
+		android:layout_weight="1"
+		android:text="..."
+		android:textColor="#060"
+		android:textAppearance="?android:attr/textAppearanceMedium"
+		android:onClick="do_currnote" />
             <Button
 	        android:layout_width="fill_parent"
 		android:layout_height="1dp"

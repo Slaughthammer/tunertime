@@ -41,6 +41,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private View harm_buttons;
 	private TextView harm1_display;
 	private TextView harm2_display;
+	private TextView currnote_button;
 
 	private Strobe strobe = null;
 	private SurfaceHolder holder = null;
@@ -58,6 +59,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		buttons_holder = (ViewGroup)findViewById(R.id.buttons_holder);
 		center_display = (TextView)findViewById(R.id.center_display);
 		stretch_display = (TextView)findViewById(R.id.stretch_display);
+		currnote_button = (Button)findViewById(R.id.currnote_button);
 
 		LayoutInflater fl8r = (LayoutInflater)getSystemService(
 				Context.LAYOUT_INFLATER_SERVICE);
@@ -192,6 +194,23 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				}
 			});
 		builder.show();
+	}
+
+	public void update_currnote(int val) {
+		curr_note = val;
+
+		int note_index = curr_note%12;
+		int octave = curr_note/12;
+		String note_name = NOTE_NAMES[note_index];
+		currnote_button.setText(note_name+"-"+octave);
+	}
+
+	public void do_currnote(View v) {
+		if (curr_note != -1) {
+			strobe_cents = curr_note*100;
+		}
+		apply_temper();
+		update_status();
 	}
 
 	private void apply_temper() {
