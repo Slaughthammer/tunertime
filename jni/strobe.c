@@ -11,7 +11,11 @@
 
 #define NUM_STROBES 3
 
-struct filter_kernel {
+struct strobe_rec {
+		/* location within bitmap */
+	int height;
+	int y;
+
 		/* center frequency */
 	double freq;
 		/* filter coefficients: */
@@ -20,15 +24,8 @@ struct filter_kernel {
 		/* filter history: */
 	double x1,x2;
 	double y1,y2;
-};
-
-struct strobe_rec {
-		/* location within bitmap */
-	int height;
-	int y;
-
-	struct filter_kernel fk;	/* filter parameters */
-	signed short filtered[SND_BUFSAMPS]; /* filter output */
+		/* filter output: */
+	signed short filtered[SND_BUFSAMPS];
 
 	unsigned msamps_per_col;        /* milisamples per column */
 	int curr_samp;                  /* index into snd_buf/filtered */
@@ -69,12 +66,12 @@ static void println(const char *fmt, ...);
 
 
 static void
-filter_recalc(struct filter_kernel *fk)
+filter_recalc(struct strobe_rec *s)
 {
 	double R,K;
 	double R2;
 	double c;
-	double freq = fk->freq;
+	double freq = s->freq;
 	double bandwidth = freq/20.0;
 
 	freq /= ((double)sample_rate);
@@ -85,24 +82,24 @@ filter_recalc(struct filter_kernel *fk)
 	R2 = R*R;
 	K = ((1.0-(2.0*R*c))+R2)/(2.0-(2.0*c));
 
-	fk->a0 = 1.0-K;
-	fk->a1 = 2.0*(K-R)*c;
-	fk->a2 = R2-K;
-	fk->b1 = 2.0*R*c;
-	fk->b2 = -R2;
+	s->a0 = 1.0-K;
+	s->a1 = 2.0*(K-R)*c;
+	s->a2 = R2-K;
+	s->b1 = 2.0*R*c;
+	s->b2 = -R2;
 
-	fk->x1 = fk->x2 = fk->y1 = fk->y2 = 0.0;
+	s->x1 = s->x2 = s->y1 = s->y2 = 0.0;
 }
 
 
 static void
 strobe_recalc(struct strobe_rec *s)
 {
-	filter_recalc(&s->fk);
+	filter_recalc(s);
 
-	s->msamps_per_col = (sample_rate*1000) / s->fk.freq;
+	s->msamps_per_col = (sample_rate*1000) / s->freq;
 
-	s->multiplier = (s->fk.freq + width) / width;
+	s->multiplier = (s->freq + width) / width;
 	if (s->multiplier < 1) {
 		s->multiplier = 1;
 	}
@@ -111,13 +108,12 @@ strobe_recalc(struct strobe_rec *s)
 static void
 strobe_filter(struct strobe_rec *s)
 {
-	struct filter_kernel *fk = &s->fk;
 	double x1,x2,y0,y1,y2;
 	double a0,a1,a2,b1,b2;
 	int i;
 
-	a0 = fk->a0; a1 = fk->a1; a2 = fk->a2; b1 = fk->b1; b2 = fk->b2;
-	x1 = fk->x1; x2 = fk->x2; y1 = fk->y1; y2 = fk->y2;
+	a0 = s->a0; a1 = s->a1; a2 = s->a2; b1 = s->b1; b2 = s->b2;
+	x1 = s->x1; x2 = s->x2; y1 = s->y1; y2 = s->y2;
 
 	i = s->curr_samp % SND_BUFSAMPS;
 	while (i != snd_ofs) {
@@ -131,36 +127,7 @@ strobe_filter(struct strobe_rec *s)
 		i = (i+1)%SND_BUFSAMPS;
 	}
 
-	fk->x1 = x1; fk->x2 = x2; fk->y1 = y1; fk->y2 = y2;
-}
-
-static void
-note_filter(struct note_filter_rec *nf)
-{
-	struct filter_kernel *fk = &nf->fk;
-	double x1,x2,y0,y1,y2;
-	double a0,a1,a2,b1,b2;
-	double sum = nf->output;
-	int i;
-
-	a0 = fk->a0; a1 = fk->a1; a2 = fk->a2; b1 = fk->b1; b2 = fk->b2;
-	x1 = fk->x1; x2 = fk->x2; y1 = fk->y1; y2 = fk->y2;
-
-	i = nf->curr_samp;
-	while (i != snd_ofs) {
-		double in = snd_buf[i];
-		y0 = ((a0*in) + (a1*x1) + (a2*x2) + (b1*y1) + (b2*y2));
-		x2 = x1;
-		x1 = in;
-		y2 = y1;
-		y1 = y0;
-		sum = 0.999*sum + fabs(y0);
-		i = (i+1)%SND_BUFSAMPS;
-	}
-	nf->curr_samp = i;
-
-	fk->x1 = x1; fk->x2 = x2; fk->y1 = y1; fk->y2 = y2;
-	nf->output = sum;
+	s->x1 = x1; s->x2 = x2; s->y1 = y1; s->y2 = y2;
 }
 
 static void
@@ -287,7 +254,7 @@ strobe_draw_htic(struct strobe_rec *s)
 {
 	int x, y;
 	int step;
-	step = s->fk.freq / s->multiplier;
+	step = s->freq / s->multiplier;
 	for (x = step; x < width; x += step) {
 		for (y = (s->height*8)/10; y < s->height; y++) {
 			DRAW_PIXEL(x, y+s->y, COLOR_VALUE(0xff,0xff,0xaa));
@@ -319,9 +286,7 @@ newdata(void)
 	for (i = 0; i < NUM_STROBES; i++) {
 		strobe_newdata(&strobes[i]);
 	}
-	for (i = 0; i < 88; i++) {
-		note_filter(&notefilts[i]);
-	}
+ XXX
 }
 
 
@@ -453,7 +418,7 @@ recalculate(jobject this)
 		int mult = ((i==0) ? 1 : ((i==1) ? harm1_mult : harm2_mult));
 		strobes[i].y = y;
 		strobes[i].height = sheight;
-		strobes[i].fk.freq = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)cents, (jint)mult);
+		strobes[i].freq = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)cents, (jint)mult);
 		strobe_recalc(&strobes[i]);
 
 		y += sheight;
@@ -484,7 +449,7 @@ update_labels(jobject this)
 		int mult = ((i==0) ? 1 : ((i==1) ? harm1_mult : harm2_mult));
 		char *ext = ((mult==1) ? "st" : ((mult==2) ? "nd" :
 				((mult==3) ? "rd" : "th")));
-		sprintf(buf, "%2d%s %7.1f", mult, ext, strobes[i].fk.freq);
+		sprintf(buf, "%2d%s %7.1f", mult, ext, strobes[i].freq);
 		lab = (*env)->NewStringUTF(env, buf);
 		(*env)->SetObjectArrayElement(env, labels, i, lab);
 		(*env)->DeleteLocalRef(env, lab);
