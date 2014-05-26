@@ -462,7 +462,7 @@ jni_init(JNIEnv *env_)
 	CLASS(audiorecord, "android/media/AudioRecord")
 
 	METHOD(println, printstream, "println", "(Ljava/lang/String;)V")
-	METHOD(st_do_draw, strobe, "do_draw", "([III)I")
+	METHOD(st_do_draw, strobe, "do_draw", "([III)V")
 	METHOD(st_isinterrupted, strobe, "isInterrupted", "()Z")
 	METHOD(tt_cents_to_freq, tunertime, "cents_to_freq", "(II)D")
 	METHOD(tt_update_currnote, tunertime, "update_currnote", "(I)V");
@@ -683,7 +683,7 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 			pick_currnote(this);
 			(*env)->ReleasePrimitiveArrayCritical(env, bitmap, bitmap_ptr, 0);
 			/* send bitmap to surface */
-			(*env)->CallIntMethod(env, this, mid_st_do_draw, bitmap, width, height);
+			(*env)->CallVoidMethod(env, this, mid_st_do_draw, bitmap, width, height);
 		}
 	}
 }

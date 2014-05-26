@@ -64,27 +64,25 @@ public class Strobe extends Thread {
 	}
 
 	/* Called from JNI to handle all of the Canvas interactions to draw the
-	 * bitmap.  Returns 1 for success, 0 for failure (which means that the
-	 * underlying surface has probably re-sized) */
-	private int do_draw(int[] bitmap, int w, int h) {
-		Canvas c = null;
+	 * bitmap. */
+	private void do_draw(int[] bitmap, int w, int h) {
+		if (holder == null) {
+			return;
+		}
+		Canvas c = holder.lockCanvas();
+		if (c == null) {
+			return;
+		}
 		try {
-			c = holder.lockCanvas();
-
-			/* supposedly lockCanvas() prevents the surface from
-			 * changing underneath us, so trust that and this is the
-			 * appropriate place for a consistency check */
-			if ((w != width) || (h != height)) {
-				return 0;
-			}
-			c.drawBitmap(bitmap, /*offset=*/0, /*stride=*/w,
+			if ((c.getWidth() == w) && (c.getHeight() == h)) {
+				c.drawBitmap(bitmap, /*offset=*/0, /*stride=*/w,
 					/*x=*/0, /*y=*/0, /*wid=*/w, /*hght=*/h,
 					/*hasAlpha=*/false, /*paint=*/null);
-			draw_labels(c);
+				draw_labels(c);
+			}
 		} finally {
 			holder.unlockCanvasAndPost(c);
 		}
-		return 1;
 	}
 
 	public void run() {
