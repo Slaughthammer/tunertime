@@ -197,13 +197,19 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		builder.show();
 	}
 
+	/* warning - this is called from the Strobe thread, so it cannot access
+	 * the UI directly */
 	public void update_currnote(int val) {
 		curr_note = val;
 
 		int note_index = curr_note%12;
 		int octave = curr_note/12;
-		String note_name = NOTE_NAMES[note_index];
-		currnote_button.setText(note_name+"-"+octave);
+		final String note_name = (NOTE_NAMES[note_index] + " " + octave);
+		runOnUiThread(new Runnable() {
+			public void run() {
+				currnote_button.setText(note_name);
+			}
+		});
 	}
 
 	public void do_currnote(View v) {
