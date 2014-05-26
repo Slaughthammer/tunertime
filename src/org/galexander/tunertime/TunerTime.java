@@ -20,6 +20,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private int harm2_mult = 4;
 	private int temper[] = new int[12];
 	private boolean temper_enabled;
+	private int curr_note = -1;		/* for currnote_button */
 
 	private SurfaceView w_strobe;
 	private ViewGroup buttons_holder;
