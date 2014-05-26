@@ -207,7 +207,34 @@ Which might be the mysterious record problem reported by a user.  Seems
 like there is a race case between shutting down the old one and starting
 the new one.
 
-XXX - invent landscape mode
+
+May 26, 2014.
+
+Bugs aside for the moment, I want to add the traditional tuner
+functionality (detecting which note is playing, instead of being told).
+I was thinking I'd give this a special mode, but really it might be
+convenient to have it on all of the modes.  The UI is a bit of a
+question, but I think I'm content to simply split the mode button in
+half to make room for a new button.  The new button would show the
+current note, and when clicked it would set the strobes to that note.
+
+There's some debate about FFT vs. filters.  Time domain information is
+not particularly meaningful, so FFT is totally viable.  However, FFT
+gives me a peak-detection problem that I'm not particularly interested
+in.  Anyways, I have a draft of the filter design in mind already.
+
+So the plan is to have an 88-channel filter (like ggh), and it will
+collect the output of these filters into a single variable using a
+simplified very-low-pass filter, something like
+    new_value = old_value*0.999 + curr_sample
+Then I will sum these 88 channels into 12 channels (collapse the octaves
+together), and then find the highest result, and that tells us which
+semitone.  Then we search the octaves and find the highest octave, and
+that's the octave.  If no channel is above a certain threshhold, it will
+simply display what it was displaying last time...
+
+
+
 XXX - rotate it a bunch of times to cause a SIGSEGV...
 
 XXX - microphone capture apparently fails intermittently if you home -> other mic app -> tunertime
