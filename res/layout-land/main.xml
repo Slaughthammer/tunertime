@@ -46,20 +46,21 @@
 		    android:textColor="#66F" />
 	    </LinearLayout>
 	    <LinearLayout
-		android:layout_height="wrap_content"
+		android:layout_height="1dp"
 		android:layout_width="fill_parent"
+		android:layout_weight="1"
 		android:orientation="horizontal">
 		<Button android:id="@+id/currnote_button"
-		    android:layout_width="fill_parent"
-		    android:layout_height="1dp"
+		    android:layout_width="1dp"
+		    android:layout_height="fill_parent"
 		    android:layout_weight="1"
 		    android:text="..."
 		    android:textColor="#060"
 		    android:textAppearance="?android:attr/textAppearanceMedium"
 		    android:onClick="do_currnote" />
 		<Button
-		    android:layout_width="fill_parent"
-		    android:layout_height="1dp"
+		    android:layout_width="1dp"
+		    android:layout_height="fill_parent"
 		    android:layout_weight="1"
 		    android:text="menu"
 		    android:textColor="#060"
