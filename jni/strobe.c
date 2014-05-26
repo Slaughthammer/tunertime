@@ -9,6 +9,12 @@
  * harmless (record_bufsz on my system is just over 4kB, or 2ksamps) */
 #define SND_BUFSAMPS 32768
 
+#define FFT_DEPTH 14
+#define FFT_SIZE (1 << FFT_DEPTH)
+
+#define NOTES_NUM 64
+#define NOTES_LOWEST 24
+
 #define NUM_STROBES 3
 
 struct strobe_rec {
@@ -35,12 +41,12 @@ struct strobe_rec {
 	int last_cleared_col;
 };
 
-/* for 88 parallel note filters which are used to estimate the currently playing
- * note */
+/* for NOTES_NUM parallel note filters (starting at note NOTES_LOWEST) which are
+ * used to estimate the currently playing note */
 struct note_filter_rec {
-	struct filter_kernel fk;
+	double freq;
+	int fft_bin_lo, fft_bin_hi;	/* range of fft bins covered */
 	double output;
-	int curr_samp;                  /* index into snd_buf/filtered */
 };
 
 
@@ -52,8 +58,15 @@ static int height;
 static struct strobe_rec strobes[NUM_STROBES];
 static short snd_buf[SND_BUFSAMPS];
 static int snd_ofs;
-static struct note_filter_rec notefilts[88];
+
+static double fft_r[FFT_SIZE];
+static double fft_i[FFT_SIZE];
+static struct note_filter_rec notefilts[NOTES_NUM];
+static int nf_curr_samp = 0;			/* input */
+static int nf_curr_ridx = 0;			/* output */
 static int currnote = -1;			/* result of note_filters */
+static double fft_sr[32];
+static double fft_si[32];
 
 static jint *bitmap_ptr;
 
@@ -274,6 +287,95 @@ strobe_newdata(struct strobe_rec *s)
 	strobe_draw_htic(s);
 }
 
+
+/* just precompute the needed cos/sin values for FFT */
+static void
+init_fft(void)
+{
+	int l, le, le2;
+	for (l = 1; l < (sizeof fft_sr/sizeof fft_sr[0]); l++) {
+		le = 1<<l;
+		le2 = le>>1;
+		fft_sr[l] = cos(M_PI/((double)le2));
+		fft_si[l] = -sin(M_PI/((double)le2));
+	}
+}
+
+/* this is Fast Fourier Transform, cribbed from The Scientist and Engineer's
+ * Guide to Digital Signal Processing by Steven W. Smith.
+ * O(n*lg(n))
+ * in: fft_r[0..n-1]
+ * out: fft_i[0..n/2] */
+static void
+do_fft(void)
+{
+	int i,j,k,l,m;
+	int le,le2,ip;
+	double ur,ui,sr,si,tr,ti;
+
+	m = FFT_DEPTH;
+	j = FFT_SIZE/2;
+
+	memset(fft_i, 0, sizeof fft_i);
+	for (i = 1; i <= FFT_SIZE-2; i++) {
+		if (i < j) {
+			double t;
+			t = fft_r[j];
+			fft_r[j] = fft_r[i];
+			fft_r[i] = t;
+		}
+		k = FFT_SIZE/2;
+		while (k <= j) {
+			j -= k;
+			k /= 2;
+		}
+		j += k;
+	}
+
+	for (l = 1; l <= m; l++) {
+		le = 1<<l;
+		le2 = le>>1;
+		ur = 1;
+		ui = 0;
+		sr = fft_sr[l];
+		si = fft_si[l];
+		for (j = 1; j <= le2; j++) {
+			for (i = j-1; i <= FFT_SIZE-1; i += le) {
+				ip = i+le2;
+				tr = fft_r[ip]*ur - fft_i[ip]*ui;
+				ti = fft_r[ip]*ui + fft_i[ip]*ur;
+				fft_r[ip] = fft_r[i]-tr;
+				fft_i[ip] = fft_i[i]-ti;
+				fft_r[i] += tr;
+				fft_i[i] += ti;
+			}
+			tr = ur;
+			ur = tr*sr - ui*si;
+			ui = tr*si + ui*sr;
+		}
+	}
+}
+
+static int
+fft_freq2ind(double freq)
+{
+	return ((double)FFT_SIZE)*(freq/((double)sample_rate));
+}
+
+static void
+do_notefilts(void)
+{
+	int i,j;
+	for (i = 0; i < NOTES_NUM; i++) {
+		struct note_filter_rec *nf = &notefilts[i];
+		double t = 0.0;
+		for (j = nf->fft_bin_lo; j <= nf->fft_bin_hi; j++) {
+			t += fabs(fft_r[j]) + fabs(fft_i[j]);
+		}
+		nf->output = (0.9*nf->output) + t;
+	}
+}
+
 void
 newdata(void)
 {
@@ -286,7 +388,16 @@ newdata(void)
 	for (i = 0; i < NUM_STROBES; i++) {
 		strobe_newdata(&strobes[i]);
 	}
- XXX
+
+	for (i = nf_curr_samp; i != snd_ofs; i = (i+1)%SND_BUFSAMPS) {
+		fft_r[nf_curr_ridx++] = ((double)snd_buf[i]) / 32768.0;
+		if (nf_curr_ridx == FFT_SIZE) {
+			do_fft();
+			do_notefilts();
+			nf_curr_ridx = 0;
+		}
+	}
+	nf_curr_samp = i;
 }
 
 
@@ -427,11 +538,16 @@ recalculate(jobject this)
 	a5 = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)6000, (jint)1);
 	if (old_a5 != a5) {
 		/* recalculate note filters too */
-		for (i = 0; i < 88; i++) {
+		int last_fft, curr_fft;
+		last_fft = fft_freq2ind((*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)(NOTES_LOWEST-1)*100, (jint)1));
+		for (i = 0; i < NOTES_NUM; i++) {
 			struct note_filter_rec *nf = &notefilts[i];
-			nf->fk.freq = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)i*100, (jint)1);
-			filter_recalc(&nf->fk);
+			nf->freq = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)(i+NOTES_LOWEST)*100, (jint)1);
+			curr_fft = fft_freq2ind(nf->freq);
+			nf->fft_bin_lo = (last_fft + curr_fft) / 2;
+			if (i) notefilts[i-1].fft_bin_hi = nf->fft_bin_lo-1;
 		}
+		notefilts[NOTES_NUM-1].fft_bin_hi = fft_freq2ind((*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)(NOTES_NUM+NOTES_LOWEST)*100, (jint)1));
 		old_a5 = a5;
 	}
 
@@ -467,7 +583,7 @@ pick_currnote(jobject this)
 	int i;
 
 		/* chose the right note within the octave */
-	for (i = 0; i < 88; i++) {
+	for (i = 0; i < NOTES_NUM; i++) {
 		semis[i%12] += notefilts[i].output;
 	}
 	max = semis[0];
@@ -481,7 +597,7 @@ pick_currnote(jobject this)
 
 		/* chose the right octave */
 	max = notefilts[choice].output;
-	for (i = choice; i < 88; i += 12) {
+	for (i = choice; i < NOTES_NUM; i += 12) {
 		if (notefilts[i].output > max) {
 			max = notefilts[i].output;
 			choice = i;
@@ -491,7 +607,7 @@ pick_currnote(jobject this)
 		/* update */
 	if (currnote != choice) {
 		jobject ui = (*env)->GetObjectField(env, this, fid_st_ui);
-		(*env)->CallVoidMethod(env, ui, mid_tt_update_currnote, (jint)choice);
+		(*env)->CallVoidMethod(env, ui, mid_tt_update_currnote, (jint)(choice+NOTES_LOWEST));
 		(*env)->DeleteLocalRef(env, ui);
 		currnote = choice;
 	}
@@ -513,6 +629,8 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 	memset(strobes, 0, sizeof strobes);
 	memset(notefilts, 0, sizeof notefilts);
 	bitmap = NULL;
+
+	init_fft();
 	
 	recorder = (*env)->GetObjectField(env, this, fid_st_recorder);
 	record_bufsz = (*env)->GetIntField(env, this, fid_st_record_bufsz);
