@@ -233,6 +233,30 @@ semitone.  Then we search the octaves and find the highest octave, and
 that's the octave.  If no channel is above a certain threshhold, it will
 simply display what it was displaying last time...
 
+...
+
+Well, the advantages of the filter-based version were non-illusive, in
+that I had no trouble implementing it.  But it is way too slow.  I
+remember how I made it work on the n800 last time: I limited its input to
+something like 8kHz, roughly 20% as much work as 44kHz.
+
+Obviously, I could build for hardfp or start another thread or any number
+of things to get the required performance out of my phone, but that is
+ridiculous.  I forgot how expensive these filters are.  Roughly 11
+floating point operations per filter (88x) per sample (44.1kHz) means
+roughly 42 MFLOPS.  That's well within the realm of plausibility, but well
+outside the realm of "free".
+
+The FFT, on the other hand, seems to be roughly 10 * n * lg(n), or around
+100k for 1024 samples, or closer to 4 MFLOPS.  That's better.  I'd prefer
+even better yet but maybe I won't get it.  I had the idea increasing the
+block size would help, but number of operations per second would be
+   (44100/n)*10*n*lg(n)
+   441000*lg(n)
+I.e., as the block size increases, it does get more expensive per sample,
+just not very quickly.  And I doubt I want to do a block size any smaller
+than 1024.  In fact, 2048 is the smallest that ggd does and that looks
+pretty sketchy.
 
 
 XXX - rotate it a bunch of times to cause a SIGSEGV...
