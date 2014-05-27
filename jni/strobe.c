@@ -9,11 +9,11 @@
  * harmless (record_bufsz on my system is just over 4kB, or 2ksamps) */
 #define SND_BUFSAMPS 32768
 
-#define FFT_DEPTH 14
+#define FFT_DEPTH 15
 #define FFT_SIZE (1 << FFT_DEPTH)
 
-#define NOTES_NUM 64
-#define NOTES_LOWEST 24
+#define NOTES_NUM 76
+#define NOTES_LOWEST 12
 
 #define NUM_STROBES 3
 
