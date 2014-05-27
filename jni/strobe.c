@@ -375,7 +375,7 @@ do_notefilts(void)
 		for (j = nf->fft_bin_lo; j <= nf->fft_bin_hi; j++) {
 			t += fabs(fft_r[j]) + fabs(fft_i[j]);
 		}
-		nf->output = (0.9*nf->output) + t;
+		nf->output = (0.5*nf->output) + t;
 	}
 }
 
