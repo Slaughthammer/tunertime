@@ -409,7 +409,9 @@ pick_currnote(void)
 		}
 	}
 
-	currnote = choice+NOTES_LOWEST;
+	if (max > 1000.0) {
+		currnote = choice+NOTES_LOWEST;
+	}
 }
 
 void
