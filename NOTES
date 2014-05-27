@@ -264,7 +264,6 @@ XXX - rotate it a bunch of times to cause a SIGSEGV...
 XXX - microphone capture apparently fails intermittently if you home -> other mic app -> tunertime
 
 XXX - tone generator?
-XXX - fft
 
 XXX - document sound of white noise
 XXX - see what can be done about sound overflows, if fixing buffer sizes doesn't do it
