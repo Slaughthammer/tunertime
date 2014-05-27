@@ -379,6 +379,39 @@ do_notefilts(void)
 	}
 }
 
+static void
+pick_currnote(void)
+{
+	double semis[12] = { 0.0 };
+	double max;
+	int choice;
+	int i;
+
+		/* chose the right note within the octave */
+	for (i = 0; i < NOTES_NUM; i++) {
+		semis[i%12] += notefilts[i].output;
+	}
+	max = semis[0];
+	choice = 0;
+	for (i = 0; i < 12; i++) {
+		if (semis[i] > max) {
+			max = semis[i];
+			choice = i;
+		}
+	}
+
+		/* chose the right octave */
+	max = notefilts[choice].output;
+	for (i = choice; i < NOTES_NUM; i += 12) {
+		if (notefilts[i].output > max) {
+			max = notefilts[i].output;
+			choice = i;
+		}
+	}
+
+	currnote = choice+NOTES_LOWEST;
+}
+
 void
 newdata(void)
 {
@@ -397,6 +430,7 @@ newdata(void)
 		if (nf_curr_ridx == FFT_SIZE) {
 			do_fft();
 			do_notefilts();
+			pick_currnote();
 			nf_curr_ridx = 0;
 		}
 	}
@@ -549,8 +583,10 @@ recalculate(jobject this)
 			curr_fft = fft_freq2ind(nf->freq);
 			nf->fft_bin_lo = (last_fft + curr_fft) / 2;
 			if (i) notefilts[i-1].fft_bin_hi = nf->fft_bin_lo-1;
+			nf->output = 0.0;
+			last_fft = curr_fft;
 		}
-		notefilts[NOTES_NUM-1].fft_bin_hi = fft_freq2ind((*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)(NOTES_NUM+NOTES_LOWEST)*100, (jint)1));
+		notefilts[i-1].fft_bin_hi = fft_freq2ind((*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)(i+NOTES_LOWEST)*100, (jint)1));
 		old_a5 = a5;
 	}
 
@@ -577,44 +613,6 @@ update_labels(jobject this)
 	(*env)->DeleteLocalRef(env, labels);
 }
 
-static void
-pick_currnote(jobject this)
-{
-	double semis[12] = { 0.0 };
-	double max;
-	int choice;
-	int i;
-
-		/* chose the right note within the octave */
-	for (i = 0; i < NOTES_NUM; i++) {
-		semis[i%12] += notefilts[i].output;
-	}
-	max = semis[0];
-	choice = 0;
-	for (i = 0; i < 12; i++) {
-		if (semis[i] > max) {
-			max = semis[i];
-			choice = i;
-		}
-	}
-
-		/* chose the right octave */
-	max = notefilts[choice].output;
-	for (i = choice; i < NOTES_NUM; i += 12) {
-		if (notefilts[i].output > max) {
-			max = notefilts[i].output;
-			choice = i;
-		}
-	}
-
-		/* update */
-	if (currnote != choice) {
-		jobject ui = (*env)->GetObjectField(env, this, fid_st_ui);
-		(*env)->CallVoidMethod(env, ui, mid_tt_update_currnote, (jint)(choice+NOTES_LOWEST));
-		(*env)->DeleteLocalRef(env, ui);
-		currnote = choice;
-	}
-}
 
 /* This is the entry point from the Java code...it is a loop that checks for
  * thread state changes, reads audio, then writes to screen. */
@@ -682,10 +680,15 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 			/* process sound into bitmap */
 			bitmap_ptr = (*env)->GetPrimitiveArrayCritical(env, bitmap, 0);
 			newdata();
-			pick_currnote(this);
 			(*env)->ReleasePrimitiveArrayCritical(env, bitmap, bitmap_ptr, 0);
 			/* send bitmap to surface */
 			(*env)->CallVoidMethod(env, this, mid_st_do_draw, bitmap, width, height);
+
+			if (currnote != -1) {
+				jobject ui = (*env)->GetObjectField(env, this, fid_st_ui);
+				(*env)->CallVoidMethod(env, ui, mid_tt_update_currnote, (jint)currnote);
+				(*env)->DeleteLocalRef(env, ui);
+			}
 		}
 	}
 }
