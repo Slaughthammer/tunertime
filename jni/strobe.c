@@ -359,6 +359,9 @@ do_fft(void)
 static int
 fft_freq2ind(double freq)
 {
+	if ((int)freq >= sample_rate/2) {
+		return FFT_SIZE/2;
+	}
 	return ((double)FFT_SIZE)*(freq/((double)sample_rate));
 }
 
