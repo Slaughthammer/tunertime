@@ -259,6 +259,14 @@ than 1024.  In fact, 2048 is the smallest that ggd does and that looks
 pretty sketchy.
 
 
+July 30, 2014.
+
+I have decided the FFT is too slow to be running "in the background" of
+regular operation.  It makes the output visibly stutter.  So I intend to
+separate it out into its own mode.
+
+XXX - FFT mode
+
 XXX - rotate it a bunch of times to cause a SIGSEGV...
 
 XXX - microphone capture apparently fails intermittently if you home -> other mic app -> tunertime
