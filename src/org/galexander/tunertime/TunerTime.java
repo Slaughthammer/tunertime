@@ -20,7 +20,11 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private int harm2_mult = 4;
 	private int temper[] = new int[12];
 	private boolean temper_enabled;
-	private int curr_note = -1;		/* for currnote_button */
+
+	private boolean fft_mode;
+	private int fft_size;
+	private int fft_width;
+	private int fft_offset;
 
 	private SurfaceView w_strobe;
 	private ViewGroup buttons_holder;
@@ -42,7 +46,10 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private View harm_buttons;
 	private TextView harm1_display;
 	private TextView harm2_display;
-	private TextView currnote_button;
+	private View fft_buttons;
+	/* XXX - need to monitor the X position of any clicks within the display area, for scrolling */
+	/* XXX - need to have buttons for zoom+/- */
+	/* XXX - need to have buttons for fft size+/- */
 
 	private Strobe strobe = null;
 	private SurfaceHolder holder = null;
@@ -60,7 +67,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		buttons_holder = (ViewGroup)findViewById(R.id.buttons_holder);
 		center_display = (TextView)findViewById(R.id.center_display);
 		stretch_display = (TextView)findViewById(R.id.stretch_display);
-		currnote_button = (Button)findViewById(R.id.currnote_button);
 
 		LayoutInflater fl8r = (LayoutInflater)getSystemService(
 				Context.LAYOUT_INFLATER_SERVICE);
@@ -100,12 +106,13 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				R.id.harm1_display);
 		harm2_display = (TextView)harm_buttons.findViewById(
 				R.id.harm2_display);
+/* XXX */
 	}
 
 	public void onResume() {
 		stop_strobe();
 		load_config();
-		set_buttons(note_buttons);
+		set_mode(note_buttons, false);
 		update_status();
 		if (holder != null) {
 			/* lingering surface must still be valid */
@@ -140,6 +147,9 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		temper[10] = prefs.getInt("temper10", 0);
 		temper[11] = prefs.getInt("temper11", 0);
 		temper_enabled = prefs.getBoolean("temper_enabled", false);
+		fft_size = prefs.getInt("fft_size", 8192);
+		fft_width = prefs.getInt("fft_width", 1024);
+		fft_offset = prefs.getInt("fft_offset", 0);
 	}
 
 	private void save_config() {
@@ -163,12 +173,17 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		editor.putInt("temper10", temper[10]);
 		editor.putInt("temper11", temper[11]);
 		editor.putBoolean("temper_enabled", temper_enabled);
+		editor.putInt("fft_size", fft_size);
+		editor.putInt("fft_width", fft_width);
+		editor.putInt("fft_offset", fft_offset);
 		editor.commit();
 	}
 
-	private void set_buttons(View v) {
+	private void set_mode(View buttons, boolean fft_mode_) {
 		buttons_holder.removeAllViews();
-		buttons_holder.addView(v);
+		buttons_holder.addView(buttons);
+		strobe.setFft(fft_mode);
+		fft_mode = fft_mode_;
 	}
 
 
@@ -181,43 +196,22 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			"stretch",
 			"temper",
 			"harmonics",
+			"FFT",
 			"help" },
 			new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface d, int id) {
 					switch (id) {
-				case 0: set_buttons(note_buttons);	break;
-				case 1: set_buttons(afreq_buttons);	break;
-				case 2: set_buttons(stretch_buttons);	break;
-				case 3: set_buttons(temper_buttons);	break;
-				case 4: set_buttons(harm_buttons);	break;
-				case 5: do_help();			break;
+				case 0: set_mode(note_buttons, false);	break;
+				case 1: set_mode(afreq_buttons, false);	break;
+				case 2: set_mode(stretch_buttons, false);break;
+				case 3: set_mode(temper_buttons, false);break;
+				case 4: set_mode(harm_buttons, false);	break;
+				case 5: set_mode(fft_buttons, true);	break;
+				case 6: do_help();			break;
 					}
 				}
 			});
 		builder.show();
-	}
-
-	/* warning - this is called from the Strobe thread, so it cannot access
-	 * the UI directly */
-	public void update_currnote(int val) {
-		curr_note = val;
-
-		int note_index = curr_note%12;
-		int octave = curr_note/12;
-		final String note_name = (NOTE_NAMES[note_index] + " " + octave);
-		runOnUiThread(new Runnable() {
-			public void run() {
-				currnote_button.setText(note_name);
-			}
-		});
-	}
-
-	public void do_currnote(View v) {
-		if (curr_note != -1) {
-			strobe_cents = curr_note*100;
-		}
-		apply_temper();
-		update_status();
 	}
 
 	private void apply_temper() {
@@ -317,6 +311,19 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		update_status();
 	}
 
+	public void do_fft_zoom_in(View v) {
+		fft_width /= 2;
+	}
+	public void do_fft_zoom_out(View v) {
+		fft_width *= 2;
+	}
+	public void do_fft_sizeup(View v) {
+		fft_size *= 2;
+	}
+	public void do_fft_sizedn(View v) {
+		fft_size /= 2;
+	}
+
 	private void do_help() {
 		Intent i = new Intent(Intent.ACTION_VIEW);
 		i.setData(Uri.parse("http://galexander.org/software/tunertime/"));
@@ -341,8 +348,13 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		harm1_mult = range_limit(harm1_mult, 1, 20);
 		harm2_mult = range_limit(harm2_mult, 1, 20);
 
+		fft_size = range_limit(fft_size, 1024, 32768);
+		fft_width = range_limit(fft_width, 64, 1024);
+		fft_offset = range_limit(fft_offset, 0, 1024-fft_width);
+
 		if (strobe != null) {
 			strobe.setCents(strobe_cents, harm1_mult, harm2_mult);
+			storbe.setFftParms(fft_size, fft_width, fft_offset);
 		}
 
 		int note_index = ((strobe_cents+50)%1200)/100;

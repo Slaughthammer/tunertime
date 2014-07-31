@@ -9,9 +9,16 @@ public class Strobe extends Thread {
 	private volatile int cents;
 	private volatile int harm1_mult, harm2_mult;
 	private volatile boolean cents_changed = false;
+
 	private volatile int width = 0, height = 0;
-	private volatile boolean surface_changed = false;
 	private SurfaceHolder holder = null;
+	private volatile boolean surface_changed = false;
+
+	private volatile boolean fft_mode = false;
+	private volatile int fft_size = 8192;	/* number of samples in FFT window */
+	private volatile int fft_width = 1024;	/* zoom level, 1024ths of range */
+	private volatile int fft_offset = 0;	/* offset in 1024ths of screen */
+	private volatile boolean fft_changed = false;
 
 	private AudioRecord recorder = null;
 	private int record_bufsz = 0;
@@ -33,6 +40,18 @@ public class Strobe extends Thread {
 		width = width_;
 		height = height_;
 		surface_changed = true;
+	}
+
+	public void setFft(boolean fft_mode_) {
+		fft_mode = fft_mode_;
+		fft_changed = true;
+	}
+
+	public void setFftParms(int fft_size_, int fft_width_, int fft_offset_) {
+		fft_size = fft_size_;
+		fft_width = fft_width_;
+		fft_offset = fft_offset_;
+		fft_changed = true;
 	}
 
 	private native void runner();		/* efficient C loop */

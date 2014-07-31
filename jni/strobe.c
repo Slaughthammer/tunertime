@@ -61,12 +61,15 @@ static int snd_ofs;
 
 static double fft_r[FFT_SIZE];
 static double fft_i[FFT_SIZE];
-static struct note_filter_rec notefilts[NOTES_NUM] = { { 0 } };
-static int nf_curr_samp = 0;			/* input */
+static int nf_curr_samp = 0;			/* input - XXX??? */
 static int nf_curr_ridx = 0;			/* output */
-static int currnote = -1;			/* result of note_filters */
 static double fft_sr[32];
 static double fft_si[32];
+
+static int fft_mode = 0;
+static int fft_size = 8192;
+static int fft_width = 1024;
+static int fft_offset = 0;
 
 static jint *bitmap_ptr;
 
@@ -356,6 +359,16 @@ do_fft(void)
 	}
 }
 
+static void
+do_fft_display(void)
+{
+	/* XXX - need to calibrate y range somehow */
+	/* XXX - would be nice to add a row, but realistically we should just draw the single fft state to the screen */
+	/* XXX - need to find the lowest fft bin that will be on the display, and iterate from that to the highest one, with logarithmic frequency */
+	/* XXX - and maybe draw the legend, at least a piano keyboard? */
+	/* XXX - maybe update some shared info to let Strobe::do_draw() draw text labels on the legend? */
+}
+
 static int
 fft_freq2ind(double freq)
 {
@@ -363,55 +376,6 @@ fft_freq2ind(double freq)
 		return FFT_SIZE/2;
 	}
 	return ((double)FFT_SIZE)*(freq/((double)sample_rate));
-}
-
-static void
-do_notefilts(void)
-{
-	int i,j;
-	for (i = 0; i < NOTES_NUM; i++) {
-		struct note_filter_rec *nf = &notefilts[i];
-		double t = 0.0;
-		for (j = nf->fft_bin_lo; j <= nf->fft_bin_hi; j++) {
-			t += fabs(fft_r[j]) + fabs(fft_i[j]);
-		}
-		nf->output = (0.5*nf->output) + t;
-	}
-}
-
-static void
-pick_currnote(void)
-{
-	double semis[12] = { 0.0 };
-	double max;
-	int choice;
-	int i;
-
-		/* chose the right note within the octave */
-	for (i = 0; i < NOTES_NUM; i++) {
-		semis[i%12] += notefilts[i].output;
-	}
-	max = semis[0];
-	choice = 0;
-	for (i = 0; i < 12; i++) {
-		if (semis[i] > max) {
-			max = semis[i];
-			choice = i;
-		}
-	}
-
-		/* chose the right octave */
-	max = notefilts[choice].output;
-	for (i = choice; i < NOTES_NUM; i += 12) {
-		if (notefilts[i].output > max) {
-			max = notefilts[i].output;
-			choice = i;
-		}
-	}
-
-	if (max > 1000.0) {
-		currnote = choice+NOTES_LOWEST;
-	}
 }
 
 void
@@ -423,20 +387,21 @@ newdata(void)
 		return;
 	}
 #endif
-	for (i = 0; i < NUM_STROBES; i++) {
-		strobe_newdata(&strobes[i]);
-	}
-
-	for (i = nf_curr_samp; i != snd_ofs; i = (i+1)%SND_BUFSAMPS) {
-		fft_r[nf_curr_ridx++] = ((double)snd_buf[i]) / 32768.0;
-		if (nf_curr_ridx == FFT_SIZE) {
-			do_fft();
-			do_notefilts();
-			pick_currnote();
-			nf_curr_ridx = 0;
+	if (fft_mode) {
+		for (i = nf_curr_samp; i != snd_ofs; i = (i+1)%SND_BUFSAMPS) {
+			fft_r[nf_curr_ridx++] = ((double)snd_buf[i]) / 32768.0;
+			if (nf_curr_ridx == FFT_SIZE) {
+				do_fft();
+				do_fft_display();
+				nf_curr_ridx = 0;
+			}
+		}
+	nf_curr_samp = i;
+	} else {
+		for (i = 0; i < NUM_STROBES; i++) {
+			strobe_newdata(&strobes[i]);
 		}
 	}
-	nf_curr_samp = i;
 }
 
 
@@ -470,6 +435,10 @@ static jfieldID fid_st_recorder;
 static jfieldID fid_st_record_bufsz;
 static jfieldID fid_st_labels;
 static jfieldID fid_st_ui;
+static jfieldID fid_st_fft_mode;
+static jfieldID fid_st_fft_size;
+static jfieldID fid_st_fft_width;
+static jfieldID fid_st_fft_offset;
 
 static jintArray bitmap;
 
@@ -520,6 +489,10 @@ jni_init(JNIEnv *env_)
 	FIELD(st_record_bufsz, strobe, "record_bufsz", "I")
 	FIELD(st_labels, strobe, "labels", "[Ljava/lang/String;")
 	FIELD(st_ui, strobe, "ui", "Lorg/galexander/tunertime/TunerTime;")
+	FIELD(st_fft_mode, strobe, "fft_mode", "Z")
+	FIELD(st_fft_size, strobe, "fft_size", "I")
+	FIELD(st_fft_width, strobe, "fft_width", "I")
+	FIELD(st_fft_offset, strobe, "fft_offset", "I")
 
 	return 1;
 }
@@ -577,6 +550,8 @@ recalculate(jobject this)
 	a5 = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)6000, (jint)1);
 	if (old_a5 != a5) {
 		/* recalculate note filters too */
+                /* XXX - do i need to know a5 change now?  maybe to redraw the legend on the bottom of the screen? */
+/* 
 		int last_fft, curr_fft;
 		last_fft = fft_freq2ind((*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)(NOTES_LOWEST-1)*100, (jint)1));
 		for (i = 0; i < NOTES_NUM; i++) {
@@ -589,6 +564,7 @@ recalculate(jobject this)
 			last_fft = curr_fft;
 		}
 		notefilts[i-1].fft_bin_hi = fft_freq2ind((*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)(i+NOTES_LOWEST)*100, (jint)1));
+*/
 		old_a5 = a5;
 	}
 
@@ -615,6 +591,15 @@ update_labels(jobject this)
 	(*env)->DeleteLocalRef(env, labels);
 }
 
+static void
+fft_mode_changed(void) {
+	/* XXX - clear the bitmap */
+	if (fft_mode) {
+		/* XXX - set fft vertical offset to 0, and ? make sure the fft other settings are sane? */
+	} else {
+		/* XXX - set strobe horizontal offset to 0 */
+	}
+}
 
 /* This is the entry point from the Java code...it is a loop that checks for
  * thread state changes, reads audio, then writes to screen. */
@@ -660,12 +645,22 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 			recalculate(this);
 			resize_bitmap();
 		}
+		if ((*env)->GetBooleanField(env, this, fid_st_fft_changed)) {
+			jboolean fft_mode_ = (*env)->GetBooleanField(fft_mode);
+			if (fft_mode != fft_mode_) {
+				fft_mode = fft_mode_;
+				fft_mode_changed();
+			}
+			fft_size = (*env)->GetIntField(env, this, fid_st_fft_size);
+			fft_width = (*env)->GetIntField(env, this, fid_st_fft_width);
+			fft_offset = (*env)->GetIntField(env, this, fid_st_fft_offset);
+		}
+
 		if ((*env)->CallBooleanMethod(env, this, mid_st_interrupted)) {
 			/* thread was interrupted, must be time for it to die */
 			println("thread interrupted");
 			return;
 		}
-/* XXX - check for fft_mode state change, such as changing the fft size, changing the zoom level, or changing the frequency display offset */
 
 		/* then get sound */
 		to_read = SND_BUFSAMPS-snd_ofs;
@@ -689,12 +684,6 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 				/* thread was interrupted, must be time for it to die */
 				println("thread interrupted in do_draw()");
 				return;
-			}
-
-			if (currnote != -1) {
-				jobject ui = (*env)->GetObjectField(env, this, fid_st_ui);
-				(*env)->CallVoidMethod(env, ui, mid_tt_update_currnote, (jint)currnote);
-				(*env)->DeleteLocalRef(env, ui);
 			}
 		}
 	}
