@@ -452,7 +452,7 @@ static jclass cl_audiorecord;
 
 static jmethodID mid_println;
 static jmethodID mid_st_do_draw;
-static jmethodID mid_st_isinterrupted;
+static jmethodID mid_st_interrupted;
 static jmethodID mid_tt_cents_to_freq;
 static jmethodID mid_tt_update_currnote;
 static jmethodID mid_ar_getsamplerate;
@@ -501,8 +501,8 @@ jni_init(JNIEnv *env_)
 	CLASS(audiorecord, "android/media/AudioRecord")
 
 	METHOD(println, printstream, "println", "(Ljava/lang/String;)V")
-	METHOD(st_do_draw, strobe, "do_draw", "([III)V")
-	METHOD(st_isinterrupted, strobe, "isInterrupted", "()Z")
+	METHOD(st_do_draw, strobe, "do_draw", "([III)Z")
+	METHOD(st_interrupted, strobe, "interrupted", "()Z")
 	METHOD(tt_cents_to_freq, tunertime, "cents_to_freq", "(II)D")
 	METHOD(tt_update_currnote, tunertime, "update_currnote", "(I)V");
 	METHOD(ar_getsamplerate, audiorecord, "getSampleRate", "()I")
@@ -660,11 +660,12 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 			recalculate(this);
 			resize_bitmap();
 		}
-		if ((*env)->CallBooleanMethod(env, this, mid_st_isinterrupted)) {
+		if ((*env)->CallBooleanMethod(env, this, mid_st_interrupted)) {
 			/* thread was interrupted, must be time for it to die */
 			println("thread interrupted");
 			return;
 		}
+/* XXX - check for fft_mode state change, such as changing the fft size, changing the zoom level, or changing the frequency display offset */
 
 		/* then get sound */
 		to_read = SND_BUFSAMPS-snd_ofs;
@@ -684,7 +685,11 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 			newdata();
 			(*env)->ReleasePrimitiveArrayCritical(env, bitmap, bitmap_ptr, 0);
 			/* send bitmap to surface */
-			(*env)->CallVoidMethod(env, this, mid_st_do_draw, bitmap, width, height);
+			if ((*env)->CallBooleanMethod(env, this, mid_st_do_draw, bitmap, width, height)) {
+				/* thread was interrupted, must be time for it to die */
+				println("thread interrupted in do_draw()");
+				return;
+			}
 
 			if (currnote != -1) {
 				jobject ui = (*env)->GetObjectField(env, this, fid_st_ui);

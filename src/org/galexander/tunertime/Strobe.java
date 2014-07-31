@@ -64,14 +64,18 @@ public class Strobe extends Thread {
 	}
 
 	/* Called from JNI to handle all of the Canvas interactions to draw the
-	 * bitmap. */
-	private void do_draw(int[] bitmap, int w, int h) {
+	 * bitmap.  Returns true iff the thread is interrupted and should exit. */
+	private jboolean do_draw(int[] bitmap, int w, int h) {
 		if (holder == null) {
-			return;
+			return false;
 		}
 		Canvas c = holder.lockCanvas();
 		if (c == null) {
-			return;
+			return false;
+		}
+		if (interrupted()) {
+			holder.unlockCanvasAndPost(c);
+			return true;
 		}
 		try {
 			if ((c.getWidth() == w) && (c.getHeight() == h)) {
@@ -83,6 +87,7 @@ public class Strobe extends Thread {
 		} finally {
 			holder.unlockCanvasAndPost(c);
 		}
+		return false;
 	}
 
 	public void run() {
