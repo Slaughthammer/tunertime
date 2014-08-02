@@ -47,9 +47,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private TextView harm1_display;
 	private TextView harm2_display;
 	private View fft_buttons;
+	private TextView N_display;
 	/* XXX - need to monitor the X position of any clicks within the display area, for scrolling */
-	/* XXX - need to have buttons for zoom+/- */
-	/* XXX - need to have buttons for fft size+/- */
 
 	private Strobe strobe = null;
 	private SurfaceHolder holder = null;
@@ -106,7 +105,13 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				R.id.harm1_display);
 		harm2_display = (TextView)harm_buttons.findViewById(
 				R.id.harm2_display);
-/* XXX */
+
+		fft_buttons = fl8r.inflate(
+				R.layout.fft_buttons, buttons_holder, false);
+		N_display = (TextView)fft_buttons.findViewById(
+				R.id.N_display);
+		zoom_display = (TextView)fft_buttons.findViewById(
+				R.id.zoom_display);
 	}
 
 	public void onResume() {
@@ -311,17 +316,21 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		update_status();
 	}
 
-	public void do_fft_zoom_in(View v) {
+	public void zoom_incr(View v) {
 		fft_width /= 2;
+		update_status();
 	}
-	public void do_fft_zoom_out(View v) {
+	public void zoom_decr(View v) {
 		fft_width *= 2;
+		update_status();
 	}
-	public void do_fft_sizeup(View v) {
+	public void N_incr(View v) {
 		fft_size *= 2;
+		update_status();
 	}
-	public void do_fft_sizedn(View v) {
+	public void N_decr(View v) {
 		fft_size /= 2;
+		update_status();
 	}
 
 	private void do_help() {
@@ -354,7 +363,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 		if (strobe != null) {
 			strobe.setCents(strobe_cents, harm1_mult, harm2_mult);
-			storbe.setFftParms(fft_size, fft_width, fft_offset);
+			strobe.setFftParms(fft_size, fft_width, fft_offset);
 		}
 
 		int note_index = ((strobe_cents+50)%1200)/100;
@@ -396,6 +405,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 		harm1_display.setText(Integer.toString(harm1_mult));
 		harm2_display.setText(Integer.toString(harm2_mult));
+
+		N_display.setText(Integer.toString(fft_size));
 	}
 
 	public double cents_to_freq(int cents, int harm_mult) {
