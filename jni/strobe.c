@@ -9,8 +9,7 @@
  * harmless (record_bufsz on my system is just over 4kB, or 2ksamps) */
 #define SND_BUFSAMPS 32768
 
-#define FFT_DEPTH 15
-#define FFT_SIZE (1 << FFT_DEPTH)
+#define MAX_FFT_SIZE 32768
 
 #define NOTES_NUM 76
 #define NOTES_LOWEST 12
@@ -59,17 +58,18 @@ static struct strobe_rec strobes[NUM_STROBES];
 static short snd_buf[SND_BUFSAMPS];
 static int snd_ofs;
 
-static double fft_r[FFT_SIZE];
-static double fft_i[FFT_SIZE];
-static int nf_curr_samp = 0;			/* input - XXX??? */
+static double fft_r[MAX_FFT_SIZE];
+static double fft_i[MAX_FFT_SIZE];
+static int nf_curr_samp = 0;			/* input */
 static int nf_curr_ridx = 0;			/* output */
 static double fft_sr[32];
 static double fft_si[32];
 
 static int fft_mode = 0;
 static int fft_size = 8192;
-static int fft_width = 1024;
-static int fft_offset = 0;
+static int fft_width = 1024;		/* size of freq window we are viewing */
+static int fft_offset = 0;		/* offset of .., out of 1024 */
+static int fft_y = 0;
 
 static jint *bitmap_ptr;
 
@@ -196,7 +196,7 @@ clear_col(struct strobe_rec *s, int col)
 	filled_rect(start_x, s->y, stop_x+1, s->y+s->height, 0x000000);
 }
 
-static void
+static voi
 strobe_drawnew(struct strobe_rec *s)
 {
 	static int exptab[256] = { -1, };
@@ -316,18 +316,18 @@ do_fft(void)
 	int le,le2,ip;
 	double ur,ui,sr,si,tr,ti;
 
-	m = FFT_DEPTH;
-	j = FFT_SIZE/2;
+	m = lg2(fft_size);
+	j = fft_size/2;
 
 	memset(fft_i, 0, sizeof fft_i);
-	for (i = 1; i <= FFT_SIZE-2; i++) {
+	for (i = 1; i <= fft_size-2; i++) {
 		if (i < j) {
 			double t;
 			t = fft_r[j];
 			fft_r[j] = fft_r[i];
 			fft_r[i] = t;
 		}
-		k = FFT_SIZE/2;
+		k = fft_size/2;
 		while (k <= j) {
 			j -= k;
 			k /= 2;
@@ -343,7 +343,7 @@ do_fft(void)
 		sr = fft_sr[l];
 		si = fft_si[l];
 		for (j = 1; j <= le2; j++) {
-			for (i = j-1; i <= FFT_SIZE-1; i += le) {
+			for (i = j-1; i <= fft_size-1; i += le) {
 				ip = i+le2;
 				tr = fft_r[ip]*ur - fft_i[ip]*ui;
 				ti = fft_r[ip]*ui + fft_i[ip]*ur;
@@ -362,9 +362,36 @@ do_fft(void)
 static void
 do_fft_display(void)
 {
-	/* XXX - need to calibrate y range somehow */
+	int tot_bins = fft_size/2;
+	int first_bin = ((fft_offset*tot_bins)/1024);
+	int num_bins = ((fft_width*tot_bins)/1024);
+	int i;
+	int y1 = fft_y;
+	int yn = (height*fft_size) / (10*sample_rate)
+/* XXX - fudge height here to account for piano-bar legend? */
+
+	if (y1 + yn > height) yn = height - y1;
+
+	if (first_bin < 0) first_bin = 0;
+	if (last_bin < 0) last_bin = 0;
+	if (num_bins > tot_bins) num_bins = tot_bins;
+	if (first_bin + num_bins > tot_bins) first_bin = tot_bins - num_bins;
+
+	for (i = 0; i < num_bins; i++) {
+		int x1 = (i*width)/num_bins;
+		int xn = width/num_bins;
+		unsigned color;
+		if (xn < 1) xn = 1;
+		color =  /* XXX */;
+		filled_rect(x1, x1+xn, y1, y1+yn, color);
+	}
+
+	if ((fft_y + yn) >= height) {
+		fft_y = 0;
+	}
+	
+	/* XXX - need to calibrate magnitude somehow */
 	/* XXX - would be nice to add a row, but realistically we should just draw the single fft state to the screen */
-	/* XXX - need to find the lowest fft bin that will be on the display, and iterate from that to the highest one, with logarithmic frequency */
 	/* XXX - and maybe draw the legend, at least a piano keyboard? */
 	/* XXX - maybe update some shared info to let Strobe::do_draw() draw text labels on the legend? */
 }
@@ -373,9 +400,9 @@ static int
 fft_freq2ind(double freq)
 {
 	if ((int)freq >= sample_rate/2) {
-		return FFT_SIZE/2;
+		return fft_size/2;
 	}
-	return ((double)FFT_SIZE)*(freq/((double)sample_rate));
+	return ((double)fft_size)*(freq/((double)sample_rate));
 }
 
 void
@@ -390,7 +417,7 @@ newdata(void)
 	if (fft_mode) {
 		for (i = nf_curr_samp; i != snd_ofs; i = (i+1)%SND_BUFSAMPS) {
 			fft_r[nf_curr_ridx++] = ((double)snd_buf[i]) / 32768.0;
-			if (nf_curr_ridx == FFT_SIZE) {
+			if (nf_curr_ridx == fft_size) {
 				do_fft();
 				do_fft_display();
 				nf_curr_ridx = 0;
@@ -593,11 +620,14 @@ update_labels(jobject this)
 
 static void
 fft_mode_changed(void) {
-	/* XXX - clear the bitmap */
+	memset(bitmap_ptr, 0, width*height*sizeof *bitmap_ptr);
 	if (fft_mode) {
-		/* XXX - set fft vertical offset to 0, and ? make sure the fft other settings are sane? */
+		fft_y = 0;
 	} else {
-		/* XXX - set strobe horizontal offset to 0 */
+		int i;
+		for (i = 0; i < NUM_STROBES; i++) {
+			strobes[i].prev_pos = 0;
+		}
 	}
 }
 
