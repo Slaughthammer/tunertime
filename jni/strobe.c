@@ -196,7 +196,7 @@ clear_col(struct strobe_rec *s, int col)
 	filled_rect(start_x, s->y, stop_x+1, s->y+s->height, 0x000000);
 }
 
-static voi
+static void
 strobe_drawnew(struct strobe_rec *s)
 {
 	static int exptab[256] = { -1, };
@@ -304,11 +304,25 @@ init_fft(void)
 	}
 }
 
+static unsigned
+lg2(int x)
+{
+	unsigned ret = 0;
+	if (x == 0) {
+		return 0;
+	}
+	while (x != 1) {
+		x >>= 1;
+		ret++;
+	}
+	return ret;
+}
+
 /* this is Fast Fourier Transform, cribbed from The Scientist and Engineer's
  * Guide to Digital Signal Processing by Steven W. Smith.
  * O(n*lg(n))
  * in: fft_r[0..n-1]
- * out: fft_i[0..n/2] */
+ * out: fft_r/i[0..n/2] */
 static void
 do_fft(void)
 {
@@ -367,7 +381,10 @@ do_fft_display(void)
 	int num_bins = ((fft_width*tot_bins)/1024);
 	int i;
 	int y1 = fft_y;
-	int yn = (height*fft_size) / (10*sample_rate)
+	int yn = (height*fft_size) / (10*sample_rate);
+	int incr;
+	double avg = 0.;
+	double scale
 /* XXX - fudge height here to account for piano-bar legend? */
 
 	if (y1 + yn > height) yn = height - y1;
@@ -376,17 +393,36 @@ do_fft_display(void)
 	if (last_bin < 0) last_bin = 0;
 	if (num_bins > tot_bins) num_bins = tot_bins;
 	if (first_bin + num_bins > tot_bins) first_bin = tot_bins - num_bins;
+	incr = num_bins / width;
+	if (incr < 1) incr = 1;
 
+		/* normalize the data, and compute the average */
 	for (i = 0; i < num_bins; i++) {
+		double t = fabs(fft_r[i+j]) + fabs(fft_i[i+j]);
+		fft_r[i+j] = t;
+		avg += fft_r[i+j];
+	}
+	avg /= (((double)num_bins) / ((double)incr));
+	scale = 64./avg;
+
+	for (i = 0; i < num_bins; i+=incr) {
 		int x1 = (i*width)/num_bins;
 		int xn = width/num_bins;
+		double val = 0;
 		unsigned color;
+		int j;
+		for (j = 0; j < incr; j++) {
+			val += fft_r[i+j];
+		}
 		if (xn < 1) xn = 1;
-		color =  /* XXX */;
+		color = val * scale;
+		if (color > 255) color = 255;
+		color |= color << 8;
 		filled_rect(x1, x1+xn, y1, y1+yn, color);
 	}
 
-	if ((fft_y + yn) >= height) {
+	fft_y += yn;
+	if (fft_y >= height) {
 		fft_y = 0;
 	}
 	
