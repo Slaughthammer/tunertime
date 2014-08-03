@@ -480,9 +480,8 @@ static jclass cl_audiorecord;
 
 static jmethodID mid_println;
 static jmethodID mid_st_do_draw;
-static jmethodID mid_st_interrupted;
+static jmethodID mid_st_is_interrupted;
 static jmethodID mid_tt_cents_to_freq;
-static jmethodID mid_tt_update_currnote;
 static jmethodID mid_ar_getsamplerate;
 static jmethodID mid_ar_read;
 
@@ -535,9 +534,8 @@ jni_init(JNIEnv *env_)
 
 	METHOD(println, printstream, "println", "(Ljava/lang/String;)V")
 	METHOD(st_do_draw, strobe, "do_draw", "([III)Z")
-	METHOD(st_interrupted, strobe, "interrupted", "()Z")
+	METHOD(st_is_interrupted, strobe, "isInterrupted", "()Z")
 	METHOD(tt_cents_to_freq, tunertime, "cents_to_freq", "(II)D")
-	METHOD(tt_update_currnote, tunertime, "update_currnote", "(I)V");
 	METHOD(ar_getsamplerate, audiorecord, "getSampleRate", "()I")
 	METHOD(ar_read, audiorecord, "read", "([SII)I")
 
@@ -725,7 +723,7 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 			fft_offset = (*env)->GetIntField(env, this, fid_st_fft_offset);
 		}
 
-		if ((*env)->CallBooleanMethod(env, this, mid_st_interrupted)) {
+		if ((*env)->CallBooleanMethod(env, this, mid_st_is_interrupted)) {
 			/* thread was interrupted, must be time for it to die */
 			println("thread interrupted");
 			return;

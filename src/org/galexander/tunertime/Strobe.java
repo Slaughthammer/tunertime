@@ -92,7 +92,7 @@ public class Strobe extends Thread {
 		if (c == null) {
 			return false;
 		}
-		if (interrupted()) {
+		if (isInterrupted()) {
 			holder.unlockCanvasAndPost(c);
 			return true;
 		}
