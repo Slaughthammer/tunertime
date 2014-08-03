@@ -185,9 +185,9 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private void set_mode(View buttons, boolean fft_mode_) {
 		buttons_holder.removeAllViews();
 		buttons_holder.addView(buttons);
+		fft_mode = fft_mode_;
 		if (strobe != null) {
 			strobe.setFft(fft_mode);
-			fft_mode = fft_mode_;
 		}
 	}
 
