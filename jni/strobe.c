@@ -384,13 +384,12 @@ do_fft_display(void)
 	int yn = (height*fft_size) / (10*sample_rate);
 	int incr;
 	double avg = 0.;
-	double scale
+	double scale;
 /* XXX - fudge height here to account for piano-bar legend? */
 
 	if (y1 + yn > height) yn = height - y1;
 
 	if (first_bin < 0) first_bin = 0;
-	if (last_bin < 0) last_bin = 0;
 	if (num_bins > tot_bins) num_bins = tot_bins;
 	if (first_bin + num_bins > tot_bins) first_bin = tot_bins - num_bins;
 	incr = num_bins / width;
@@ -398,9 +397,10 @@ do_fft_display(void)
 
 		/* normalize the data, and compute the average */
 	for (i = 0; i < num_bins; i++) {
-		double t = fabs(fft_r[i+j]) + fabs(fft_i[i+j]);
-		fft_r[i+j] = t;
-		avg += fft_r[i+j];
+		int n = i+first_bin;
+		double t = fabs(fft_r[n]) + fabs(fft_i[n]);
+		fft_r[n] = t;
+		avg += t;
 	}
 	avg /= (((double)num_bins) / ((double)incr));
 	scale = 64./avg;
@@ -412,7 +412,7 @@ do_fft_display(void)
 		unsigned color;
 		int j;
 		for (j = 0; j < incr; j++) {
-			val += fft_r[i+j];
+			val += fft_r[i+j+first_bin];
 		}
 		if (xn < 1) xn = 1;
 		color = val * scale;
@@ -498,6 +498,7 @@ static jfieldID fid_st_recorder;
 static jfieldID fid_st_record_bufsz;
 static jfieldID fid_st_labels;
 static jfieldID fid_st_ui;
+static jfieldID fid_st_fft_changed;
 static jfieldID fid_st_fft_mode;
 static jfieldID fid_st_fft_size;
 static jfieldID fid_st_fft_width;
@@ -552,6 +553,7 @@ jni_init(JNIEnv *env_)
 	FIELD(st_record_bufsz, strobe, "record_bufsz", "I")
 	FIELD(st_labels, strobe, "labels", "[Ljava/lang/String;")
 	FIELD(st_ui, strobe, "ui", "Lorg/galexander/tunertime/TunerTime;")
+	FIELD(st_fft_changed, strobe, "fft_changed", "Z")
 	FIELD(st_fft_mode, strobe, "fft_mode", "Z")
 	FIELD(st_fft_size, strobe, "fft_size", "I")
 	FIELD(st_fft_width, strobe, "fft_width", "I")
@@ -712,7 +714,8 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 			resize_bitmap();
 		}
 		if ((*env)->GetBooleanField(env, this, fid_st_fft_changed)) {
-			jboolean fft_mode_ = (*env)->GetBooleanField(fft_mode);
+			jboolean fft_mode_ = (*env)->GetBooleanField(env, this,
+							fid_st_fft_mode);
 			if (fft_mode != fft_mode_) {
 				fft_mode = fft_mode_;
 				fft_mode_changed();

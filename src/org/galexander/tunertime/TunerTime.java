@@ -110,8 +110,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				R.layout.fft_buttons, buttons_holder, false);
 		N_display = (TextView)fft_buttons.findViewById(
 				R.id.N_display);
-		zoom_display = (TextView)fft_buttons.findViewById(
-				R.id.zoom_display);
 	}
 
 	public void onResume() {

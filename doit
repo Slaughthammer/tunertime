@@ -1,1 +1,2 @@
-ndk-build && ant debug && adb -d install -r bin/TunerTime-debug.apk 
+# ndk-build && ant debug && adb -d install -r bin/TunerTime-debug.apk 
+ndk-build && ant release && cat bin/TunerTime-release.apk | ssh roach 'cat > /sdcard/buh.apk; source /sdcard/.profile; pm install -r /sdcard/buh.apk'

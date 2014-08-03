@@ -84,7 +84,7 @@ public class Strobe extends Thread {
 
 	/* Called from JNI to handle all of the Canvas interactions to draw the
 	 * bitmap.  Returns true iff the thread is interrupted and should exit. */
-	private jboolean do_draw(int[] bitmap, int w, int h) {
+	private boolean do_draw(int[] bitmap, int w, int h) {
 		if (holder == null) {
 			return false;
 		}
