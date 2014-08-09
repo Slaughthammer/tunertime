@@ -6,6 +6,8 @@ import android.graphics.*;
 import android.media.*;
 
 public class Strobe extends Thread {
+	public final static int FFT_RANGE_MULT = 65536;
+
 	private volatile int cents;
 	private volatile int harm1_mult, harm2_mult;
 	private volatile boolean cents_changed = false;
@@ -16,8 +18,8 @@ public class Strobe extends Thread {
 
 	private volatile boolean fft_mode = false;
 	private volatile int fft_size = 8192;	/* number of samples in FFT window */
-	private volatile int fft_width = 1024;	/* zoom level, 1024ths of range */
-	private volatile int fft_offset = 0;	/* offset in 1024ths of screen */
+	private volatile int fft_width = FFT_RANGE_MULT/4; /* zoom level */
+	private volatile int fft_offset = 0;	/* offset in FFT_RANGE_MULTs of screen */
 	private volatile boolean fft_changed = false;
 
 	private AudioRecord recorder = null;

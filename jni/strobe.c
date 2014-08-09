@@ -10,6 +10,7 @@
 #define SND_BUFSAMPS 32768
 
 #define MAX_FFT_SIZE 32768
+#define FFT_RANGE_MULT 65536	/* for normalized values in fft_offset et al */
 
 #define NOTES_NUM 76
 #define NOTES_LOWEST 12
@@ -67,8 +68,8 @@ static double fft_si[32];
 
 static int fft_mode = 0;
 static int fft_size = 8192;
-static int fft_width = 1024;		/* size of freq window we are viewing */
-static int fft_offset = 0;		/* offset of .., out of 1024 */
+static int fft_width = FFT_RANGE_MULT;	/* size of freq window we are viewing */
+static int fft_offset = 0;		/* offset, out of FFT_RANGE_MULT */
 static int fft_y = 0;
 
 static jint *bitmap_ptr;
@@ -376,8 +377,8 @@ do_fft(void)
 static void
 draw_legend(int y1, int h, int first_bin, int num_bins)
 {
-	int x1 = (fft_offset*width) / 1024;
-	int x2 = ((fft_offset+fft_width)*width)/1024;
+	int x1 = (fft_offset*width) / FFT_RANGE_MULT;
+	int x2 = ((fft_offset+fft_width)*width)/FFT_RANGE_MULT;
 	int y2 = y1+(h/3);
 	if (x1 < 0) x1 = 0;
 	if (x1 >= width) x1 = width-1;
@@ -390,8 +391,8 @@ draw_legend(int y1, int h, int first_bin, int num_bins)
 	if (x2 < width) {
 		filled_rect(x2,y2,width,height,0x00FF0000);
 	}
-//	first_bin = ((fft_offset*tot_bins)/1024);
-//	num_bins = ((fft_width*tot_bins)/1024);
+//	first_bin = ((fft_offset*tot_bins)/FFT_RANGE_MULT);
+//	num_bins = ((fft_width*tot_bins)/FFT_RANGE_MULT);
 }
 
 static void
@@ -411,8 +412,8 @@ do_fft_display(void)
 	yn = (disp_height*fft_size) / (10*sample_rate);
 	if (y1 + yn > disp_height) yn = disp_height - y1;
 
-	first_bin = ((fft_offset*tot_bins)/1024);
-	num_bins = ((fft_width*tot_bins)/1024);
+	first_bin = ((fft_offset*tot_bins)/FFT_RANGE_MULT);
+	num_bins = ((fft_width*tot_bins)/FFT_RANGE_MULT);
 	if (first_bin < 0) first_bin = 0;
 	if (num_bins > tot_bins) num_bins = tot_bins;
 	if (first_bin + num_bins > tot_bins) first_bin = tot_bins - num_bins;

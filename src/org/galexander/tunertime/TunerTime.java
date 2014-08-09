@@ -69,7 +69,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				if (fft_mode &&
 				    ((action == MotionEvent.ACTION_DOWN) ||
 				     (action == MotionEvent.ACTION_MOVE))) {
-					fft_offset = ((int)event.getX()) * 1024 / v.getWidth();
+					fft_offset = ((int)event.getX()) * Strobe.FFT_RANGE_MULT / v.getWidth();
 					update_status();
 					return true;
 				}
@@ -164,7 +164,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		temper[11] = prefs.getInt("temper11", 0);
 		temper_enabled = prefs.getBoolean("temper_enabled", false);
 		fft_size = prefs.getInt("fft_size", 8192);
-		fft_width = prefs.getInt("fft_width", 1024);
+		fft_width = prefs.getInt("fft_width", Strobe.FFT_RANGE_MULT/4);
 		fft_offset = prefs.getInt("fft_offset", 0);
 	}
 
@@ -371,8 +371,9 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		harm2_mult = range_limit(harm2_mult, 1, 20);
 
 		fft_size = range_limit(fft_size, 1024, 32768);
-		fft_width = range_limit(fft_width, 64, 1024);
-		fft_offset = range_limit(fft_offset, 0, 1024-fft_width);
+		fft_width = range_limit(fft_width, 512, Strobe.FFT_RANGE_MULT);
+		fft_offset = range_limit(fft_offset, 0,
+				Strobe.FFT_RANGE_MULT-fft_width);
 
 		if (strobe != null) {
 			strobe.setCents(strobe_cents, harm1_mult, harm2_mult);
