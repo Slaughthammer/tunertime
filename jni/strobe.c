@@ -418,7 +418,7 @@ do_fft_display(void)
 		color = val * scale;
 		if (color > 255) color = 255;
 		color |= color << 8;
-		filled_rect(x1, x1+xn, y1, y1+yn, color);
+		filled_rect(x1, y1, x1+xn, y1+yn, color);
 	}
 
 	fft_y += yn;
