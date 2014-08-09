@@ -63,6 +63,19 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		setContentView(R.layout.main);
 		w_strobe = (SurfaceView)findViewById(R.id.strobe);
 		w_strobe.getHolder().addCallback(this);
+		w_strobe.setOnTouchListener(new View.OnTouchListener() {
+			public boolean onTouch(View v, MotionEvent event) {
+				int action = event.getAction();
+				if (fft_mode &&
+				    ((action == MotionEvent.ACTION_DOWN) ||
+				     (action == MotionEvent.ACTION_MOVE))) {
+					fft_offset = ((int)event.getX()) * 1024 / v.getWidth();
+					update_status();
+					return true;
+				}
+				return false;
+			}
+		});
 		buttons_holder = (ViewGroup)findViewById(R.id.buttons_holder);
 		center_display = (TextView)findViewById(R.id.center_display);
 		stretch_display = (TextView)findViewById(R.id.stretch_display);
