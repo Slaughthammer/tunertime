@@ -71,6 +71,7 @@ static int fft_size = 8192;
 static int fft_width = FFT_RANGE_MULT;	/* size of freq window we are viewing */
 static int fft_offset = 0;		/* offset, out of FFT_RANGE_MULT */
 static int fft_y = 0;
+static int fft_legend_height = 0;
 
 static jint *bitmap_ptr;
 
@@ -375,11 +376,12 @@ do_fft(void)
 }
 
 static void
-draw_legend(int y1, int h, int first_bin, int num_bins)
+draw_legend(void)
 {
 	int x1 = (fft_offset*width) / FFT_RANGE_MULT;
 	int x2 = ((fft_offset+fft_width)*width)/FFT_RANGE_MULT;
-	int y2 = y1+(h/3);
+	int y1 = height-fft_legend_height;
+	int y2 = y1+(fft_legend_height/3);
 	if (x1 < 0) x1 = 0;
 	if (x1 >= width) x1 = width-1;
 	if (x2 < 0) x2 = 0;
@@ -391,6 +393,8 @@ draw_legend(int y1, int h, int first_bin, int num_bins)
 	if (x2 < width) {
 		filled_rect(x2,y2,width,height,0x00FF0000);
 	}
+		/* XXX - add piano legend */
+		/* XXX - add 7-segment display rendering of the octave counter on the piano, and maybe even the do-re-mi?? */
 //	first_bin = ((fft_offset*tot_bins)/FFT_RANGE_MULT);
 //	num_bins = ((fft_width*tot_bins)/FFT_RANGE_MULT);
 }
@@ -405,8 +409,7 @@ do_fft_display(void)
 	int incr;
 	double avg = 0.;
 	double scale;
-	int legend_height = height/12;
-	int disp_height = height-legend_height;
+	int disp_height = height-fft_legend_height;
 
 	y1 = fft_y;
 	yn = (disp_height*fft_size) / (10*sample_rate);
@@ -422,8 +425,6 @@ do_fft_display(void)
 
 	xn = (width+(num_bins-1))/num_bins;
 	if (xn < 1) xn = 1;
-
-	draw_legend(disp_height, legend_height, first_bin, num_bins);
 
 		/* normalize the data, and compute the average */
 	for (i = 0; i < num_bins; i++) {
@@ -453,11 +454,6 @@ do_fft_display(void)
 	if (fft_y >= disp_height) {
 		fft_y = 0;
 	}
-	
-	/* XXX - need to calibrate magnitude somehow */
-	/* XXX - would be nice to add a row, but realistically we should just draw the single fft state to the screen */
-	/* XXX - and maybe draw the legend, at least a piano keyboard? */
-	/* XXX - maybe update some shared info to let Strobe::do_draw() draw text labels on the legend? */
 }
 
 static int
@@ -687,11 +683,27 @@ fft_mode_changed(void) {
 	memset(bitmap_ptr, 0, width*height*sizeof *bitmap_ptr);
 	if (fft_mode) {
 		fft_y = 0;
+		fft_legend_height = height/12;
+		draw_legend();
 	} else {
 		int i;
 		for (i = 0; i < NUM_STROBES; i++) {
 			strobes[i].prev_pos = 0;
 		}
+	}
+}
+
+static void
+check_fft_mode(jobject this)
+{
+	if ((*env)->GetBooleanField(env, this, fid_st_fft_changed)) {
+		(*env)->SetBooleanField(env, this, fid_st_fft_changed,
+					JNI_FALSE);
+		fft_mode = (*env)->GetBooleanField(env, this, fid_st_fft_mode);
+		fft_size = (*env)->GetIntField(env, this, fid_st_fft_size);
+		fft_width = (*env)->GetIntField(env, this, fid_st_fft_width);
+		fft_offset = (*env)->GetIntField(env, this, fid_st_fft_offset);
+		fft_mode_changed();
 	}
 }
 
@@ -739,18 +751,6 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 			recalculate(this);
 			resize_bitmap();
 		}
-		if ((*env)->GetBooleanField(env, this, fid_st_fft_changed)) {
-			jboolean fft_mode_ = (*env)->GetBooleanField(env, this,
-							fid_st_fft_mode);
-			if (fft_mode != fft_mode_) {
-				fft_mode = fft_mode_;
-				fft_mode_changed();
-			}
-			fft_size = (*env)->GetIntField(env, this, fid_st_fft_size);
-			fft_width = (*env)->GetIntField(env, this, fid_st_fft_width);
-			fft_offset = (*env)->GetIntField(env, this, fid_st_fft_offset);
-		}
-
 		if ((*env)->CallBooleanMethod(env, this, mid_st_is_interrupted)) {
 			/* thread was interrupted, must be time for it to die */
 			println("thread interrupted");
@@ -772,6 +772,9 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 		if (bitmap) {
 			/* process sound into bitmap */
 			bitmap_ptr = (*env)->GetPrimitiveArrayCritical(env, bitmap, 0);
+
+			check_fft_mode(this);
+
 			newdata();
 			(*env)->ReleasePrimitiveArrayCritical(env, bitmap, bitmap_ptr, 0);
 			/* send bitmap to surface */
