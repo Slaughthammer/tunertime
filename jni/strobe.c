@@ -374,26 +374,52 @@ do_fft(void)
 }
 
 static void
+draw_legend(int y1, int h, int first_bin, int num_bins)
+{
+	int x1 = (fft_offset*width) / 1024;
+	int x2 = ((fft_offset+fft_width)*width)/1024;
+	int y2 = y1+(h/3);
+	if (x1 < 0) x1 = 0;
+	if (x1 >= width) x1 = width-1;
+	if (x2 < 0) x2 = 0;
+	if (x2 > width) x2 = width;
+	if (x1 > 0) {
+		filled_rect(0,y2,x1,height, 0x00FF0000);
+	}
+	filled_rect(x1,y2,x2,height, 0x0000FF00);
+	if (x2 < width) {
+		filled_rect(x2,y2,width,height,0x00FF0000);
+	}
+//	first_bin = ((fft_offset*tot_bins)/1024);
+//	num_bins = ((fft_width*tot_bins)/1024);
+}
+
+static void
 do_fft_display(void)
 {
 	int tot_bins = fft_size/2;
-	int first_bin = ((fft_offset*tot_bins)/1024);
-	int num_bins = ((fft_width*tot_bins)/1024);
+	int first_bin, num_bins;
 	int i;
-	int y1 = fft_y;
-	int yn = (height*fft_size) / (10*sample_rate);
+	int y1, yn;
 	int incr;
 	double avg = 0.;
 	double scale;
-/* XXX - fudge height here to account for piano-bar legend? */
+	int legend_height = height/12;
+	int disp_height = height-legend_height;
 
-	if (y1 + yn > height) yn = height - y1;
+	y1 = fft_y;
+	yn = (disp_height*fft_size) / (10*sample_rate);
+	if (y1 + yn > disp_height) yn = disp_height - y1;
 
+	first_bin = ((fft_offset*tot_bins)/1024);
+	num_bins = ((fft_width*tot_bins)/1024);
 	if (first_bin < 0) first_bin = 0;
 	if (num_bins > tot_bins) num_bins = tot_bins;
 	if (first_bin + num_bins > tot_bins) first_bin = tot_bins - num_bins;
 	incr = num_bins / width;
 	if (incr < 1) incr = 1;
+
+	draw_legend(disp_height, legend_height, first_bin, num_bins);
 
 		/* normalize the data, and compute the average */
 	for (i = 0; i < num_bins; i++) {
@@ -422,7 +448,7 @@ do_fft_display(void)
 	}
 
 	fft_y += yn;
-	if (fft_y >= height) {
+	if (fft_y >= disp_height) {
 		fft_y = 0;
 	}
 	
