@@ -65,6 +65,8 @@ public class Strobe extends Thread {
 		int y = 0;
 		int strobe_height = height/labels.length;
 
+		if (fft_mode) return;
+
 		if (label_p == null) {
 			label_p = new Paint();
 			label_p.setARGB(0xff,0xaa,0xaa,0xff);
