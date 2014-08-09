@@ -401,7 +401,7 @@ do_fft_display(void)
 	int tot_bins = fft_size/2;
 	int first_bin, num_bins;
 	int i;
-	int y1, yn;
+	int y1, yn, xn;
 	int incr;
 	double avg = 0.;
 	double scale;
@@ -420,6 +420,9 @@ do_fft_display(void)
 	incr = num_bins / width;
 	if (incr < 1) incr = 1;
 
+	xn = (width+(num_bins-1))/num_bins;
+	if (xn < 1) xn = 1;
+
 	draw_legend(disp_height, legend_height, first_bin, num_bins);
 
 		/* normalize the data, and compute the average */
@@ -434,14 +437,12 @@ do_fft_display(void)
 
 	for (i = 0; i < num_bins; i+=incr) {
 		int x1 = (i*width)/num_bins;
-		int xn = width/num_bins;
 		double val = 0;
 		unsigned color;
 		int j;
 		for (j = 0; j < incr; j++) {
 			val += fft_r[i+j+first_bin];
 		}
-		if (xn < 1) xn = 1;
 		color = val * scale;
 		if (color > 255) color = 255;
 		color |= color << 8;
