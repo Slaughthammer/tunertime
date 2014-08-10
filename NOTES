@@ -266,11 +266,39 @@ regular operation.  It makes the output visibly stutter.  So I intend to
 separate it out into its own mode.
 
 
+August 10, 2014.
+
+So, I implemented the FFT bit, and it looks pretty good and is kind of
+easy to use.  The only thing that sucks in terms of usability is that
+it's easy to lose your target waveform as you zoom in.  Probably
+pinch-to-zoom would be the prefered solution.
+
+I have implemented a GUI button for hamming window, and I was going to
+hold off on finishing the GUI until I knew if I really wanted that
+button.  So, I've been reading about windows.
+
+It looks like the way these things are described is by how they smear out
+a perfect sinewave into neighboring bins.  The rectangular window
+actually has just about the best peak at bin 0 (where the wave should be
+represented, I guess), going quickly down to -20dB.  But then it has a
+large range between -30dB and -40dB (-10,000x).  Other windows, such as
+Hamming and so on, have a fatter peak around bin 0, but then they quickly
+go down to -50dB (-100,000x) or even -100dB (-10,000,000,000x).
+
+I think I don't care, in fact I might prefer the rectangular window for
+this purpose because of the sharpness of its peak at 0.  -20dB (-100x) is
+already enough that it won't hardly show up in my plot, so the
+rectangular window is fine.  For other analyses, I'd care, but for this
+crude visual representation the rectangular window will do just fine.
+
+So that's my "use words to excuse yourself from implementing a Hamming
+window."
+
 XXX - FFT mode
   XXX - why does it crash when N+/N-?
   XXX - does it eat memory like crazy?
-  XXX - implement hamming window - good idea? bad idea?
   XXX - implement landscape-mode fft_buttons
+  XXX - pinch-to-zoom
 
 XXX - rotate it a bunch of times to cause a SIGSEGV...
 
