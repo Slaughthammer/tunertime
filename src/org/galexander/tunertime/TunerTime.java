@@ -485,7 +485,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			case MotionEvent.ACTION_DOWN:
 				start_x = x1;
 				start_x_width = 0;
-				start_fft_offset = fft_offset;
+				start_fft_offset = fft_offset +
+					((x1*fft_width) / v.getWidth());
 				return true;
 			case MotionEvent.ACTION_POINTER_2_DOWN:
 				start_x_width = Math.abs(x1-x2);
@@ -494,13 +495,13 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				return true;
 			case MotionEvent.ACTION_MOVE:
 				int delta_x = x1 - start_x;
-				fft_offset = start_fft_offset -
-					((fft_width * delta_x) / v.getWidth());
 				if (start_x_width != 0) {
 					int new_width = Math.abs(x1-x2);
 					fft_width = (start_fft_width *
 						start_x_width) / new_width;
 				}
+				fft_offset = start_fft_offset -
+					((x1*fft_width) / v.getWidth());
 				update_status();
 				return true;
 			}
