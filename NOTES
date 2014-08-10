@@ -265,12 +265,12 @@ I have decided the FFT is too slow to be running "in the background" of
 regular operation.  It makes the output visibly stutter.  So I intend to
 separate it out into its own mode.
 
+
 XXX - FFT mode
-  XXX - implement fft drawing
-  XXX - implement piano notes drawing
+  XXX - why does it crash when N+/N-?
+  XXX - does it eat memory like crazy?
+  XXX - implement hamming window - good idea? bad idea?
   XXX - implement landscape-mode fft_buttons
-  XXX - implement X dragging
-  XXX - is hamming window a good idea?
 
 XXX - rotate it a bunch of times to cause a SIGSEGV...
 
