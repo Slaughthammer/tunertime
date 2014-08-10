@@ -560,6 +560,8 @@ fft_draw_piano(jobject this)
 			last_x = x0 + (SEVEN_WID*2);
 		}
 	}
+
+	(*env)->DeleteLocalRef(env, ui);
 }
 
 static void
