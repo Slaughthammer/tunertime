@@ -194,6 +194,74 @@ filled_rect(int x1, int y1, int x2, int y2, unsigned color)
 	}
 }
 
+
+#define SEVEN_WID (width/50)
+/* seven segment display:
+ *      0x01
+ *  0x02    0x04
+ *      0x08
+ *  0x10    0x20
+ *      0x40
+ */
+static unsigned
+char_to_bits(char c)
+{
+	switch (c) {
+		case '0': return 0x77;
+		case '1': return 0x24;
+		case '2': return 0x5D;
+		case '3': return 0x6D;
+		case '4': return 0x2E;
+		case '5': return 0x6B;
+		case '6': return 0x7B;
+		case '7': return 0x25;
+		case '8': return 0x7F;
+		case '9': return 0x6F;
+		case 'A': return 0x3F;
+		case 'B': return 0x7A;
+		case 'C': return 0x53;
+		case 'D': return 0x7C;
+		case 'E': return 0x5B;
+		case 'F': return 0x1B;
+		case 'G': return 0x73;
+	}
+	return 0x28;
+}
+
+static void
+seven_seg(int x, int y, char c, unsigned color)
+{
+	unsigned bits = char_to_bits(c);
+	int l1,l2;
+	int x1,x2,x3,x4;
+	int y1,y2,y3,y4,y5,y6;
+
+	l1 = SEVEN_WID/5;
+	if (l1 < 1) l1 = 1;
+	l2 = SEVEN_WID-(3*l1);
+	if (l2 < 1) l2 = 1;
+
+	x1 = x;
+	x2 = x1+l1;
+	x3 = x2+l2;
+	x4 = x3+l1;
+
+	y1 = y;
+	y2 = y1+l1;
+	y3 = y2+l2;
+	y4 = y3+l1;
+	y5 = y4+l2;
+	y6 = y5+l1;
+
+	if (bits & 0x01) filled_rect(x2,y1,x3,y2, color);
+	if (bits & 0x02) filled_rect(x1,y2,x2,y3, color);
+	if (bits & 0x04) filled_rect(x3,y2,x4,y3, color);
+	if (bits & 0x08) filled_rect(x2,y3,x3,y4, color);
+	if (bits & 0x10) filled_rect(x1,y4,x2,y5, color);
+	if (bits & 0x10) filled_rect(x3,y4,x4,y5, color);
+	if (bits & 0x40) filled_rect(x2,y5,x3,y6, color);
+}
+
 #define NUM_CLEAR 25	/* number of columns to clear at once */
 static void
 clear_col(struct strobe_rec *s, int col)
@@ -490,7 +558,10 @@ fft_draw_piano(jobject this)
 		if (x2 > width) x2 = width;
 
 		filled_rect(x1, y1, x2, y2, 0x00FFFFFF);
-	/* XXX - add 7-segment display rendering of the octave counter on the piano, and maybe even the do-re-mi?? */
+		if (w*3 >= SEVEN_WID) {
+			seven_seg(x, y1, name[0], 0x007777FF);
+			seven_seg(x+SEVEN_WID, y1, (i/12)+'0', 0x0077FF77);
+		}
 	}
 }
 
