@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+    <TextView
+	android:layout_height="wrap_content"
+	android:layout_width="fill_parent"
+	android:gravity="center"
+	android:lines="1"
+	android:singleLine="true"
+	android:textAppearance="?android:attr/textAppearanceMedium"
+	android:text="N" />
+    <LinearLayout
+	android:layout_height="1dp"
+	android:layout_width="fill_parent"
+	android:layout_weight="1"
+	android:orientation="horizontal">
+	<Button
+	    android:layout_height="fill_parent"
+	    android:layout_width="1dp"
+	    android:layout_weight="1"
+	    android:text="-"
+	    android:textAppearance="?android:attr/textAppearanceMedium"
+	    android:onClick="N_decr" />
+	<TextView android:id="@+id/N_display"
+	    android:layout_height="fill_parent"
+	    android:layout_width="1dp"
+	    android:layout_weight="2"
+	    android:gravity="center"
+	    android:lines="1"
+	    android:singleLine="true"
+	    android:textAppearance="?android:attr/textAppearanceLarge" 
+	    android:textColor="#fc4" />
+	<Button
+	    android:layout_height="fill_parent"
+	    android:layout_width="1dp"
+	    android:layout_weight="1"
+	    android:text="+"
+	    android:textAppearance="?android:attr/textAppearanceMedium"
+	    android:onClick="N_incr" />
+    </LinearLayout>
+</LinearLayout>

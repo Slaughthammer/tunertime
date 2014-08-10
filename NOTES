@@ -295,7 +295,8 @@ So that's my "use words to excuse yourself from implementing a Hamming
 window."
 
 XXX - FFT mode
-  XXX - implement landscape-mode fft_buttons
+  XXX - document
+  XXX - upload
 
 XXX - rotate it a bunch of times to cause a SIGSEGV...
 
