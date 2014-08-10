@@ -317,14 +317,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		update_status();
 	}
 
-	public void zoom_incr(View v) {
-		fft_width /= 2;
-		update_status();
-	}
-	public void zoom_decr(View v) {
-		fft_width *= 2;
-		update_status();
-	}
 	public void N_incr(View v) {
 		fft_size *= 2;
 		update_status();
