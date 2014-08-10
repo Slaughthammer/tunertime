@@ -410,35 +410,94 @@ do_fft(void)
 	}
 }
 
+static int
+fft_freq2ind(double freq)
+{
+	if ((int)freq >= sample_rate/2) {
+		return fft_size/2;
+	}
+	return ((double)fft_size)*(freq/((double)sample_rate));
+}
+
 static void
-draw_legend(void)
+fft_draw_slider(void)
 {
 	int x1 = (fft_offset*width) / FFT_RANGE_MULT;
 	int x2 = ((fft_offset+fft_width)*width)/FFT_RANGE_MULT;
-	int y1 = height-fft_legend_height;
-	int y2 = y1+(fft_legend_height/3);
+	int y1 = height-(fft_legend_height/3);
+
 	if (x1 < 0) x1 = 0;
 	if (x1 >= width) x1 = width-1;
 	if (x2 < 0) x2 = 0;
 	if (x2 > width) x2 = width;
 	if (x1 > 0) {
-		filled_rect(0,y2,x1,height, 0x00FF0000);
+		filled_rect(0,y1,x1,height, 0x00FF0000);
 	}
-	filled_rect(x1,y2,x2,height, 0x0000FF00);
+	filled_rect(x1,y1,x2,height, 0x0000FF00);
 	if (x2 < width) {
-		filled_rect(x2,y2,width,height,0x00FF0000);
+		filled_rect(x2,y1,width,height,0x00FF0000);
 	}
-		/* XXX - add piano legend */
-		/* XXX - add 7-segment display rendering of the octave counter on the piano, and maybe even the do-re-mi?? */
-//	first_bin = ((fft_offset*tot_bins)/FFT_RANGE_MULT);
-//	num_bins = ((fft_width*tot_bins)/FFT_RANGE_MULT);
+}
+
+#define COMPUTE_BINS \
+	tot_bins = fft_size/2; \
+	first_bin = ((fft_offset*tot_bins)/FFT_RANGE_MULT); \
+	num_bins = ((fft_width*tot_bins)/FFT_RANGE_MULT); \
+	if (first_bin < 0) first_bin = 0; \
+	if (num_bins > tot_bins) num_bins = tot_bins; \
+	if (first_bin + num_bins > tot_bins) first_bin = tot_bins - num_bins;
+
+static void
+fft_draw_piano(jobject this)
+{
+	jobject ui = (*env)->GetObjectField(env, this, fid_st_ui);
+	int y1,y2;
+	int tot_bins, first_bin, num_bins;
+	double next_freq;
+	int i;
+
+	y1 = height-fft_legend_height;
+	y2 = height-(fft_legend_height/3);
+
+	COMPUTE_BINS
+
+	next_freq = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)0, (jint)1);
+	for (i = 0; i < 88; i++) {
+		double freq;
+		int bin1, x1, bin2, x2, x, w;
+		static const char *(names[12]) = { "A", NULL, "B", "C", NULL, "D", NULL, "E", "F", NULL, "G", NULL };
+		const char *name = names[i % 12];
+
+		freq = next_freq;
+		next_freq = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)(i+1)*100, (jint)1);
+
+		if (!name) continue;		/* don't draw black keys */
+
+		bin1 = fft_freq2ind(freq);
+		if (bin1 < first_bin) continue;
+		if (bin1 >= first_bin+num_bins) continue;
+
+		bin2 = fft_freq2ind(next_freq);
+
+		x1 = ((bin1-first_bin)*width) / num_bins;
+		x2 = ((bin2-first_bin)*width) / num_bins;
+		x = x1;
+		w = (x2-x1) / 6;
+		if (w < 1) w = 1;
+		x1 = x - w;
+		x2 = x + w;
+		if (x1 < 0) x1 = 0;
+		if (x2 > width) x2 = width;
+
+		filled_rect(x1, y1, x2, y2, 0x00FFFFFF);
+	/* XXX - add 7-segment display rendering of the octave counter on the piano, and maybe even the do-re-mi?? */
+	}
 }
 
 static void
 do_fft_display(void)
 {
-	int tot_bins = fft_size/2;
-	int first_bin, num_bins;
+	int tot_bins, first_bin, num_bins;
 	int i;
 	int y1, yn, xn;
 	int incr;
@@ -450,11 +509,8 @@ do_fft_display(void)
 	yn = (disp_height*fft_size) / (10*sample_rate);
 	if (y1 + yn > disp_height) yn = disp_height - y1;
 
-	first_bin = ((fft_offset*tot_bins)/FFT_RANGE_MULT);
-	num_bins = ((fft_width*tot_bins)/FFT_RANGE_MULT);
-	if (first_bin < 0) first_bin = 0;
-	if (num_bins > tot_bins) num_bins = tot_bins;
-	if (first_bin + num_bins > tot_bins) first_bin = tot_bins - num_bins;
+	COMPUTE_BINS
+
 	incr = num_bins / width;
 	if (incr < 1) incr = 1;
 
@@ -489,15 +545,6 @@ do_fft_display(void)
 	if (fft_y >= disp_height) {
 		fft_y = 0;
 	}
-}
-
-static int
-fft_freq2ind(double freq)
-{
-	if ((int)freq >= sample_rate/2) {
-		return fft_size/2;
-	}
-	return ((double)fft_size)*(freq/((double)sample_rate));
 }
 
 void
@@ -677,12 +724,14 @@ update_labels(jobject this)
 }
 
 static void
-fft_mode_changed(void) {
+fft_mode_changed(jobject this)
+{
 	memset(bitmap_ptr, 0, width*height*sizeof *bitmap_ptr);
 	if (fft_mode) {
 		fft_y = 0;
 		fft_legend_height = height/12;
-		draw_legend();
+		fft_draw_slider();
+		fft_draw_piano(this);
 	} else {
 		int i;
 		for (i = 0; i < NUM_STROBES; i++) {
@@ -694,15 +743,16 @@ fft_mode_changed(void) {
 static void
 check_fft_mode(jobject this)
 {
-	if ((*env)->GetBooleanField(env, this, fid_st_fft_changed)) {
-		(*env)->SetBooleanField(env, this, fid_st_fft_changed,
-					JNI_FALSE);
-		fft_mode = (*env)->GetBooleanField(env, this, fid_st_fft_mode);
-		fft_size = (*env)->GetIntField(env, this, fid_st_fft_size);
-		fft_width = (*env)->GetIntField(env, this, fid_st_fft_width);
-		fft_offset = (*env)->GetIntField(env, this, fid_st_fft_offset);
-		fft_mode_changed();
+	if (!(*env)->GetBooleanField(env, this, fid_st_fft_changed)) {
+		return;
 	}
+
+	(*env)->SetBooleanField(env, this, fid_st_fft_changed, JNI_FALSE);
+	fft_mode = (*env)->GetBooleanField(env, this, fid_st_fft_mode);
+	fft_size = (*env)->GetIntField(env, this, fid_st_fft_size);
+	fft_width = (*env)->GetIntField(env, this, fid_st_fft_width);
+	fft_offset = (*env)->GetIntField(env, this, fid_st_fft_offset);
+	fft_mode_changed(this);
 }
 
 /* This is the entry point from the Java code...it is a loop that checks for
