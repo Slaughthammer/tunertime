@@ -295,10 +295,8 @@ So that's my "use words to excuse yourself from implementing a Hamming
 window."
 
 XXX - FFT mode
-  XXX - why does it crash when N+/N-?
-  XXX - does it eat memory like crazy?
-  XXX - implement landscape-mode fft_buttons
   XXX - pinch-to-zoom
+  XXX - implement landscape-mode fft_buttons
 
 XXX - rotate it a bunch of times to cause a SIGSEGV...
 
