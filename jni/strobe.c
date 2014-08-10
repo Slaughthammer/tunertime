@@ -519,13 +519,14 @@ static void
 fft_draw_piano(jobject this)
 {
 	jobject ui = (*env)->GetObjectField(env, this, fid_st_ui);
-	int y1,y2;
+	int y1,y2,y3;
 	int tot_bins, first_bin, num_bins;
 	double next_freq;
 	int i;
 
-	y1 = height-fft_legend_height;
-	y2 = height-(fft_legend_height/3);
+	y1 = height - fft_legend_height;
+	y3 = height - (fft_legend_height/3);
+	y2 = y3 - (fft_legend_height/4);
 
 	COMPUTE_BINS
 
@@ -553,15 +554,15 @@ fft_draw_piano(jobject this)
 		x2 = ((bin2-first_bin)*width) / num_bins;
 		x = x1;
 		w = x2-x1;
-		x1 = x;
-		x2 = x + 1;
+		x1 = x-1;
+		x2 = x + 2;
 		if (x1 < 0) x1 = 0;
 		if (x2 > width) x2 = width;
 
-		filled_rect(x1, y1, x2, y2, 0x00FFFFFF);
+		filled_rect(x1, y2, x2, y3, 0x00FFFFFF);
 		if (w > (SEVEN_WID*2)) {
-			seven_seg(x+2, y1, name[0], 0x00AAAAFF);
-			seven_seg(x+SEVEN_WID, y1, (i/12)+'0', 0x00AAAAFF);
+			seven_seg(x-(SEVEN_WID-1), y1, name[0], 0x00AAAAFF);
+			seven_seg(x+1, y1, (i/12)+'0', 0x00AAAAFF);
 		}
 	}
 }
@@ -801,7 +802,7 @@ fft_mode_changed(jobject this)
 	memset(bitmap_ptr, 0, width*height*sizeof *bitmap_ptr);
 	if (fft_mode) {
 		fft_y = 0;
-		fft_legend_height = height/12;
+		fft_legend_height = height/10;
 		fft_draw_slider();
 		fft_draw_piano(this);
 	} else {
