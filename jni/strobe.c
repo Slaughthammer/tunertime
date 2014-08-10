@@ -732,8 +732,6 @@ recalculate(jobject this)
 	int sheight = height/NUM_STROBES;
 	int y = 0;
 	jobject ui;
-	static double old_a5 = 0.0;	/* roughly, 880 */
-	double a5;
 
 	ui = (*env)->GetObjectField(env, this, fid_st_ui);
 
@@ -745,27 +743,6 @@ recalculate(jobject this)
 		strobe_recalc(&strobes[i]);
 
 		y += sheight;
-	}
-
-	a5 = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)6000, (jint)1);
-	if (old_a5 != a5) {
-		/* recalculate note filters too */
-                /* XXX - do i need to know a5 change now?  maybe to redraw the legend on the bottom of the screen? */
-/* 
-		int last_fft, curr_fft;
-		last_fft = fft_freq2ind((*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)(NOTES_LOWEST-1)*100, (jint)1));
-		for (i = 0; i < NOTES_NUM; i++) {
-			struct note_filter_rec *nf = &notefilts[i];
-			nf->freq = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)(i+NOTES_LOWEST)*100, (jint)1);
-			curr_fft = fft_freq2ind(nf->freq);
-			nf->fft_bin_lo = (last_fft + curr_fft) / 2;
-			if (i) notefilts[i-1].fft_bin_hi = nf->fft_bin_lo-1;
-			nf->output = 0.0;
-			last_fft = curr_fft;
-		}
-		notefilts[i-1].fft_bin_hi = fft_freq2ind((*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)(i+NOTES_LOWEST)*100, (jint)1));
-*/
-		old_a5 = a5;
 	}
 
 	(*env)->DeleteLocalRef(env, ui);
