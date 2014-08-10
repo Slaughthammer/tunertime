@@ -449,6 +449,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		strobe.setSurface(holder, width, height);
 		strobe.setCents(strobe_cents, harm1_mult, harm2_mult);
 		strobe.setFft(fft_mode);
+		strobe.setFftParms(fft_size, fft_width, fft_offset);
 		strobe.start();
 	}
 
