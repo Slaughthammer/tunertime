@@ -245,6 +245,7 @@ seven_seg(int x, int y, char c, unsigned color)
 	x2 = x1+l1;
 	x3 = x2+l2;
 	x4 = x3+l1;
+	if ((x1 < 0) || (x4 > width)) return;
 
 	y1 = y;
 	y2 = y1+l1;
@@ -252,6 +253,7 @@ seven_seg(int x, int y, char c, unsigned color)
 	y4 = y3+l1;
 	y5 = y4+l2;
 	y6 = y5+l1;
+	if ((y1 < 0) || (y6 > height)) return;
 
 	if (bits & 0x01) filled_rect(x2,y1,x3,y2, color);
 	if (bits & 0x02) filled_rect(x1,y2,x2,y3, color);
