@@ -533,8 +533,8 @@ fft_draw_piano(jobject this)
 	COMPUTE_BINS
 
 	for (i = 0; i < 88; i++) {
-		double freq;
-		int bin, x, x0, x1, x2;
+		double freq, bin;
+		int x, x0, x1, x2;
 		static const char *(names[12]) = { "A", NULL, "B", "C", NULL, "D", NULL, "E", "F", NULL, "G", NULL };
 		const char *name = names[i % 12];
 
@@ -542,11 +542,11 @@ fft_draw_piano(jobject this)
 
 		freq = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)i*100, (jint)1);
 
-		bin = fft_freq2ind(freq);
-		if (bin < first_bin) continue;
-		if (bin >= first_bin+num_bins) continue;
+		bin = ((double)fft_size)*(freq/((double)sample_rate));
+		if ((int)bin < first_bin) continue;
+		if ((int)bin >= first_bin+num_bins) continue;
 
-		x = ((bin-first_bin)*width) / num_bins;
+		x = (int)(((bin-(double)first_bin)*(double)width) / (double)num_bins);
 		x0 = x - (SEVEN_WID-1);
 		x1 = x - 1;
 		x2 = x + 2;
