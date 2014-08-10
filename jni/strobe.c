@@ -627,7 +627,7 @@ newdata(void)
 	if (fft_mode) {
 		for (i = nf_curr_samp; i != snd_ofs; i = (i+1)%SND_BUFSAMPS) {
 			fft_r[nf_curr_ridx++] = ((double)snd_buf[i]) / 32768.0;
-			if (nf_curr_ridx == fft_size) {
+			if (nf_curr_ridx >= fft_size) {
 				do_fft();
 				do_fft_display();
 				nf_curr_ridx = 0;
