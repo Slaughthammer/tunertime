@@ -11,6 +11,7 @@
 
 #define MAX_FFT_SIZE 32768
 #define FFT_RANGE_MULT 65536	/* for normalized values in fft_offset et al */
+#define FFT_SECONDS 5		/* 5 seconds on the screen at once */
 
 #define NOTES_NUM 76
 #define NOTES_LOWEST 12
@@ -576,7 +577,7 @@ do_fft_display(void)
 	int disp_height = height-fft_legend_height;
 
 	y1 = fft_y;
-	yn = (disp_height*fft_size) / (10*sample_rate);
+	yn = (disp_height*fft_size) / (FFT_SECONDS*sample_rate);
 	if (y1 + yn > disp_height) yn = disp_height - y1;
 
 	COMPUTE_BINS
