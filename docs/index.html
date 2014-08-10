@@ -221,6 +221,29 @@ harmonics instead, you can select them on this panel.</p>
 factor is non-zero then the distance between the fundamental and 2nd
 harmonic will not be exactly a multiple of 2.0.</p>
 
+<h3>FFT</h3>
+
+<p>There is also an FFT mode.  FFT stands for Fast Fourier Transform,
+which is a technique for converting a time-domain signal (like a
+waveform) into a frequency-domain symbol (like a spectrum analyzer).
+The FFT mode is not really useful directly for tuning, but it can help
+you get in the ballpark.  Or you can use it to determine the frequency of
+a totally unknown signal, or to examine the harmonics of a waveform.</p>
+
+<p>In FFT mode, the vertical axis is time, and the horizontal axis is
+frequency.  Lower frequencies are to the left.</p>
+
+<p>The only tuning parameter is "N", which is the size of the block that
+the FFT operates on.  The rule is that bigger N means more precise
+frequency measurements for tones that do not change over time.  Smaller N
+means faster response and better display of tones that do change over
+time.</p>
+
+<p>To zoom or scroll within the frequency range, use touch or pinch
+motions.</p>
+
+<p>The frequencies corresponding to the 88 keys on a piano are labelled
+along the bottom of the display, with a white line for each of them.</p>
 
 <h2>Stretch factor</h2>
 
@@ -489,6 +512,8 @@ showing that it appears in all frequencies -->
 
 
 <h2>Change log</h2>
+
+<p><b>2014/08/10 Version 1.3:</b> Add FFT mode, fix crash.</p>
 
 <p><b>2014/03/20 Version 1.2:</b> Fix crash in landscape orientation.</p>
 
