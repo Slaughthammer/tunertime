@@ -195,7 +195,7 @@ filled_rect(int x1, int y1, int x2, int y2, unsigned color)
 }
 
 
-#define SEVEN_WID (width/50)
+#define SEVEN_WID (width/40)
 /* seven segment display:
  *      0x01
  *  0x02    0x04
@@ -537,9 +537,11 @@ fft_draw_piano(jobject this)
 		const char *name = names[i % 12];
 
 		freq = next_freq;
+		if (!names[(i+1)%12]) {
+			/* skip black keys */
+			i++;
+		}
 		next_freq = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)(i+1)*100, (jint)1);
-
-		if (!name) continue;		/* don't draw black keys */
 
 		bin1 = fft_freq2ind(freq);
 		if (bin1 < first_bin) continue;
@@ -550,17 +552,16 @@ fft_draw_piano(jobject this)
 		x1 = ((bin1-first_bin)*width) / num_bins;
 		x2 = ((bin2-first_bin)*width) / num_bins;
 		x = x1;
-		w = (x2-x1) / 6;
-		if (w < 1) w = 1;
-		x1 = x - w;
-		x2 = x + w;
+		w = x2-x1;
+		x1 = x;
+		x2 = x + 1;
 		if (x1 < 0) x1 = 0;
 		if (x2 > width) x2 = width;
 
 		filled_rect(x1, y1, x2, y2, 0x00FFFFFF);
-		if (w*3 >= SEVEN_WID) {
-			seven_seg(x, y1, name[0], 0x007777FF);
-			seven_seg(x+SEVEN_WID, y1, (i/12)+'0', 0x0077FF77);
+		if (w > (SEVEN_WID*2)) {
+			seven_seg(x+2, y1, name[0], 0x00AAAAFF);
+			seven_seg(x+SEVEN_WID, y1, (i/12)+'0', 0x00AAAAFF);
 		}
 	}
 }
