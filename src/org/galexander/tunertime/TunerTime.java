@@ -63,31 +63,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		setContentView(R.layout.main);
 		w_strobe = (SurfaceView)findViewById(R.id.strobe);
 		w_strobe.getHolder().addCallback(this);
-		w_strobe.setOnTouchListener(new View.OnTouchListener() {
-			private int start_x = 0;
-			private int start_fft_offset = 0;
-			public boolean onTouch(View v, MotionEvent event) {
-				int action = event.getAction();
-				if (!fft_mode) {
-					return false;
-				}
-				if (action == MotionEvent.ACTION_DOWN) {
-					start_x = (int)event.getX();
-					start_fft_offset = fft_offset;
-					return true;
-				}
-				if (action == MotionEvent.ACTION_MOVE) {
-					int delta_x = ((int)event.getX()) -
-							start_x;
-					fft_offset = start_fft_offset -
-							((fft_width * delta_x) /
-							 v.getWidth());
-					update_status();
-					return true;
-				}
-				return false;
-			}
-		});
+		w_strobe.setOnTouchListener(new strobe_listener());
 		buttons_holder = (ViewGroup)findViewById(R.id.buttons_holder);
 		center_display = (TextView)findViewById(R.id.center_display);
 		stretch_display = (TextView)findViewById(R.id.stretch_display);
@@ -488,6 +464,29 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		if (strobe != null) {
 			strobe.setSurface(null, 0, 0);
 			stop_strobe();
+		}
+	}
+
+	private class strobe_listener implements View.OnTouchListener {
+		private int start_x = 0;
+		private int start_fft_offset = 0;
+		public boolean onTouch(View v, MotionEvent event) {
+			if (!fft_mode) {
+				return false;
+			}
+			switch (event.getAction()) {
+			case MotionEvent.ACTION_DOWN:
+				start_x = (int)event.getX();
+				start_fft_offset = fft_offset;
+				return true;
+			case MotionEvent.ACTION_MOVE:
+				int delta_x = ((int)event.getX()) - start_x;
+				fft_offset = start_fft_offset -
+					((fft_width * delta_x) / v.getWidth());
+				update_status();
+				return true;
+			}
+			return false;
 		}
 	}
 }
