@@ -470,19 +470,45 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private class strobe_listener implements View.OnTouchListener {
 		private int start_x = 0;
 		private int start_fft_offset = 0;
+		private int start_x_width = 0;
+		private int start_fft_width = 0;
 		public boolean onTouch(View v, MotionEvent event) {
+			int i;
+			int x1 = -1, x2 = -1;
 			if (!fft_mode) {
 				return false;
 			}
+			if ((i = event.findPointerIndex(0)) != -1) {
+				x1 = (int)event.getX(i);
+			} else {
+				start_x_width = 0;
+				return false;
+			}
+			if ((i = event.findPointerIndex(1)) != -1) {
+				x2 = (int)event.getX(i);
+			} else {
+				start_x_width = 0;
+			}
 			switch (event.getAction()) {
 			case MotionEvent.ACTION_DOWN:
-				start_x = (int)event.getX();
+				start_x = x1;
+				start_x_width = 0;
 				start_fft_offset = fft_offset;
 				return true;
+			case MotionEvent.ACTION_POINTER_2_DOWN:
+				start_x_width = Math.abs(x1-x2);
+				if (start_x_width < 10) start_x_width = 10;
+				start_fft_width = fft_width;
+				return true;
 			case MotionEvent.ACTION_MOVE:
-				int delta_x = ((int)event.getX()) - start_x;
+				int delta_x = x1 - start_x;
 				fft_offset = start_fft_offset -
 					((fft_width * delta_x) / v.getWidth());
+				if (start_x_width != 0) {
+					int new_width = Math.abs(x1-x2);
+					fft_width = (start_fft_width *
+						start_x_width) / new_width;
+				}
 				update_status();
 				return true;
 			}
