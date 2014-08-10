@@ -598,7 +598,7 @@ do_fft_display(void)
 		avg += t;
 	}
 	avg /= (((double)num_bins) / ((double)incr));
-	scale = 64./avg;
+	scale = 32./avg;
 
 	for (i = 0; i < num_bins; i+=incr) {
 		int x1 = (i*width)/num_bins;
