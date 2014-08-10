@@ -258,7 +258,7 @@ seven_seg(int x, int y, char c, unsigned color)
 	if (bits & 0x04) filled_rect(x3,y2,x4,y3, color);
 	if (bits & 0x08) filled_rect(x2,y3,x3,y4, color);
 	if (bits & 0x10) filled_rect(x1,y4,x2,y5, color);
-	if (bits & 0x10) filled_rect(x3,y4,x4,y5, color);
+	if (bits & 0x20) filled_rect(x3,y4,x4,y5, color);
 	if (bits & 0x40) filled_rect(x2,y5,x3,y6, color);
 }
 
