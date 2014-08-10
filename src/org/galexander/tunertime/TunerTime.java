@@ -48,7 +48,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private TextView harm2_display;
 	private View fft_buttons;
 	private TextView N_display;
-	/* XXX - need to monitor the X position of any clicks within the display area, for scrolling */
 
 	private Strobe strobe = null;
 	private SurfaceHolder holder = null;
