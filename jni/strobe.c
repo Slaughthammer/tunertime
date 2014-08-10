@@ -523,7 +523,7 @@ fft_draw_piano(jobject this)
 	jobject ui = (*env)->GetObjectField(env, this, fid_st_ui);
 	int y1,y2,y3;
 	int tot_bins, first_bin, num_bins;
-	double next_freq;
+	int last_x = 0;
 	int i;
 
 	y1 = height - fft_legend_height;
@@ -532,39 +532,32 @@ fft_draw_piano(jobject this)
 
 	COMPUTE_BINS
 
-	next_freq = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)0, (jint)1);
 	for (i = 0; i < 88; i++) {
 		double freq;
-		int bin1, x1, bin2, x2, x, w;
+		int bin, x, x0, x1, x2;
 		static const char *(names[12]) = { "A", NULL, "B", "C", NULL, "D", NULL, "E", "F", NULL, "G", NULL };
 		const char *name = names[i % 12];
 
-		freq = next_freq;
-		if (!names[(i+1)%12]) {
-			/* skip black keys */
-			i++;
-		}
-		next_freq = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)(i+1)*100, (jint)1);
+		if (!name) continue;		/* skip black keys */
 
-		bin1 = fft_freq2ind(freq);
-		if (bin1 < first_bin) continue;
-		if (bin1 >= first_bin+num_bins) continue;
+		freq = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)i*100, (jint)1);
 
-		bin2 = fft_freq2ind(next_freq);
+		bin = fft_freq2ind(freq);
+		if (bin < first_bin) continue;
+		if (bin >= first_bin+num_bins) continue;
 
-		x1 = ((bin1-first_bin)*width) / num_bins;
-		x2 = ((bin2-first_bin)*width) / num_bins;
-		x = x1;
-		w = x2-x1;
-		x1 = x-1;
+		x = ((bin-first_bin)*width) / num_bins;
+		x0 = x - (SEVEN_WID-1);
+		x1 = x - 1;
 		x2 = x + 2;
 		if (x1 < 0) x1 = 0;
 		if (x2 > width) x2 = width;
 
 		filled_rect(x1, y2, x2, y3, 0x00FFFFFF);
-		if (w > (SEVEN_WID*2)) {
-			seven_seg(x-(SEVEN_WID-1), y1, name[0], 0x00AAAAFF);
-			seven_seg(x+1, y1, (i/12)+'0', 0x00AAAAFF);
+		if (x0 >= last_x) {
+			seven_seg(x0, y1, name[0], 0x00AAAAFF);
+			seven_seg(x0+SEVEN_WID, y1, (i/12)+'0', 0x00AAAAFF);
+			last_x = x0 + (SEVEN_WID*2);
 		}
 	}
 }
