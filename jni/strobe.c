@@ -74,13 +74,48 @@ static int fft_y = 0;
 static int fft_legend_height = 0;
 
 static jint *bitmap_ptr;
-
+#define COLOR_VALUE(r,g,b) (((r)<<16)|((g)<<8)|(b))
+#define DRAW_PIXEL(x,y,c) bitmap_ptr[(x)+((y)*width)] = (c)
 
 static void println(const char *fmt, ...);
 
 
-#define COLOR_VALUE(r,g,b) (((r)<<16)|((g)<<8)|(b))
-#define DRAW_PIXEL(x,y,c) bitmap_ptr[(x)+((y)*width)] = (c)
+static JNIEnv *env;
+
+static jclass cl_system;
+static jclass cl_printstream;
+static jclass cl_string;
+static jclass cl_strobe;
+static jclass cl_tunertime;
+static jclass cl_audiorecord;
+
+static jmethodID mid_println;
+static jmethodID mid_st_do_draw;
+static jmethodID mid_st_is_interrupted;
+static jmethodID mid_tt_cents_to_freq;
+static jmethodID mid_ar_getsamplerate;
+static jmethodID mid_ar_read;
+
+static jfieldID fid_out;
+static jfieldID fid_st_cents;
+static jfieldID fid_st_harm1_mult;
+static jfieldID fid_st_harm2_mult;
+static jfieldID fid_st_cents_changed;
+static jfieldID fid_st_width;
+static jfieldID fid_st_height;
+static jfieldID fid_st_surface_changed;
+static jfieldID fid_st_recorder;
+static jfieldID fid_st_record_bufsz;
+static jfieldID fid_st_labels;
+static jfieldID fid_st_ui;
+static jfieldID fid_st_fft_changed;
+static jfieldID fid_st_fft_mode;
+static jfieldID fid_st_fft_size;
+static jfieldID fid_st_fft_width;
+static jfieldID fid_st_fft_offset;
+
+static jintArray bitmap;
+
 
 
 static void
@@ -491,43 +526,6 @@ newdata(void)
 	}
 }
 
-
-
-static JNIEnv *env;
-
-static jclass cl_system;
-static jclass cl_printstream;
-static jclass cl_string;
-static jclass cl_strobe;
-static jclass cl_tunertime;
-static jclass cl_audiorecord;
-
-static jmethodID mid_println;
-static jmethodID mid_st_do_draw;
-static jmethodID mid_st_is_interrupted;
-static jmethodID mid_tt_cents_to_freq;
-static jmethodID mid_ar_getsamplerate;
-static jmethodID mid_ar_read;
-
-static jfieldID fid_out;
-static jfieldID fid_st_cents;
-static jfieldID fid_st_harm1_mult;
-static jfieldID fid_st_harm2_mult;
-static jfieldID fid_st_cents_changed;
-static jfieldID fid_st_width;
-static jfieldID fid_st_height;
-static jfieldID fid_st_surface_changed;
-static jfieldID fid_st_recorder;
-static jfieldID fid_st_record_bufsz;
-static jfieldID fid_st_labels;
-static jfieldID fid_st_ui;
-static jfieldID fid_st_fft_changed;
-static jfieldID fid_st_fft_mode;
-static jfieldID fid_st_fft_size;
-static jfieldID fid_st_fft_width;
-static jfieldID fid_st_fft_offset;
-
-static jintArray bitmap;
 
 
 /* sets up the tokens needed to reference Java things */
