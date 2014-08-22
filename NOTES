@@ -295,6 +295,8 @@ So that's my "use words to excuse yourself from implementing a Hamming
 window."
 
 XXX - 1s tics in the fft mode
+XXX - button to toggle scale between notes and hz
+XXX - label for FFT/strobe
 XXX - bring back pause mode?
 
 XXX - rotate it a bunch of times to cause a SIGSEGV...  can this still happen??
