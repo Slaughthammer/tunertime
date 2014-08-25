@@ -76,7 +76,8 @@ static int fft_legend_height = 0;
 
 static jint *bitmap_ptr;
 #define COLOR_VALUE(r,g,b) (((r)<<16)|((g)<<8)|(b))
-#define DRAW_PIXEL(x,y,c) bitmap_ptr[(x)+((y)*width)] = (c)
+#define ADDR_PIXEL(x,y) (&bitmap_ptr[(x)+((y)*width)])
+#define DRAW_PIXEL(x,y,c) *ADDR_PIXEL((x),(y)) = (c)
 
 static void println(const char *fmt, ...);
 
@@ -195,8 +196,20 @@ filled_rect(int x1, int y1, int x2, int y2, unsigned color)
 	}
 }
 
+static void
+or_vline(int x, int y1, int y2, unsigned color)
+{
+	int y;
+	for (y = y1; y < y2; y++) {
+		jint *p = ADDR_PIXEL(x, y);
+		*p |= color;
+	}
+}
 
-#define SEVEN_WID (width/40)
+
+
+#define SEVEN_CHARS 40
+#define SEVEN_WID (width/SEVEN_CHARS)
 /* seven segment display:
  *      0x01
  *  0x02    0x04
@@ -510,6 +523,9 @@ fft_draw_slider(void)
 	}
 }
 
+static int grid_x[SEVEN_CHARS];
+static int num_grid_x = 0;
+
 #define COMPUTE_BINS \
 	tot_bins = fft_size/2; \
 	first_bin = ((fft_offset*tot_bins)/FFT_RANGE_MULT); \
@@ -533,6 +549,7 @@ fft_draw_piano(jobject this)
 
 	COMPUTE_BINS
 
+	num_grid_x = 0;
 	for (i = 0; i < 88; i++) {
 		double freq, bin;
 		int x, x0, x1, x2;
@@ -559,6 +576,8 @@ fft_draw_piano(jobject this)
 			seven_seg(x0, y1, name[0], 0x00AAAAFF);
 			seven_seg(x0+SEVEN_WID, y1, (i/12)+'0', 0x00AAAAFF);
 			last_x = x0 + (SEVEN_WID*2);
+			filled_rect(x, 0, x+1, y1, 0x00AAAA44);
+			grid_x[num_grid_x++] = x;
 		}
 	}
 
@@ -610,6 +629,10 @@ do_fft_display(void)
 		if (color > 255) color = 255;
 		color = COLOR_VALUE(0,color,color/2);
 		filled_rect(x1, y1, x1+xn, y1+yn, color);
+	}
+
+	for (i = 0; i < num_grid_x; i++) {
+		or_vline(grid_x[i], y1, y1+yn, 0xAAAA44);
 	}
 
 	fft_y += yn;
