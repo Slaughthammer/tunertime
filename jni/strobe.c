@@ -197,6 +197,16 @@ filled_rect(int x1, int y1, int x2, int y2, unsigned color)
 }
 
 static void
+or_hline(int x1, int x2, int y, unsigned color)
+{
+	int x;
+	for (x = x1; x < x2; x++) {
+		jint *p = ADDR_PIXEL(x, y);
+		*p |= color;
+	}
+}
+
+static void
 or_vline(int x, int y1, int y2, unsigned color)
 {
 	int y;
@@ -538,7 +548,7 @@ static void
 fft_draw_piano(jobject this)
 {
 	jobject ui = (*env)->GetObjectField(env, this, fid_st_ui);
-	int y1,y2,y3;
+	int y,y1,y2,y3;
 	int tot_bins, first_bin, num_bins;
 	int last_x = 0;
 	int i;
@@ -576,9 +586,15 @@ fft_draw_piano(jobject this)
 			seven_seg(x0, y1, name[0], 0x00AAAAFF);
 			seven_seg(x0+SEVEN_WID, y1, (i/12)+'0', 0x00AAAAFF);
 			last_x = x0 + (SEVEN_WID*2);
-			filled_rect(x, 0, x+1, y1, 0x00777722);
+			or_vline(x, 0, y1, 0x00777722);
 			grid_x[num_grid_x++] = x;
 		}
+	}
+
+		/* 1 second grid */
+	for (y = (y1/FFT_SECONDS); y < (y1-(FFT_SECONDS*2));
+	     y += (y1/FFT_SECONDS)) {
+		or_hline(0, width, y, 0x777722);
 	}
 
 	(*env)->DeleteLocalRef(env, ui);
@@ -589,15 +605,15 @@ do_fft_display(void)
 {
 	int tot_bins, first_bin, num_bins;
 	int i;
-	int y1, yn, xn;
+	int y1, y2, xn;
 	int incr;
 	double avg = 0.;
 	double scale;
 	int disp_height = height-fft_legend_height;
 
 	y1 = fft_y;
-	yn = (disp_height*fft_size) / (FFT_SECONDS*sample_rate);
-	if (y1 + yn > disp_height) yn = disp_height - y1;
+	y2 = y1 + ((disp_height*fft_size) / (FFT_SECONDS*sample_rate));
+	if (y2 > disp_height) y2 = disp_height;
 
 	COMPUTE_BINS
 
@@ -617,6 +633,7 @@ do_fft_display(void)
 	avg /= (((double)num_bins) / ((double)incr));
 	scale = 32./avg;
 
+		/* draw fft data */
 	for (i = 0; i < num_bins; i+=incr) {
 		int x1 = (i*width)/num_bins;
 		double val = 0;
@@ -628,14 +645,21 @@ do_fft_display(void)
 		color = val * scale;
 		if (color > 255) color = 255;
 		color = COLOR_VALUE(0,color,color/2);
-		filled_rect(x1, y1, x1+xn, y1+yn, color);
+		filled_rect(x1, y1, x1+xn, y2, color);
 	}
 
+		/* draw grid */
 	for (i = 0; i < num_grid_x; i++) {
-		or_vline(grid_x[i], y1, y1+yn, 0x777722);
+		or_vline(grid_x[i], y1, y2, 0x777722);
+	}
+	for (i = (disp_height/FFT_SECONDS); i < (disp_height-(FFT_SECONDS*2));
+	     i += (disp_height/FFT_SECONDS)) {
+		if ((y1 <= i) && (y2 > i)) {
+			or_hline(0, width, i, 0x777722);
+		}
 	}
 
-	fft_y += yn;
+	fft_y = y2;
 	if (fft_y >= disp_height) {
 		fft_y = 0;
 	}
