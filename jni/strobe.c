@@ -586,7 +586,7 @@ fft_draw_piano(jobject this)
 			seven_seg(x0, y1, name[0], 0x00AAAAFF);
 			seven_seg(x0+SEVEN_WID, y1, (i/12)+'0', 0x00AAAAFF);
 			last_x = x0 + (SEVEN_WID*2);
-			or_vline(x, 0, y1, 0x00777722);
+			or_vline(x, 0, y1, 0x00444411);
 			grid_x[num_grid_x++] = x;
 		}
 	}
@@ -594,7 +594,7 @@ fft_draw_piano(jobject this)
 		/* 1 second grid */
 	for (y = (y1/FFT_SECONDS); y < (y1-(FFT_SECONDS*2));
 	     y += (y1/FFT_SECONDS)) {
-		or_hline(0, width, y, 0x777722);
+		or_hline(0, width, y, 0x444411);
 	}
 
 	(*env)->DeleteLocalRef(env, ui);
@@ -650,12 +650,12 @@ do_fft_display(void)
 
 		/* draw grid */
 	for (i = 0; i < num_grid_x; i++) {
-		or_vline(grid_x[i], y1, y2, 0x777722);
+		or_vline(grid_x[i], y1, y2, 0x444411);
 	}
 	for (i = (disp_height/FFT_SECONDS); i < (disp_height-(FFT_SECONDS*2));
 	     i += (disp_height/FFT_SECONDS)) {
 		if ((y1 <= i) && (y2 > i)) {
-			or_hline(0, width, i, 0x777722);
+			or_hline(0, width, i, 0x444411);
 		}
 	}
 
