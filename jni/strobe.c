@@ -576,7 +576,7 @@ fft_draw_piano(jobject this)
 			seven_seg(x0, y1, name[0], 0x00AAAAFF);
 			seven_seg(x0+SEVEN_WID, y1, (i/12)+'0', 0x00AAAAFF);
 			last_x = x0 + (SEVEN_WID*2);
-			filled_rect(x, 0, x+1, y1, 0x00AAAA44);
+			filled_rect(x, 0, x+1, y1, 0x00777722);
 			grid_x[num_grid_x++] = x;
 		}
 	}
@@ -632,7 +632,7 @@ do_fft_display(void)
 	}
 
 	for (i = 0; i < num_grid_x; i++) {
-		or_vline(grid_x[i], y1, y1+yn, 0xAAAA44);
+		or_vline(grid_x[i], y1, y1+yn, 0x777722);
 	}
 
 	fft_y += yn;
