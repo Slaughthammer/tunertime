@@ -349,7 +349,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		harm1_mult = range_limit(harm1_mult, 1, 20);
 		harm2_mult = range_limit(harm2_mult, 1, 20);
 
-		fft_size = range_limit(fft_size, 1024, 32768);
+		fft_size = range_limit(fft_size, 512, 32768);
 		fft_width = range_limit(fft_width, 512, Strobe.FFT_RANGE_MULT);
 		fft_offset = range_limit(fft_offset, 0,
 				Strobe.FFT_RANGE_MULT-fft_width);
