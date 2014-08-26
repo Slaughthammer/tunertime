@@ -294,8 +294,6 @@ crude visual representation the rectangular window will do just fine.
 So that's my "use words to excuse yourself from implementing a Hamming
 window."
 
-XXX - button to toggle scale between notes and hz
- - landscape, too
 XXX - remember at least fft mode across pause/resume
 XXX - label for FFT/strobe
 XXX - bring back pause mode

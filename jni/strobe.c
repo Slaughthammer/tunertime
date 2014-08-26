@@ -600,17 +600,17 @@ static int
 round_up(int i)
 {
 	int mult = 1;
-	while (i > 9) {
+	while (i > 99) {
 		mult *= 10;
 		i /= 10;
 	}
-	if (i >= 5) {
-		return 10*mult;
+	if (i >= 50) {
+		return 100*mult;
 	}
-	if ( i >= 2) {
-		return 5*mult;
+	if ( i >= 25) {
+		return 50*mult;
 	}
-	return 2*mult;
+	return 25*mult;
 }
 
 static void

@@ -40,4 +40,17 @@
 	    android:textAppearance="?android:attr/textAppearanceMedium"
 	    android:onClick="N_incr" />
     </LinearLayout>
+    <LinearLayout
+	android:layout_width="fill_parent"
+	android:layout_height="1dp"
+	android:layout_weight="1"
+	android:orientation="horizontal">
+	<Button android:id="@+id/grid_button"
+	    android:layout_width="1dp"
+	    android:layout_height="fill_parent"
+	    android:layout_weight="1"
+	    android:text="scale"
+	    android:textAppearance="?android:attr/textAppearanceMedium"
+	    android:onClick="grid_toggle" />
+   </LinearLayout>
 </LinearLayout>
