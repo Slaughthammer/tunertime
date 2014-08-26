@@ -71,6 +71,7 @@ static int fft_mode = 0;
 static int fft_size = 8192;
 static int fft_width = FFT_RANGE_MULT;	/* size of freq window we are viewing */
 static int fft_offset = 0;		/* offset, out of FFT_RANGE_MULT */
+static int fft_grid_freq = 0;
 static int fft_y = 0;
 static int fft_legend_height = 0;
 
@@ -115,6 +116,7 @@ static jfieldID fid_st_fft_mode;
 static jfieldID fid_st_fft_size;
 static jfieldID fid_st_fft_width;
 static jfieldID fid_st_fft_offset;
+static jfieldID fid_st_fft_grid_freq;
 
 static jintArray bitmap;
 
@@ -548,7 +550,7 @@ static void
 fft_draw_piano(jobject this)
 {
 	jobject ui = (*env)->GetObjectField(env, this, fid_st_ui);
-	int y,y1,y2,y3;
+	int y1,y2,y3;
 	int tot_bins, first_bin, num_bins;
 	int last_x = 0;
 	int i;
@@ -572,7 +574,7 @@ fft_draw_piano(jobject this)
 
 		bin = ((double)fft_size)*(freq/((double)sample_rate));
 		if ((int)bin < first_bin) continue;
-		if ((int)bin >= first_bin+num_bins) continue;
+		if ((int)bin >= first_bin+num_bins) break;
 
 		x = (int)(((bin-(double)first_bin)*(double)width) / (double)num_bins);
 		x0 = x - (SEVEN_WID-1);
@@ -591,13 +593,92 @@ fft_draw_piano(jobject this)
 		}
 	}
 
-		/* 1 second grid */
+	(*env)->DeleteLocalRef(env, ui);
+}
+
+static int
+round_up(int i)
+{
+	int mult = 1;
+	while (i > 9) {
+		mult *= 10;
+		i /= 10;
+	}
+	if (i >= 5) {
+		return 10*mult;
+	}
+	if ( i >= 2) {
+		return 5*mult;
+	}
+	return 2*mult;
+}
+
+static void
+fft_draw_freqs(void)
+{
+	int tot_bins, first_bin, num_bins;
+	int y1,y2,y3;
+	int freq_lo, freq_range;
+	int f, step;
+
+	y1 = height - fft_legend_height;
+	y3 = height - (fft_legend_height/3);
+	y2 = y3 - (fft_legend_height/4);
+
+	COMPUTE_BINS
+
+	freq_lo = (first_bin * sample_rate) / fft_size;
+	freq_range = (num_bins * sample_rate) / fft_size;
+
+	step = freq_range / 7;
+	step = round_up(step);
+
+	num_grid_x = 0;
+	for (f = (freq_lo/step)*step; ; f += step) {
+		double bin;
+		int x, x0, x1, x2, x3;
+		int w;
+		int i;
+		char label[20];
+
+		sprintf(label, "%d", f);
+
+		bin = ((double)fft_size)*((double)f/((double)sample_rate));
+		if ((int)bin < first_bin) continue;
+		if ((int)bin >= first_bin+num_bins) break;
+		x = (int)(((bin-(double)first_bin)*(double)width) / (double)num_bins);
+
+		w = SEVEN_WID*strlen(label);
+		x0 = x - (w / 2);
+		x1 = x - 1;
+		x2 = x + 2;
+		x3 = x0 + w;
+		if (x1 < 0) x1 = 0;
+		if (x2 > width) x2 = width;
+
+		filled_rect(x1, y2, x2, y3, 0x00FFFFFF);
+		or_vline(x, 0, y1, 0x00444411);
+		grid_x[num_grid_x++] = x;
+		if ((x0 >= 0) && (x3 < width)) {
+			for (i = 0; label[i]; i++) {
+				seven_seg(x0 + (SEVEN_WID*i), y1, label[i],
+							0x00AAAAFF);
+			}
+		}
+	}
+}
+
+static void
+fft_draw_seconds(void)
+{
+	int y, y1;
+
+	y1 = height - fft_legend_height;
+
 	for (y = (y1/FFT_SECONDS); y < (y1-(FFT_SECONDS*2));
 	     y += (y1/FFT_SECONDS)) {
 		or_hline(0, width, y, 0x444411);
 	}
-
-	(*env)->DeleteLocalRef(env, ui);
 }
 
 static void
@@ -743,6 +824,7 @@ jni_init(JNIEnv *env_)
 	FIELD(st_fft_size, strobe, "fft_size", "I")
 	FIELD(st_fft_width, strobe, "fft_width", "I")
 	FIELD(st_fft_offset, strobe, "fft_offset", "I")
+	FIELD(st_fft_grid_freq, strobe, "fft_grid_freq", "Z")
 
 	return 1;
 }
@@ -826,7 +908,12 @@ fft_mode_changed(jobject this)
 		fft_y = 0;
 		fft_legend_height = height/10;
 		fft_draw_slider();
-		fft_draw_piano(this);
+		if (fft_grid_freq) {
+			fft_draw_freqs();
+		} else {
+			fft_draw_piano(this);
+		}
+		fft_draw_seconds();
 	} else {
 		int i;
 		for (i = 0; i < NUM_STROBES; i++) {
@@ -847,6 +934,7 @@ check_fft_mode(jobject this)
 	fft_size = (*env)->GetIntField(env, this, fid_st_fft_size);
 	fft_width = (*env)->GetIntField(env, this, fid_st_fft_width);
 	fft_offset = (*env)->GetIntField(env, this, fid_st_fft_offset);
+	fft_grid_freq = (*env)->GetIntField(env, this, fid_st_fft_grid_freq);
 	fft_mode_changed(this);
 }
 

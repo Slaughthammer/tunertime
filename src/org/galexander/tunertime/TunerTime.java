@@ -25,6 +25,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private int fft_size;
 	private int fft_width;
 	private int fft_offset;
+	private boolean fft_grid_freq;
 
 	private SurfaceView w_strobe;
 	private ViewGroup buttons_holder;
@@ -48,6 +49,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private TextView harm2_display;
 	private View fft_buttons;
 	private TextView N_display;
+	private Button grid_button;
 
 	private Strobe strobe = null;
 	private SurfaceHolder holder = null;
@@ -110,6 +112,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				R.layout.fft_buttons, buttons_holder, false);
 		N_display = (TextView)fft_buttons.findViewById(
 				R.id.N_display);
+		grid_button = (Button)fft_buttons.findViewById(
+				R.id.grid_button);
 	}
 
 	public void onResume() {
@@ -153,6 +157,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		fft_size = prefs.getInt("fft_size", 8192);
 		fft_width = prefs.getInt("fft_width", Strobe.FFT_RANGE_MULT/4);
 		fft_offset = prefs.getInt("fft_offset", 0);
+		fft_grid_freq = prefs.getBoolean("fft_grid_freq", false);
 	}
 
 	private void save_config() {
@@ -179,6 +184,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		editor.putInt("fft_size", fft_size);
 		editor.putInt("fft_width", fft_width);
 		editor.putInt("fft_offset", fft_offset);
+		editor.putBoolean("fft_grid_freq", fft_grid_freq);
 		editor.commit();
 	}
 
@@ -324,6 +330,10 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		fft_size /= 2;
 		update_status();
 	}
+	public void grid_toggle(View v) {
+		fft_grid_freq = !fft_grid_freq;
+		update_status();
+	}
 
 	private void do_help() {
 		Intent i = new Intent(Intent.ACTION_VIEW);
@@ -356,7 +366,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 		if (strobe != null) {
 			strobe.setCents(strobe_cents, harm1_mult, harm2_mult);
-			strobe.setFftParms(fft_size, fft_width, fft_offset);
+			strobe.setFftParms(fft_size, fft_width, fft_offset,
+					fft_grid_freq);
 		}
 
 		int note_index = ((strobe_cents+50)%1200)/100;
@@ -400,6 +411,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		harm2_display.setText(Integer.toString(harm2_mult));
 
 		N_display.setText(Integer.toString(fft_size));
+		grid_button.setText(fft_grid_freq ? "Hz" : "scale");
 	}
 
 	public double cents_to_freq(int cents, int harm_mult) {
@@ -416,7 +428,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		strobe.setSurface(holder, width, height);
 		strobe.setCents(strobe_cents, harm1_mult, harm2_mult);
 		strobe.setFft(fft_mode);
-		strobe.setFftParms(fft_size, fft_width, fft_offset);
+		strobe.setFftParms(fft_size, fft_width, fft_offset, fft_grid_freq);
 		strobe.start();
 	}
 

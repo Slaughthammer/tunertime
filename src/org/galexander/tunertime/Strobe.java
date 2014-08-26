@@ -20,6 +20,7 @@ public class Strobe extends Thread {
 	private volatile int fft_size = 8192;	/* number of samples in FFT window */
 	private volatile int fft_width = FFT_RANGE_MULT/4; /* zoom level */
 	private volatile int fft_offset = 0;	/* offset in FFT_RANGE_MULTs of screen */
+	private volatile boolean fft_grid_freq = false;
 	private volatile boolean fft_changed = false;
 
 	private AudioRecord recorder = null;
@@ -49,10 +50,12 @@ public class Strobe extends Thread {
 		fft_changed = true;
 	}
 
-	public void setFftParms(int fft_size_, int fft_width_, int fft_offset_) {
+	public void setFftParms(int fft_size_, int fft_width_, int fft_offset_,
+			boolean fft_grid_freq_) {
 		fft_size = fft_size_;
 		fft_width = fft_width_;
 		fft_offset = fft_offset_;
+		fft_grid_freq = fft_grid_freq_;
 		fft_changed = true;
 	}
 
