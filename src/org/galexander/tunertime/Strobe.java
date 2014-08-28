@@ -22,6 +22,7 @@ public class Strobe extends Thread {
 	private volatile int fft_offset = 0;	/* offset in FFT_RANGE_MULTs of screen */
 	private volatile boolean fft_grid_freq = false;
 	private volatile boolean fft_changed = false;
+	private volatile boolean paused = false;
 
 	private AudioRecord recorder = null;
 	private int record_bufsz = 0;
@@ -59,6 +60,10 @@ public class Strobe extends Thread {
 		fft_changed = true;
 	}
 
+	public void toggle_pause() {
+		paused = !paused;
+	}
+
 	private native void runner();		/* efficient C loop */
 
 	private Paint label_p = null;
@@ -67,8 +72,6 @@ public class Strobe extends Thread {
 	private void draw_labels(Canvas c) {
 		int y = 0;
 		int strobe_height = height/labels.length;
-
-		if (fft_mode) return;
 
 		if (label_p == null) {
 			label_p = new Paint();
@@ -80,7 +83,12 @@ public class Strobe extends Thread {
 			label_p.setAntiAlias(true);
 			label_p.setSubpixelText(true);
 		}
-		if (labels == null) {
+		if (paused) {
+			c.drawText("paused", 0, height/2, label_p);
+			return;
+		}
+
+		if (fft_mode || (labels == null)) {
 			return;
 		}
 		for (int i = 0; i < labels.length; i++) {

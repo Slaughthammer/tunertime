@@ -471,16 +471,18 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	}
 
 	private class strobe_listener implements View.OnTouchListener {
-		private int start_x = 0;
+		private int start_x = -1;
 		private int start_fft_offset = 0;
 		private int start_x_width = 0;
 		private int start_fft_width = 0;
+		private long start_time;
+		private boolean could_be_click = false;
 		public boolean onTouch(View v, MotionEvent event) {
 			int i;
 			int x1 = -1, x2 = -1;
-			if (!fft_mode) {
-				return false;
-			}
+			int wid = v.getWidth();
+			long time;
+
 			if ((i = event.findPointerIndex(0)) != -1) {
 				x1 = (int)event.getX(i);
 			} else {
@@ -489,15 +491,24 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			}
 			if ((i = event.findPointerIndex(1)) != -1) {
 				x2 = (int)event.getX(i);
+				could_be_click = false;
 			} else {
 				start_x_width = 0;
+			}
+			time = event.getEventTime();
+			if (could_be_click && (start_x != -1) &&
+			    ((Math.abs(x1 - start_x) > (wid/40)) ||
+			     ((time - start_time) > 300))) {
+				could_be_click = false;
 			}
 			switch (event.getAction()) {
 			case MotionEvent.ACTION_DOWN:
 				start_x = x1;
 				start_x_width = 0;
 				start_fft_offset = fft_offset +
-					((x1*fft_width) / v.getWidth());
+					((x1*fft_width) / wid);
+				start_time = time;
+				could_be_click = true;
 				return true;
 			case MotionEvent.ACTION_POINTER_2_DOWN:
 				start_x_width = Math.abs(x1-x2);
@@ -505,6 +516,9 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				start_fft_width = fft_width;
 				return true;
 			case MotionEvent.ACTION_MOVE:
+				if (could_be_click || !fft_mode) {
+					return true;
+				}
 				int delta_x = x1 - start_x;
 				if (start_x_width != 0) {
 					int new_width = Math.abs(x1-x2);
@@ -512,9 +526,13 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 						start_x_width) / new_width;
 				}
 				fft_offset = start_fft_offset -
-					((x1*fft_width) / v.getWidth());
+					((x1*fft_width) / wid);
 				update_status();
 				return true;
+			case MotionEvent.ACTION_UP:
+				if (could_be_click && (strobe != null)) {
+					strobe.toggle_pause();
+				}
 			}
 			return false;
 		}
