@@ -117,6 +117,7 @@ static jfieldID fid_st_fft_size;
 static jfieldID fid_st_fft_width;
 static jfieldID fid_st_fft_offset;
 static jfieldID fid_st_fft_grid_freq;
+static jfieldID fid_st_paused;
 
 static jintArray bitmap;
 
@@ -750,11 +751,6 @@ void
 newdata(void)
 {
 	int i;
-#if 0 /* XXX - bring back pause?? */
-	if (strobes_paused) {
-		return;
-	}
-#endif
 	if (fft_mode) {
 		for (i = nf_curr_samp; i != snd_ofs; i = (i+1)%SND_BUFSAMPS) {
 			fft_r[nf_curr_ridx++] = ((double)snd_buf[i]) / 32768.0;
@@ -825,6 +821,7 @@ jni_init(JNIEnv *env_)
 	FIELD(st_fft_width, strobe, "fft_width", "I")
 	FIELD(st_fft_offset, strobe, "fft_offset", "I")
 	FIELD(st_fft_grid_freq, strobe, "fft_grid_freq", "Z")
+	FIELD(st_paused, strobe, "paused", "Z");
 
 	return 1;
 }
@@ -1006,7 +1003,9 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 
 			check_fft_mode(this);
 
-			newdata();
+			if (!(*env)->GetBooleanField(env,this,fid_st_paused)) {
+				newdata();
+			}
 			(*env)->ReleasePrimitiveArrayCritical(env, bitmap, bitmap_ptr, 0);
 			/* send bitmap to surface */
 			if ((*env)->CallBooleanMethod(env, this, mid_st_do_draw, bitmap, width, height)) {
