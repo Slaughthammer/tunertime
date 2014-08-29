@@ -296,7 +296,6 @@ window."
 
 XXX - remember at least fft mode across pause/resume
 XXX - label for FFT/strobe
-XXX - bring back pause mode
 
 XXX - rotate it a bunch of times to cause a SIGSEGV...  can this still happen??
 
