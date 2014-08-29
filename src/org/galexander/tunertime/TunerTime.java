@@ -475,13 +475,11 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		private int start_fft_offset = 0;
 		private int start_x_width = 0;
 		private int start_fft_width = 0;
-		private long start_time;
 		private boolean could_be_click = false;
 		public boolean onTouch(View v, MotionEvent event) {
 			int i;
 			int x1 = -1, x2 = -1;
 			int wid = v.getWidth();
-			long time;
 
 			if ((i = event.findPointerIndex(0)) != -1) {
 				x1 = (int)event.getX(i);
@@ -495,10 +493,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			} else {
 				start_x_width = 0;
 			}
-			time = event.getEventTime();
-			if (could_be_click && (start_x != -1) &&
-			    ((Math.abs(x1 - start_x) > (wid/40)) ||
-			     ((time - start_time) > 300))) {
+			if (could_be_click &&
+			    (Math.abs(x1 - start_x) > (wid/40))) {
 				could_be_click = false;
 			}
 			switch (event.getAction()) {
@@ -507,7 +503,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				start_x_width = 0;
 				start_fft_offset = fft_offset +
 					((x1*fft_width) / wid);
-				start_time = time;
 				could_be_click = true;
 				return true;
 			case MotionEvent.ACTION_POINTER_2_DOWN:
