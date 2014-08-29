@@ -154,7 +154,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		temper[10] = prefs.getInt("temper10", 0);
 		temper[11] = prefs.getInt("temper11", 0);
 		temper_enabled = prefs.getBoolean("temper_enabled", false);
-		fft_size = prefs.getInt("fft_size", 8192);
+		fft_size = prefs.getInt("fft_size", 2048);
 		fft_width = prefs.getInt("fft_width", Strobe.FFT_RANGE_MULT/4);
 		fft_offset = prefs.getInt("fft_offset", 0);
 		fft_grid_freq = prefs.getBoolean("fft_grid_freq", false);
