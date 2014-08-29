@@ -295,6 +295,11 @@ So that's my "use words to excuse yourself from implementing a Hamming
 window."
 
 XXX - remember at least fft mode across pause/resume
+XXX - make strobe mode use seven seg font
+XXX - add screenshots of fft mode and tablet to play
+XXX - document FFT mode
+XXX - simplify doc
+
 
 XXX - microphone capture apparently fails intermittently if you home -> other mic app -> tunertime
 
