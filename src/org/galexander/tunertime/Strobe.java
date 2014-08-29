@@ -67,11 +67,9 @@ public class Strobe extends Thread {
 	private native void runner();		/* efficient C loop */
 
 	private Paint label_p = null;
-	private String[] labels = null;
 
 	private void draw_labels(Canvas c) {
 		int y = 0;
-		int strobe_height = height/labels.length;
 
 		if (label_p == null) {
 			label_p = new Paint();
@@ -86,14 +84,6 @@ public class Strobe extends Thread {
 		if (paused) {
 			c.drawText("paused", 0, height/2, label_p);
 			return;
-		}
-
-		if (fft_mode || (labels == null)) {
-			return;
-		}
-		for (int i = 0; i < labels.length; i++) {
-			y += strobe_height;
-			c.drawText(labels[i], 0, y, label_p);
 		}
 	}
 
