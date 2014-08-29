@@ -195,6 +195,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		if (strobe != null) {
 			strobe.setFft(fft_mode);
 		}
+		setTitle(fft_mode ? "TunerTime: FFT" : "TunerTime: strobe");
 	}
 
 

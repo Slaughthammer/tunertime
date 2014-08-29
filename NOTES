@@ -295,7 +295,6 @@ So that's my "use words to excuse yourself from implementing a Hamming
 window."
 
 XXX - remember at least fft mode across pause/resume
-XXX - label for FFT/strobe
 
 XXX - rotate it a bunch of times to cause a SIGSEGV...  can this still happen??
 
