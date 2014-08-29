@@ -25,8 +25,6 @@ struct strobe_rec {
 
 		/* center frequency */
 	double freq;
-		/* relationship to fundamental */
-	int mult;
 		/* filter coefficients: */
 	double a0,a1,a2;
 	double b1,b2;
@@ -111,6 +109,7 @@ static jfieldID fid_st_height;
 static jfieldID fid_st_surface_changed;
 static jfieldID fid_st_recorder;
 static jfieldID fid_st_record_bufsz;
+static jfieldID fid_st_labels;
 static jfieldID fid_st_ui;
 static jfieldID fid_st_fft_changed;
 static jfieldID fid_st_fft_mode;
@@ -222,6 +221,8 @@ or_vline(int x, int y1, int y2, unsigned color)
 
 
 
+#define SEVEN_CHARS 40
+#define SEVEN_WID (width/SEVEN_CHARS)
 /* seven segment display:
  *      0x01
  *  0x02    0x04
@@ -250,29 +251,28 @@ char_to_bits(char c)
 		case 'E': return 0x5B;
 		case 'F': return 0x1B;
 		case 'G': return 0x73;
-		case ' ': return 0x00;
 	}
 	return 0x28;
 }
 
-static int
-seven_seg(int wid, int x, int y, char c, unsigned color)
+static void
+seven_seg(int x, int y, char c, unsigned color)
 {
 	unsigned bits = char_to_bits(c);
 	int l1,l2;
 	int x1,x2,x3,x4;
 	int y1,y2,y3,y4,y5,y6;
 
-	l1 = wid/5;
+	l1 = SEVEN_WID/5;
 	if (l1 < 1) l1 = 1;
-	l2 = wid-(3*l1);
+	l2 = SEVEN_WID-(3*l1);
 	if (l2 < 1) l2 = 1;
 
 	x1 = x;
 	x2 = x1+l1;
 	x3 = x2+l2;
 	x4 = x3+l1;
-	if ((x1 < 0) || (x4 > width)) return 0;
+	if ((x1 < 0) || (x4 > width)) return;
 
 	y1 = y;
 	y2 = y1+l1;
@@ -280,12 +280,7 @@ seven_seg(int wid, int x, int y, char c, unsigned color)
 	y4 = y3+l1;
 	y5 = y4+l2;
 	y6 = y5+l1;
-	if ((y1 < 0) || (y6 > height)) return 0;
-
-	if (c == '.') {
-		filled_rect(x1, y5, x2, y6, color);
-		return l1*2;
-	}
+	if ((y1 < 0) || (y6 > height)) return;
 
 	if (bits & 0x01) filled_rect(x2,y1,x3,y2, color);
 	if (bits & 0x02) filled_rect(x1,y2,x2,y3, color);
@@ -294,17 +289,6 @@ seven_seg(int wid, int x, int y, char c, unsigned color)
 	if (bits & 0x10) filled_rect(x1,y4,x2,y5, color);
 	if (bits & 0x20) filled_rect(x3,y4,x4,y5, color);
 	if (bits & 0x40) filled_rect(x2,y5,x3,y6, color);
-
-	return wid;
-}
-
-static void
-seven_str(int wid, int x, int y, char *s, unsigned color)
-{
-	while (*s) {
-		x += seven_seg(wid, x, y, *s, color);
-		s++;
-	}
 }
 
 #define NUM_CLEAR 25	/* number of columns to clear at once */
@@ -429,19 +413,6 @@ strobe_draw_htic(struct strobe_rec *s)
 }
 
 static void
-strobe_draw_label(struct strobe_rec *s)
-{
-	int font_wid = width/20;
-	int y = s->y + s->height - (2*font_wid);
-	char buf[20];
-
-	sprintf(buf, "%d", s->mult);
-	seven_str(font_wid, font_wid/2, y, buf, 0x00AAAAFF);
-	sprintf(buf, "%.1f", s->freq);
-	seven_str(font_wid, 4*font_wid, y, buf, 0x00AAAAFF);
-}
-
-static void
 strobe_newdata(struct strobe_rec *s)
 {
 	if (s->curr_samp == snd_ofs) {
@@ -451,7 +422,6 @@ strobe_newdata(struct strobe_rec *s)
 	strobe_filter(s);
 	strobe_drawnew(s);
 	strobe_draw_htic(s);
-	strobe_draw_label(s);
 }
 
 
@@ -566,9 +536,7 @@ fft_draw_slider(void)
 	}
 }
 
-#define FFT_LAB_CHARS 40
-#define FFT_LAB_WID (width/FFT_LAB_CHARS)
-static int grid_x[FFT_LAB_CHARS];
+static int grid_x[SEVEN_CHARS];
 static int num_grid_x = 0;
 
 #define COMPUTE_BINS \
@@ -610,7 +578,7 @@ fft_draw_piano(jobject this)
 		if ((int)bin >= first_bin+num_bins) break;
 
 		x = (int)(((bin-(double)first_bin)*(double)width) / (double)num_bins);
-		x0 = x - (FFT_LAB_WID-1);
+		x0 = x - (SEVEN_WID-1);
 		x1 = x - 1;
 		x2 = x + 2;
 		if (x1 < 0) x1 = 0;
@@ -618,9 +586,9 @@ fft_draw_piano(jobject this)
 
 		filled_rect(x1, y2, x2, y3, 0x00FFFFFF);
 		if (x0 >= last_x) {
-			seven_seg(FFT_LAB_WID, x0, y1, name[0], 0x00AAAAFF);
-			seven_seg(FFT_LAB_WID, x0+FFT_LAB_WID, y1, (i/12)+'0', 0x00AAAAFF);
-			last_x = x0 + (FFT_LAB_WID*2);
+			seven_seg(x0, y1, name[0], 0x00AAAAFF);
+			seven_seg(x0+SEVEN_WID, y1, (i/12)+'0', 0x00AAAAFF);
+			last_x = x0 + (SEVEN_WID*2);
 			or_vline(x, 0, y1, 0x00444411);
 			grid_x[num_grid_x++] = x;
 		}
@@ -671,6 +639,7 @@ fft_draw_freqs(void)
 		double bin;
 		int x, x0, x1, x2, x3;
 		int w;
+		int i;
 		char label[20];
 
 		sprintf(label, "%d", f);
@@ -680,7 +649,7 @@ fft_draw_freqs(void)
 		if ((int)bin >= first_bin+num_bins) break;
 		x = (int)(((bin-(double)first_bin)*(double)width) / (double)num_bins);
 
-		w = FFT_LAB_WID*strlen(label);
+		w = SEVEN_WID*strlen(label);
 		x0 = x - (w / 2);
 		x1 = x - 1;
 		x2 = x + 2;
@@ -692,7 +661,10 @@ fft_draw_freqs(void)
 		or_vline(x, 0, y1, 0x00444411);
 		grid_x[num_grid_x++] = x;
 		if ((x0 >= 0) && (x3 < width)) {
-			seven_str(FFT_LAB_WID, x0, y1, label, 0x00AAAAFF);
+			for (i = 0; label[i]; i++) {
+				seven_seg(x0 + (SEVEN_WID*i), y1, label[i],
+							0x00AAAAFF);
+			}
 		}
 	}
 }
@@ -841,6 +813,7 @@ jni_init(JNIEnv *env_)
 	FIELD(st_surface_changed, strobe, "surface_changed", "Z")
 	FIELD(st_recorder, strobe, "recorder", "Landroid/media/AudioRecord;")
 	FIELD(st_record_bufsz, strobe, "record_bufsz", "I")
+	FIELD(st_labels, strobe, "labels", "[Ljava/lang/String;")
 	FIELD(st_ui, strobe, "ui", "Lorg/galexander/tunertime/TunerTime;")
 	FIELD(st_fft_changed, strobe, "fft_changed", "Z")
 	FIELD(st_fft_mode, strobe, "fft_mode", "Z")
@@ -893,7 +866,6 @@ recalculate(jobject this)
 
 	for (i = 0; i < NUM_STROBES; i++) {
 		int mult = ((i==0) ? 1 : ((i==1) ? harm1_mult : harm2_mult));
-		strobes[i].mult = mult;
 		strobes[i].y = y;
 		strobes[i].height = sheight;
 		strobes[i].freq = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)cents, (jint)mult);
@@ -903,6 +875,26 @@ recalculate(jobject this)
 	}
 
 	(*env)->DeleteLocalRef(env, ui);
+}
+
+static void
+update_labels(jobject this)
+{
+	jobjectArray labels = (*env)->NewObjectArray(env, NUM_STROBES, cl_string, NULL);
+	int i;
+	for (i = 0; i < NUM_STROBES; i++) {
+		jstring lab;
+		char buf[100];
+		int mult = ((i==0) ? 1 : ((i==1) ? harm1_mult : harm2_mult));
+		char *ext = ((mult==1) ? "st" : ((mult==2) ? "nd" :
+				((mult==3) ? "rd" : "th")));
+		sprintf(buf, "%2d%s %7.1f", mult, ext, strobes[i].freq);
+		lab = (*env)->NewStringUTF(env, buf);
+		(*env)->SetObjectArrayElement(env, labels, i, lab);
+		(*env)->DeleteLocalRef(env, lab);
+	}
+	(*env)->SetObjectField(env, this, fid_st_labels, labels);
+	(*env)->DeleteLocalRef(env, labels);
 }
 
 static void
@@ -978,6 +970,7 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 			harm1_mult = (*env)->GetIntField(env, this, fid_st_harm1_mult);
 			harm2_mult = (*env)->GetIntField(env, this, fid_st_harm2_mult);
 			recalculate(this);
+			update_labels(this);
 		}
 		if ((*env)->GetBooleanField(env, this, fid_st_surface_changed)) {
 			(*env)->SetBooleanField(env, this, fid_st_surface_changed, JNI_FALSE);
