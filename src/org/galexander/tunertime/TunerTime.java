@@ -119,7 +119,11 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	public void onResume() {
 		stop_strobe();
 		load_config();
-		set_mode(note_buttons, false);
+		if (fft_mode) {
+			set_mode(fft_buttons, true);
+		} else {
+			set_mode(note_buttons, false);
+		}
 		update_status();
 		if (holder != null) {
 			/* lingering surface must still be valid */
@@ -154,6 +158,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		temper[10] = prefs.getInt("temper10", 0);
 		temper[11] = prefs.getInt("temper11", 0);
 		temper_enabled = prefs.getBoolean("temper_enabled", false);
+		fft_mode = prefs.getBoolean("fft_mode", false);
 		fft_size = prefs.getInt("fft_size", 2048);
 		fft_width = prefs.getInt("fft_width", Strobe.FFT_RANGE_MULT/4);
 		fft_offset = prefs.getInt("fft_offset", 0);
@@ -181,6 +186,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		editor.putInt("temper10", temper[10]);
 		editor.putInt("temper11", temper[11]);
 		editor.putBoolean("temper_enabled", temper_enabled);
+		editor.putBoolean("fft_mode", fft_mode);
 		editor.putInt("fft_size", fft_size);
 		editor.putInt("fft_width", fft_width);
 		editor.putInt("fft_offset", fft_offset);
