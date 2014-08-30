@@ -296,8 +296,7 @@ window."
 
 XXX - remember at least fft mode across pause/resume
 XXX - add screenshots of fft mode and tablet to play
-XXX - document FFT mode
-XXX - simplify doc
+XXX - release
 
 
 XXX - microphone capture apparently fails intermittently if you home -> other mic app -> tunertime
