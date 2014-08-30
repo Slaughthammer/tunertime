@@ -294,10 +294,8 @@ crude visual representation the rectangular window will do just fine.
 So that's my "use words to excuse yourself from implementing a Hamming
 window."
 
-XXX - add screenshots of fft mode and tablet to play
-XXX - release
 
 
-XXX - microphone capture apparently fails intermittently if you home -> other mic app -> tunertime
+XXX - microphone capture apparently fails intermittently if you home -> other mic app -> tunertime (fails on nexus 7!)
 
 XXX - tone generator?
