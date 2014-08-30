@@ -12,28 +12,22 @@ h2 {
 
 <h1>TunerTime</h1>
 
-<p>TunerTime is an Android application for tuning pianos.  It is based
-on the same principle as a
+<p>TunerTime is a tool for visualizing sound, a detail-oriented
+augmentation for the human ear.  It can be used to tune pianos, and for
+many other uses.</p>
+
+<p>Its primary mode operates on the same principle as a 
 <a href="http://en.wikipedia.org/wiki/Electronic_tuner#Strobe_tuner">strobe
-tuner</a>.</p>
+tuner</a>.  The strobe mode shows you a very precise and nuanced picture
+of the frequency of a tone as it relates to an ideal reference.</p>
 
-<p>TunerTime can be used to tune any instrument, but it is specially designed
-for piano.  TunerTime is very precise -- if you want to, you can easily
-tune an instrument to within 1/4Hz of the target (subject to the
-limitations of the instrument itself).</p>
-
-<p>One thing TunerTime does not do is automatically determine the
-frequency of a note that it hears.  You tell TunerTime which frequency
-you are aiming for, and it tells you how close you are getting.  If you
-want a more convenient tuner (especially for guitars or wind
-instruments), there are many other apps for that.</p>
-
-<p>It's unfortunate that it's kind of complicated to understand at the
-beginning.  I think it is a very powerful and usable tuner, but the
-learning curve is pretty steep.  If you do a lot of tuning, for example
-of pianos or accordions or pipes, then I think this is a very useful tool
-and well worth the learning experience.  I hope my exposition of its
-operation here is not too discouraging.</p>
+<p>It also has an FFT mode, or spectrum analyzer.  This produces
+a real-time
+<a href="http://en.wikipedia.org/wiki/Spectrogram">spectrogram</a>,
+allowing you to easily see harmonics and relationships between sounds
+without knowing the frequency beforehand.  This is for more than just
+tuning, I use it to understand everything from melodies to insect
+sounds.</p>
 
 <p>I had <em>Piano Servicing Tuning & Rebuilding</em> by Arthur A.
 Reblitz and a very old piano by my side while I was writing this
@@ -44,171 +38,94 @@ change a thing about it.</p>
 if you were saying "it's tuner time." The same way you might say "it's
 dinner time," but perhaps with less anticipatory salivation.</p>
 
-<h2>Strobe principle</h2>
+<h2>Strobe intro</h2>
 
-<p>In an electro-mechanical spinning-disk strobe tuner, you select the
-note by controlling the rotation of a patterned disk.  Suppose you select
-440Hz.  When it is up to speed, there is a band on the wheel which is
-rotating at exactly the right speed so that the pattern repeats 440 times
-a second.  There are also other bands with a tighter or looser pattern on
-them so that they are repeating at a harmonic (a multiple) of 440 Hz,
-generally by octave.</p>
+<p>The strobe mode is based off of an electro-mechanical spinning-disk
+strobe tuner, except instead of appearing like it is spinning forward or
+backward depending on the frequency, the dividing line between red and
+green bands moves up and down the screen.  The advantage is you can see a
+brief history of the tone.</p>
 
-<p>At the same time, there is a strobe light behind the wheel that is
-controlled by a microphone.  Whenever the microphone picks up a burst of
-noise, the light brightens.  If the microphone is picking up 440
-bursts every second, then the light will shine on the disk at the same
-point in the pattern each time.  The disk will appear to be stopped.</p>
+<p>Just start up the app, set it for a note (semi-tone and octave) in the
+range of your instrument, and then bang on or blow into your instrument.
+Sing if you dare, but beware the human voice is incredibly imprecise.</p>
 
-<p>If the bursts are coming slightly too fast -- say 441 times a second --
-then each time the light comes on, the wheel will be not quite as far
-into the pattern as it was at the previous burst.  The wheel will appear
-to be spinning backwards.</p>
+<p>If the note is flat, the red and green lines will slope down.  If it
+is sharp, they will slope up.  If it is very sharp or very flat (or you
+set it for the wrong note), the lines will appear vertical or messy.
+If it is sounding a beat note (perhaps due to resonating with other parts
+of the instrument), the lines will be wavy.</p>
 
-<p>If the bursts are coming slightly too slow -- say 439 times a second --
-then each time the light comes on, the wheel will be a little further
-into the pattern than it was at the previous burst.  The wheel will
-appear to be spinning forwards.</p>
+<p>Another thing to do is set TunerTime to A, and then sound an E.
+Notice how the harmonics of the E do show up (imperfectly) in the A.
+C'est la vie.</p>
 
-<p>If the bursts are coming at a radically different frequency -- say 300
-times a second -- then it will be hard to discern a pattern, though there
-may be a misleading signal from some harmonic.</p>
+<p>Three harmonics are shown at once, by default showing the two upper
+octaves.  This can be interesting because often the upper harmonics will
+not be precise multiples, and seeing them helps you understand what your
+ears are telling you.</p>
 
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="200" height="200" style="float:right;">
-<path d="
-M10,10 L10,190
-M40,10 L40,190
-M70,10 L70,190
-M100,10 L100,190
-M130,10 L130,190
-M4,50 L16,50 L10,56 L4,50
-M25,100 L18,105 L30,107 L25,100
-" fill="none" stroke="black" />
-<path d="
-M10,190 L40,10
-M40,190 L70,10
-M70,190 L100,10
-M100,190 L130,10
-M130,190 L160,10
-" fill="none" stroke="black" stroke-dasharray="5,10" />
-</svg>
+<p>The small vertical yellow lines along the bottom of the strobe
+bands represent 1 second intervals.  If it takes 1 second for
+the green line to go from the top to the bottom and wrap around, then it
+is 1 Hz flat.</p>
 
-<p>In TunerTime, instead of a light coming on, there are green lines that
-are drawn while there is a burst of sound (and red ones when there is
-not).  And instead of a pattern on a spinning wheel, there is a pattern
-that is traced on the screen.</p>
+<p>Tap on the strobe display to pause.</p>
 
-<p>So as time progresses, TunerTime traces a line from the top of the band
-to the bottom of it, showing green (burst) or red (no burst) as it goes.
-When it gets to the bottom, it jumps back up to the top, but moves a
-little to the right.  When it gets all the way to the right, of course,
-it starts over again on the left side of the screen.</p>
+<h2>Strobe settings</h2>
 
-<p>The frequency that is selected controls how long it takes TunerTime to
-draw a single vertical line before moving onto the next one.  If the
-frequency is set to 440Hz, then every second, TunerTime will draw 440
-vertical lines.</p>
-
-<p>If the sound is at precisely 440Hz, then overall the image will be of
-a straight horizontal line.  A burst of noise (green portion) will occur
-at the same time during each vertical trace.</p>
-
-<p>If the sound is slightly flat, then the image will be of a descending
-line.  If the sound is slightly sharp, then the image will be of an
-ascending line.</p>
-
-<p>And like a real strobe tuner, TunerTime provides 3 different bands.
-It gives you one band at the base frequency that you selected, and then
-two more at octaves above that.  It can be useful to see the higher
-harmonics, and also it is just convenient so you do not have to step
-through the octaves as much.</p>
-
-<p>One thing TunerTime shows that a strobe tuner does not is a trend over
-time.  Instead of simply looking at it and saying subjectively, "it is
-spinning faster than it was", you can see a second or two of history of
-it.  This can have a few uses, as you shall see later.</p>
-
-<h2>Functional description</h2>
-
-<div style="float:right;">
-<img src="screen01.png">
-<div style="text-align:center;font-weight:bold;">Figure 1</div>
-</div>
-<p>Here's a description of the functional parts of the TunerTime user
-interface.  This chapter will teach you what it does, if not quite how to
-actually use it.</p>
-
-<p>See <b>figure 1</b>.  At the top of the screen are the 3 bands of the
-tuner display.  It is
-displaying the fundamental (329.6Hz), the second harmonic (659.3Hz), and
-the fourth harmonic (1318.5Hz).  The little yellow lines at the
-bottom of each band mark seconds.  It takes one second to move from the
-far left side of the screen to the yellow mark (and another second to
-reach the second yellow mark if there is one).  This is useful to assign
-a number to how out of tune something is -- if the green line wraps
-around to the top once for every yellow mark, then that means it is
-exactly 1Hz out of tune.</p>
-
-<p>The different bands generally draw at different speeds.  So the yellow
-marks will be at different positions, the bands will show different
-duration of time (in this case the fundamental shows about 2 seconds, the
-second harmonic shows about 1.3 seconds, and the fourth harmonic shows
-about 1.2 seconds), and an event in one band will not necessarily be
-directly over the same event in another band.</p>
-
-<p>Below that and to the left are buttons to select the note.  On the
-left you can adjust the semi-tone ("note").  In the middle you can adjust
-the octave (middle C is in octave 3).  Finally, you can fine-tune the
-cents (100 cents per each semi-tone step).  It is rarely useful to adjust
-the cents, unless you are trying to determine the frequency of
-something.</p>
-
-<p>Note that TunerTime uses the mathematically simple equally tempered
-scale, which is generally the modern standard but you may desire
-something different.  You can fine-tune the temperament with the "temper"
-panel.</p>
-
-<p>The blue text in the lower right provides the "middle A" frequency
-that was chosen as the basis of the scale (usually 440Hz, but some people
-tune to a different basis), and the stretch factor which controls how
-large an octave is (+00000 means it is the default 2.0 multiplier for an
-octave).</p>
-
-<p>Finally, the "menu" button in the lower-right corner lets you select
-from a variety of panels.</p>
+<p>If you tap on "menu" you will see some panels you can access to
+control the strobe operation.</p>
 
 <h3>note</h3>
 
 <p>This is the default panel where you can control the semi-tone, octave,
-and cents to select the note that determines the frequency of the
-fundamental. This allows you to select which note you are tuning
+and cents (1/100ths of a semi-tone) to select the note that
+determines the frequency of the fundamental, the note you are tuning
 against.</p>
 
 <h3>A freq</h3>
 
 <p>On this panel you can adjust the frequency for the center A (defaults
-to 440Hz), or reset it to the default.</p>
+to 440Hz), or reset it to the default.  This is handy if you want to tune
+the entire instrument flat to avoid stretching old strings too much (for
+example).</p>
 
 <h3>stretch</h3>
 
-<p>On this panel you can adjust the stretch factor (more on this later),
-or reset it to 0.</p>
+<p>On this panel you can adjust the stretch factor, or reset it to 0.</p>
 
+<p>When tuning pianos, the upper harmonics of a single string are often
+slightly higher than you would expect in an ideal world.  Instead of the
+octave harmonic being at exactly 2.00000x, it is instead more like
+2.00100x or 2.00050x.  This will make a perceptible beat note if you use
+ideal tuning and then play octaves on the piano. To avoid this, piano
+tuners typically tune a slightly stretched scale.</p>
+
+<p>Personally, when I sit down
+to a new piano, I adjust TunerTime's note panel until it shows a
+horizontal line for the fundamental, and then I adjust the stretch panel
+until the second harmonic is also a horizontal line.  Do it again for a
+couple other notes to get a feel for it.</p>
+
+<p>For more details, see the
+<a href="http://en.wikipedia.org/wiki/Inharmonicity">wikipedia article on
+inharmonicity.</a></p>
 <h3>temper</h3>
 
-<p>The temper panel is a little complicated.  You have controls for
-semi-tone and for cents (fine-tuning).  For each note in the scale
-(semi-tone), there is an offset in cents from the default (+00c) which
+<p>For each note in the scale
+(semi-tone), TunerTime can store an offset in cents from the default
+(+00c) which
 defines the tempering of the scale.  When tempering is enabled, this
-offset is applied automatically each time you adjust to a new note.
-"save" locks in the current cents as being the tempering for the current
-semi-tone.  The enable/disable button turns tempering on/off.</p>
+offset is applied automatically each time you use the semi-tone
+adjustment in the note panel.  "save" locks in the current cents as being
+the tempering for the current semi-tone.  "enable"/"disable" turns
+tempering on/off.</p>
 
-<p>So if you wish to use a tempered scale, then first make sure tempering
-is enabled.  Then for the first semi-tone, select the temper you want (in
-cents) and then hit save.  Then select the next semi-tone and repeat the
-process until you have filled in the temper you desire for all twelve
-notes in the scale.</p>
+<p>So the procedure is: for the first semi-tone, select the temper you
+want (in cents) and then hit save.  Then select the next semi-tone and
+repeat the process until you have filled in the temper you desire for all
+twelve semitones in the scale.  Make sure you enable tempering.</p>
 
 <h3>harmonics</h3>
 
@@ -221,17 +138,23 @@ harmonics instead, you can select them on this panel.</p>
 factor is non-zero then the distance between the fundamental and 2nd
 harmonic will not be exactly a multiple of 2.0.</p>
 
-<h3>FFT</h3>
+<h2>FFT Spectrum Analyzer</h2>
 
-<p>There is also an FFT mode.  FFT stands for Fast Fourier Transform,
+<p>The menu also provides access to FFT mode.
+FFT stands for Fast Fourier Transform,
 which is a technique for converting a time-domain signal (like a
 waveform) into a frequency-domain symbol (like a spectrum analyzer).
 The FFT mode is not really useful directly for tuning, but it can help
 you get in the ballpark.  Or you can use it to determine the frequency of
 a totally unknown signal, or to examine the harmonics of a waveform.</p>
 
-<p>In FFT mode, the vertical axis is time, and the horizontal axis is
-frequency.  Lower frequencies are to the left.</p>
+<p>The vertical axis is time, with markings at 1 second intervals.</p>
+
+<p>The horizontal axis is frequency, with lower frequencies to the
+left.  In musical "scale" mode, the legend along the bottom of the screen
+has a little white line for each of the 52 white keys on a piano, and
+labels where convenient.  In "freq" mode, the legend indicates frequency
+in Hertz.</p>
 
 <p>The only tuning parameter is "N", which is the size of the block that
 the FFT operates on.  The rule is that bigger N means more precise
@@ -239,279 +162,11 @@ frequency measurements for tones that do not change over time.  Smaller N
 means faster response and better display of tones that do change over
 time.</p>
 
-<p>To zoom or scroll within the frequency range, use touch or pinch
-motions.</p>
-
-<p>The frequencies corresponding to the 88 keys on a piano are labelled
-along the bottom of the display, with a white line for each of them.</p>
-
-<h2>Stretch factor</h2>
-
-<p>The stretch factor is a specialized adjustment for pianos.  A perfect
-octave has a ratio of two.  That is, to go one octave up, you double the
-frequency.  There is one other important detail: each tone is actually
-composed of a harmonic series.  When you play A 440 Hz on a piano, there
-are tones generated also at harmonic multiples (2x, 3x, 4x, ...) of that
-frequency: 880Hz, 1320Hz, 1760Hz.  At least, in an ideal world.  But in
-the actual world, the piano string's harmonics are usually stretched out
-a small amount.  The first harmonic (2x) may appear at 2.00125x instead
-of a perfect 2x.  I.e., the first harmonic will appear at 440*2.00125 =
-880.55Hz.  This is not very interesting when you play just one
-note, but if you play two notes at once that are spaced an octave apart
-(such as A 440 and A 880), and you tuned the piano to a perfect scale,
-then you may hear an interference pattern (beat notes) between the second
-harmonic of A 440 (880.55Hz) and the fundamental of A 880 (880.00Hz).</p>
-
-<p>Tuning a piano by octaves (two keys that are the same note in the
-scale, but different octaves) is relatively easy to do by ear, so a piano
-tuner will typically adjust for this stretch factor perfectly when doing
-the octaves.  But then they will find that the relationships between the
-notes within the first octave are not quite perfect.  An octave that
-should go from 440Hz to 880Hz instead goes from 440Hz to 880.55Hz, and it
-is best to distribute this 0.55Hz "stretch" across each interval within
-the octave.  And of course tuning within one octave is what you need a
-tuner for for, so it is handy for the tuner be able to do this for
-you.</p>
-
-<p>So to achieve a 2.00125x gap between octaves, you would set the
-stretch factor to 00125.  In general, what I do is I try a few notes
-across the piano's range, and for each one, I fine-tune the "cents"
-adjustment until the top band (the fundamental frequency) of the tuner
-shows a relatively straight line.  Then I fine-tune the "stretch" until
-the second band (the second harmonic) also shows a straight line.  I've
-had pianos with stretch factors as high as 00250 and as low as 00025.</p>
-
-<div style="float:right;">
-<img src="screen02.png">
-<div style="text-align:center;font-weight:bold;">Figure 2</div>
-</div>
-<p>If you look at the guitar tone in <b>figure 2</b>, then you will see
-that the fundamental frequency is about 1/4Hz to 1/2Hz sharp, while the
-second harmonic is actually slightly flat.  That indicates this guitar
-string actually has a negative stretch factor!  Of course, for tuning a
-guitar, I would recommend tuning the lowest string with the tuner and
-then using your ear for the rest, so who cares about the stretch
-factor.  Most guitars have the 5th fret mis-placed by much more than
-1/2Hz anyways.</p>
-
-<p>For more details, see the
-<a href="http://en.wikipedia.org/wiki/Inharmonicity">wikipedia article on
-inharmonicity.</a></p>
-
-
-<h2>Usage</h2>
-
-<p>Here I'm going to show you some sample images from the app with some
-notes about what the display tells us about the sound.  Note that I
-captured these screenshots using a guitar, because my mean wife made me
-get rid of my piano.  Okay, okay, *pianos*.  Plural.  But they were cute!
-And she was mean.  And now the pianos are gone.  So there it is.</p>
-
-<p>But generally all stringed instruments look the same in TunerTime.
-Flutes tend to produce a more perfect spectrum from TunerTime's
-perspective. I haven't tried brass or reed instruments, but their tones
-have more harmonics so I would guess generally they would look
-"messier."</p>
-
-<p>Singing into it is a real eye-opener.</p>
-
-<p>It's important that you don't feel like you have to understand any of
-the numeric details here.  I never look at a signal and count and say
-"that is 1/3Hz sharp", I just want to know if it is a lot sharp or a
-little sharp and that is obvious at a glance.  I am just explaining it so
-in detail so you have examples if you really want to understand what it
-means.</p>
-
-<p>Here's a description of the functional parts of the TunerTime user
-interface.  This chapter will teach you what it does, if not quite how to
-actually use it.</p>
-
-<div style="float:right;">
-<img src="screen02.png">
-<div style="text-align:center;font-weight:bold;">Figure 2</div><br>
-</div>
-<p>Let's start with <b>figure 2</b> (which I've reproduced here for
-convenience).  The fundamental frequency (top band, 329.6Hz) is really
-the one you want to be in tune.  Looking in it from the left side of the
-screen to
-the yellow line about halfway across, you see that the red strip has
-moved from the bottom half of the band to the top half of the band.
-That's a 180 degree phase change (one half), and represents 1/2Hz sharp.
-It is sharp because the lines are tending upwards.</p>
-
-<p>Then for the second half of the displayed duration, it appears to be a
-little less sharp (maybe only 1/4Hz).  This is common for string
-instruments.  They start out sharp (due to more harmonics in the
-spectrum, I think), and then quickly reach a relatively stable plateau,
-slowly dropping in frequency.</p>
-
-<p>Or in other words, <b>it's a little sharp</b>.</p>
-
-<p>There is also a "wavey shape" to the lines, especially for the second
-half of the duration.  This represents a beat note (though I guess you
-could also describe it as vibrato).  In this case, I am playing the high
-E on my guitar and the low E is resonating passively along with it.  The
-two strings are not in tune with eachother, so there is a beat note
-(interference pattern) between them. I can barely hear the beat note in
-this instance, but the strobe shows it obviously.</p>
-
-<p>Or in other words, <b>there's a beat note</b>.</p>
-
-<p>In the second harmonic (659.3Hz), the drawing cursor (vertical black
-line) happens to be in the middle of the display.  This means that the
-stuff to the right of it is relatively old (about a half second), and
-the stuff to the left of it is slightly more recent.  The stuff
-immediately to the left of the update cursor are the most recent of
-all.  If you watch the program run, this is more obvious than any text
-description could be.</p>
-
-<p>Anyways, at 659.3Hz, you see that it is actually in tune, and then
-decaying *slightly* flat (on the order of 1/8Hz).  The fact that the
-fundamental was sharp while the second harmonic was in tune implies that
-the stretch factor is not set correctly -- in this case the guitar
-seems to want a negative stretch factor.  Ideally, the lines for the
-fundamental and the second harmonic should be roughly parallel to
-eachother.</p>
-
-<p>At the fourth harmonic, 1318.5Hz, there is basically only noise.
-The lines are not as clearly pronounced.  It's hard to draw much
-information from such a washed out signal.</p>
-
-<p style="clear:both;"></p>
-<div style="clear:both;float:right;">
-<img src="screen03.png">
-<div style="text-align:center;font-weight:bold;">Figure 3</div><br>
-</div>
-
-<p>Now look at <b>figure 3</b>.  The tuner is set to low A (110Hz),
-but I am strumming the high E string.  So everything the tuner picks up
-is an incidental harmonic that happens to pass through the filters.
-One unusual thing that is apparent right off is that the signal shown
-in the 110Hz screen is actually only inadvertently leaking through the
-filter from a harmonic.</p>
-
-<p>One sure sign of this you can see if you count the red/green
-stripes in any vertical column (such as at the far left of the
-display).  If the proper frequency was being displayed, it would show
-one red and one green, but here we see red green red green red green,
-three of each.  That means it is at 3x the frequency that is
-designated.  This only happens because there wasn't a signal at the
-fundamental frequency, so the only thing that made it through the
-filter is this harmonic and it gets amplified just so something can be
-shown.</p>
-
-<p>Or in other words, <b>anything other than one bright red line and one
-bright green line means it's probably set wrong</b>.</p>
-
-<p>The note at 3x the specified value is called the third harmonic,
-and it happens that the third harmonic of A is in fact E, so this
-makes sense.  The third harmonic is of the same note as the musical
-perfect fifth (and one octave higher).</p>
-
-<p>You can also see that it is about 2Hz flat, because each red line
-wraps all the way around twice in the space from the far left to the
-first yellow line.  Note that it looks like the red lines cross 6
-times (you can count the spots where they cross the bottom very
-easily), but that is still only 2Hz because there are three lines.
-That's complicated!  Luckily it doesn't matter.  The important point
-is that it is not actually picking up the proper frequency.</p>
-
-<p>Looking at the upper harmonics (220Hz and 440Hz), you see that it
-is a very faint signal, hard to interpret.  Another sure sign that you
-have the thing set to a different note than the one you are
-playing.</p>
-
-<p style="clear:both;"></p>
-<div style="clear:both;float:right;">
-<img src="screen04.png">
-<div style="text-align:center;font-weight:bold;">Figure 4</div><br>
-</div>
-
-<p><b>Figure 4</b> is another example where we have set the note
-wrong.  164.8Hz is the low E, but I am playing the high E.</p>
-
-<p>So in the fundamental (164.8Hz), if you look at any single vertical
-line, you will see green red green red, two of each, so it is not the
-right frequency.  In fact, the note is exactly an octave higher than
-164.8Hz.</p>
-
-<p>In the second harmonic (329.6Hz), on the other hand, you see a very
-strong signal that is approximately the right frequency.  It is, in
-fact, about 5.5Hz flat.</p>
-
-<p>Or in other words, <b>it is very flat</b>.</p>
-
-<p>In 659.3Hz, you see a proper signal, though it is also very flat
-(downward sloping). And you can see that it seems weak.  One thing to
-keep in mind is that cellphone microphones are really optimized for a
-narrow frequency range, often as small as 100Hz-500Hz.  High and low
-frequencies do not make it through necessarily.</p>
-
-<p style="clear:both;"></p>
-<div style="clear:both;float:right;">
-<img src="screen05.png">
-<div style="text-align:center;font-weight:bold;">Figure 5</div><br>
-</div>
-
-<p>See <b>figure 5</b>.  The fundamental here (329.6Hz) is about 1/4Hz
-flat.  You can see a discontinuity on the right side of the screen,
-just to the right of the cursor, which marks the time when I struck
-the string.  It is about 1/4Hz flat, as you can see by the
-slowly-descending line.</p>
-
-<p>Or in other words, <b>it is slightly flat</b>.</p>
-
-<p>The second and fourth harmonics (659.3Hz and 1318.5Hz, respectively),
-show that it is even more flat in the upper harmonics, which again shows
-that I haven't adjusted the stretch factor.  Also note that the slight
-beat note is much more pronounced in these harmonics.  But mostly the
-important part is that all three bands are each showing one red line and
-one green line, meaning that it is on the right note and getting a fairly
-good signal.</p>
-
-<p style="clear:both;"></p>
-<div style="clear:both;float:right;">
-<img src="screen06.png">
-<div style="text-align:center;font-weight:bold;">Figure 6</div><br>
-</div>
-
-<p><b>Figure 6</b> is another example of a <b>beat note</b>.  I've
-intentionally tuned the string so that it is slightly sharp, and also
-out of tune with the low E string.  This is just here to illustrate
-that the beat notes can have a few different representations.</p>
-
-<p>Sometimes when a unison or octave tuning proves challenging, these
-displays of a beat note can begin to provide a kind of intuitive sense
-of resonances.</p>
-
-<p>You can also tell that the signal isn't very strong (the fourth
-harmonic at 1318.5Hz doesn't come through at all) -- that is
-because the note has already been sounding for a while.  Also, most
-phones filter out high and low frequencies.</p>
-
-<p style="clear:both;"></p>
-<div style="clear:both;float:right;">
-<img src="screen07.png">
-<div style="text-align:center;font-weight:bold;">Figure 7</div><br>
-</div>
-
-<p><b>Figure 7</b> is perfectly in tune in the fundamental
-(329.6Hz), because the red line is horizontal on average.  However, even
-though it doesn't have any net movement, it does wave up and down a
-little.  That indicates a beat note, interference from some
-other string that is slightly out of tune.  So it means this string is
-<b>perfectly in tune, but some other string is out of tune</b>.  By
-damping the other strings, you can see which one it is.</p>
-
-<p>Again, you see that the upper harmonics are flat (descending lines),
-because the stretch factor hasn't been configured.</p>
-
-
-<!-- XXX - capture an image of me beating the phone on something,
-showing that it appears in all frequencies -->
-
+<p>Pinch to zoom, drag to scroll, tap to pause.</p>
 
 <h2>Change log</h2>
+
+<p><b>2014/08/30 Version 1.4:</b> Improve FFT mode, rewrite document.</p>
 
 <p><b>2014/08/10 Version 1.3:</b> Add FFT mode, fix crash.</p>
 
