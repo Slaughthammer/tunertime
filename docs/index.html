@@ -43,8 +43,7 @@ dinner time," but perhaps with less anticipatory salivation.</p>
 <p>The strobe mode is based off of an electro-mechanical spinning-disk
 strobe tuner, except instead of appearing like it is spinning forward or
 backward depending on the frequency, the dividing line between red and
-green bands moves up and down the screen.  The advantage is you can see a
-brief history of the tone.</p>
+green bands moves up and down the screen.</p>
 
 <p>Just start up the app, set it for a note (semi-tone and octave) in the
 range of your instrument, and then bang on or blow into your instrument.
@@ -61,9 +60,7 @@ Notice how the harmonics of the E do show up (imperfectly) in the A.
 C'est la vie.</p>
 
 <p>Three harmonics are shown at once, by default showing the two upper
-octaves.  This can be interesting because often the upper harmonics will
-not be precise multiples, and seeing them helps you understand what your
-ears are telling you.</p>
+octaves.</p>
 
 <p>The small vertical yellow lines along the bottom of the strobe
 bands represent 1 second intervals.  If it takes 1 second for
@@ -98,19 +95,19 @@ example).</p>
 <p>When tuning pianos, the upper harmonics of a single string are often
 slightly higher than you would expect in an ideal world.  Instead of the
 octave harmonic being at exactly 2.00000x, it is instead more like
-2.00100x or 2.00050x.  This will make a perceptible beat note if you use
-ideal tuning and then play octaves on the piano. To avoid this, piano
-tuners typically tune a slightly stretched scale.</p>
+2.00100x or 2.00050x.
+This is called
+<a href="http://en.wikipedia.org/wiki/Inharmonicity">inharmonicity</a>,
+and will make a perceptible beat note if you use ideal tuning and play
+octaves on the piano.  To avoid this, piano tuners typically tune a
+slightly stretched scale.</p>
 
 <p>Personally, when I sit down
 to a new piano, I adjust TunerTime's note panel until it shows a
 horizontal line for the fundamental, and then I adjust the stretch panel
 until the second harmonic is also a horizontal line.  Do it again for a
-couple other notes to get a feel for it.</p>
+couple other notes to get a feel for the instrument.</p>
 
-<p>For more details, see the
-<a href="http://en.wikipedia.org/wiki/Inharmonicity">wikipedia article on
-inharmonicity.</a></p>
 <h3>temper</h3>
 
 <p>For each note in the scale
@@ -143,17 +140,14 @@ harmonic will not be exactly a multiple of 2.0.</p>
 <p>The menu also provides access to FFT mode.
 FFT stands for Fast Fourier Transform,
 which is a technique for converting a time-domain signal (like a
-waveform) into a frequency-domain symbol (like a spectrum analyzer).
-The FFT mode is not really useful directly for tuning, but it can help
-you get in the ballpark.  Or you can use it to determine the frequency of
-a totally unknown signal, or to examine the harmonics of a waveform.</p>
+waveform) into a frequency-domain symbol (like a spectrum analyzer).</p>
 
 <p>The vertical axis is time, with markings at 1 second intervals.</p>
 
 <p>The horizontal axis is frequency, with lower frequencies to the
 left.  In musical "scale" mode, the legend along the bottom of the screen
 has a little white line for each of the 52 white keys on a piano, and
-labels where convenient.  In "freq" mode, the legend indicates frequency
+labels where they fit.  In "freq" mode, the legend indicates frequency
 in Hertz.</p>
 
 <p>The only tuning parameter is "N", which is the size of the block that
@@ -166,7 +160,8 @@ time.</p>
 
 <h2>Change log</h2>
 
-<p><b>2014/08/30 Version 1.4:</b> Improve FFT mode, rewrite document.</p>
+<p><b>2014/08/30 Version 1.4:</b> Add pause, improve FFT mode, rewrite
+document.</p>
 
 <p><b>2014/08/10 Version 1.3:</b> Add FFT mode, fix crash.</p>
 
