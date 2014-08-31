@@ -569,8 +569,6 @@ fft_draw_piano(jobject this)
 		static const char *(names[12]) = { "A", NULL, "B", "C", NULL, "D", NULL, "E", "F", NULL, "G", NULL };
 		const char *name = names[i % 12];
 
-		if (!name) continue;		/* skip black keys */
-
 		freq = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)i*100, (jint)1);
 
 		bin = ((double)fft_size)*(freq/((double)sample_rate));
@@ -584,13 +582,17 @@ fft_draw_piano(jobject this)
 		if (x1 < 0) x1 = 0;
 		if (x2 > width) x2 = width;
 
-		filled_rect(x1, y2, x2, y3, 0x00FFFFFF);
-		if (x0 >= last_x) {
-			seven_seg(x0, y1, name[0], 0x00AAAAFF);
-			seven_seg(x0+SEVEN_WID, y1, (i/12)+'0', 0x00AAAAFF);
-			last_x = x0 + (SEVEN_WID*2);
-			or_vline(x, 0, y1, 0x00444411);
-			grid_x[num_grid_x++] = x;
+		if (name) {			/* white keys */
+			filled_rect(x1, y2, x2, y3, 0x00FFFFFF);
+			if (x0 >= last_x) {
+				seven_seg(x0, y1, name[0], 0x00AAAAFF);
+				seven_seg(x0+SEVEN_WID, y1, (i/12)+'0', 0x00AAAAFF);
+				last_x = x0 + (SEVEN_WID*2);
+				or_vline(x, 0, y1, 0x00444411);
+				grid_x[num_grid_x++] = x;
+			}
+		} else {
+			filled_rect(x1, y2, x2, y3, 0x00666666);
 		}
 	}
 
