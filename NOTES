@@ -298,6 +298,6 @@ window."
 
 XXX - microphone capture apparently fails intermittently if you home -> other mic app -> tunertime (fails on nexus 7!)
 XXX - grab display lock
-
+XXX - release for crash fix if nothing else
 
 XXX - tone generator?

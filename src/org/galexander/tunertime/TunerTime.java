@@ -488,6 +488,11 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			int x1 = -1, x2 = -1;
 			int wid = v.getWidth();
 
+			if (wid == 0) {
+				/* unlikely, but don't divide by zero */
+				return false;
+			}
+
 			if ((i = event.findPointerIndex(0)) != -1) {
 				x1 = (int)event.getX(i);
 			} else {
@@ -524,6 +529,9 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				int delta_x = x1 - start_x;
 				if (start_x_width != 0) {
 					int new_width = Math.abs(x1-x2);
+					if (new_width == 0) {
+						new_width = 1;
+					}
 					fft_width = (start_fft_width *
 						start_x_width) / new_width;
 				}
