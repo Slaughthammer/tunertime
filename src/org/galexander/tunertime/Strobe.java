@@ -136,6 +136,7 @@ public class Strobe extends Thread {
 	}
 
 	public boolean sound_start() {
+System.out.println("tt: sound_start()");
 		if (recorder != null) {
 			sound_stop();
 		}
@@ -153,6 +154,7 @@ public class Strobe extends Thread {
 			sound_stop();
 			return false;
 		}
+System.out.println("tt: startRecording");
 		try {
 			recorder.startRecording();
 		} catch (IllegalStateException e) {
@@ -160,10 +162,12 @@ public class Strobe extends Thread {
 			sound_stop();
 			return false;
 		}
+System.out.println("tt: success");
 		return true;
 	}
 
 	private void sound_stop() {
+System.out.println("tt: sound_stop()");
 		if (recorder == null) {
 			return;
 		}
@@ -172,6 +176,7 @@ public class Strobe extends Thread {
 			recorder.release();
 		} catch (IllegalStateException e) { /* whatever */ }
 		recorder = null;
+System.out.println("tt: recorder cleared");
 	}
 
 	static {

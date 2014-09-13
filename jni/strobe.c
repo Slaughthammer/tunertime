@@ -958,6 +958,7 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 	recorder = (*env)->GetObjectField(env, this, fid_st_recorder);
 	record_bufsz = (*env)->GetIntField(env, this, fid_st_record_bufsz);
 	sample_rate = (*env)->CallIntMethod(env, recorder, mid_ar_getsamplerate);
+println("tt: Strobe_runner, recorder=%p, bufsz=%d, sr=%d", (void*)recorder, (int)record_bufsz, (int)sample_rate);
 	record_bufsz /= sizeof(snd_buf[0]);	/* was bytes */
 
 	readbuf = (*env)->NewShortArray(env, record_bufsz);
@@ -992,7 +993,9 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 		if (to_read > record_bufsz) {
 			to_read = record_bufsz;
 		}
+println("tt: to_read=%d", (int)to_read);
 		num_read = (*env)->CallIntMethod(env, recorder, mid_ar_read, readbuf, 0, to_read);
+println("tt: num_read=%d", (int)num_read);
 		if (num_read <= 0) {
 			return;
 		}
