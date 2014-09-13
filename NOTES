@@ -295,6 +295,55 @@ So that's my "use words to excuse yourself from implementing a Hamming
 window."
 
 
+September 13, 2014.
+
+Trying to track down the bug that causes it to lose microphone input.
+I'm heartened that the bug is present on Nexus 7 (changing orientation
+seems to be enough), though I haven't had a chance to test on there since
+I added debugging messages...
+
+I did get a SIGSEGV when changing orientation on my Moto G
+(crash20140913-1).  It is taking a bad branch to 0.  The blx call is at
+.text+2b3e in JNI.  it seems to be
+   *(*((3a800000+pc)+16)+223*4)
+Not sure what that means.  Let's try to find source correspondence....
+
+Okay, I got it to crash with the debugging messages, and it looks like
+what is happening is that the previous thread never dies!  I get a thread
+starting up.  startRecording() fails:
+
+   I/System.out(20796): tt: startRecording
+   W/AudioPolicyManagerBase( 274): startInput() input 16759 failed: other
+   input already started..
+   E/AudioRecord(20796): start() status -38
+
+But it doesn't throw an exception, and it has no return value, so my
+program doesn't know until it goes to read, which then returns -3 (ESRCH
+No such process?).  Meanwhile the thread that never died continues
+running, but now it is generating a bunch of:
+
+   E/dalvikvm(20796): JNI ERROR: env->self != thread-self (0x5f00c570 vs.
+   0x5efd9a10); auto-correcting
+
+That means that the env pointer comes from the wrong thread, which
+happens because the env is a static variable in the JNI, so when the new
+thread starts up, it replaces the old thread's env pointer.
+
+So we really need some thread discipline to make sure that (a) the old
+thread stops, and (b) the new thread doesn't start unless the old thread
+stops.
+
+I would guess that there is somewhere where interrupted can get cleared
+without throwing anything or returning a useful error.  I only call
+isInterrupted(), which shouldn't clear the flag.
+
+Another possibility is that the new thread is being started before the
+old thread can register its interruptedness...then the old thread never
+sees it is interrupted because the env pointer was overwritten?  Seems
+like a stretch because it really should depend on the "this" pointer
+instead of env, but threads have a way of being magical, and I have no
+idea what "auto-correcting" really means.
+
 
 XXX - microphone capture apparently fails intermittently if you home -> other mic app -> tunertime (fails on nexus 7!)
 XXX - grab display lock
