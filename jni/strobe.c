@@ -997,6 +997,7 @@ println("tt: to_read=%d", (int)to_read);
 		num_read = (*env)->CallIntMethod(env, recorder, mid_ar_read, readbuf, 0, to_read);
 println("tt: num_read=%d", (int)num_read);
 		if (num_read <= 0) {
+println("tt: quitting runner!", (int)num_read);
 			return;
 		}
 		(*env)->GetShortArrayRegion(env, readbuf, 0, num_read, snd_buf+snd_ofs);

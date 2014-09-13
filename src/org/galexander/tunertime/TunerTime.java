@@ -430,12 +430,14 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	}
 
 	private void start_strobe() {
+System.out.println("tt: start_strobe");
 		stop_strobe();
 		strobe = new Strobe(this);
 		strobe.setSurface(holder, width, height);
 		strobe.setCents(strobe_cents, harm1_mult, harm2_mult);
 		strobe.setFft(fft_mode);
 		strobe.setFftParms(fft_size, fft_width, fft_offset, fft_grid_freq);
+System.out.println("tt: starting....");
 		strobe.start();
 	}
 
@@ -443,6 +445,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		if (strobe == null) {
 			return;
 		}
+System.out.println("tt: stop_strobe");
 		strobe.interrupt();
 		strobe = null;
 	}
