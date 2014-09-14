@@ -345,8 +345,17 @@ instead of env, but threads have a way of being magical, and I have no
 idea what "auto-correcting" really means.
 
 
-XXX - microphone capture apparently fails intermittently if you home -> other mic app -> tunertime (fails on nexus 7!)
+September 14, 2014.
+
+I decided it's all got to be thread problems, since the JNI uses static
+variables and the Java doesn't.  So I added a static variable for the
+current running Strobe thread, and a Semaphore to ensure only one thread
+runs at a time.  So far so good.  Knock on wood.  I am closing this crash
+issue.
+
+
+XXX - test repeat orientation change on nexus 7
 XXX - grab display lock
-XXX - release for crash fix if nothing else
+XXX - release
 
 XXX - tone generator?
