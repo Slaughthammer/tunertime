@@ -94,7 +94,7 @@ static jclass cl_audiorecord;
 
 static jmethodID mid_println;
 static jmethodID mid_st_do_draw;
-static jmethodID mid_st_is_interrupted;
+static jmethodID mid_st_time_to_die;
 static jmethodID mid_tt_cents_to_freq;
 static jmethodID mid_ar_getsamplerate;
 static jmethodID mid_ar_read;
@@ -800,7 +800,7 @@ jni_init(JNIEnv *env_)
 
 	METHOD(println, printstream, "println", "(Ljava/lang/String;)V")
 	METHOD(st_do_draw, strobe, "do_draw", "([III)Z")
-	METHOD(st_is_interrupted, strobe, "isInterrupted", "()Z")
+	METHOD(st_time_to_die, strobe, "time_to_die", "()Z")
 	METHOD(tt_cents_to_freq, tunertime, "cents_to_freq", "(II)D")
 	METHOD(ar_getsamplerate, audiorecord, "getSampleRate", "()I")
 	METHOD(ar_read, audiorecord, "read", "([SII)I")
@@ -982,7 +982,7 @@ println("tt: Strobe_runner, recorder=%p, bufsz=%d, sr=%d", (void*)recorder, (int
 			recalculate(this);
 			resize_bitmap();
 		}
-		if ((*env)->CallBooleanMethod(env, this, mid_st_is_interrupted)) {
+		if ((*env)->CallBooleanMethod(env, this, mid_st_time_to_die)) {
 			/* thread was interrupted, must be time for it to die */
 			println("thread interrupted");
 			return;

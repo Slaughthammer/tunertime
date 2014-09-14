@@ -7,9 +7,14 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.view.SurfaceHolder;
+import java.util.concurrent.Semaphore;
 
 public class Strobe extends Thread {
 	public final static int FFT_RANGE_MULT = 65536;
+
+	private static final Object lock = new Object();
+	private static Strobe curr_thread = null;
+	private static final Semaphore sem = new Semaphore(1);
 
 	private volatile int cents;
 	private volatile int harm1_mult, harm2_mult;
@@ -32,6 +37,13 @@ public class Strobe extends Thread {
 	private TunerTime ui = null;
 
 	Strobe(TunerTime ui_) {
+		super();
+		synchronized(lock) {
+			if (curr_thread != null) {
+				curr_thread.interrupt();
+			}
+			curr_thread = this;
+		}
 		ui = ui_;
 	}
 
@@ -110,7 +122,7 @@ public class Strobe extends Thread {
 		if (c == null) {
 			return false;
 		}
-		if (isInterrupted()) {
+		if (time_to_die()) {
 			holder.unlockCanvasAndPost(c);
 			return true;
 		}
@@ -129,12 +141,42 @@ public class Strobe extends Thread {
 
 	public void run() {
 		try {
+			sem.acquire();
+		} catch (Exception e) {
+			synchronized(lock) {
+				if (curr_thread == this) {
+					curr_thread = null;
+				}
+			}
+			return;
+		}
+		try {
 			if (sound_start()) {
 				runner();
 			}
 		} finally {
 			sound_stop();
+			synchronized(lock) {
+				if (curr_thread == this) {
+					curr_thread = null;
+				}
+			}
+			sem.release();
 		}
+	}
+
+	private boolean time_to_die() {
+		if (isInterrupted()) {
+			return true;
+		}
+		synchronized(lock) {
+			if (curr_thread != this) {
+				/* a new thread has been started, we'd better
+				 * die toot sweet! */
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private boolean sound_start() {
