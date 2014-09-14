@@ -1,9 +1,12 @@
 package org.galexander.tunertime;
 
-import java.lang.*;
-import android.view.*;
-import android.graphics.*;
-import android.media.*;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Typeface;
+import android.media.AudioFormat;
+import android.media.AudioRecord;
+import android.media.MediaRecorder;
+import android.view.SurfaceHolder;
 
 public class Strobe extends Thread {
 	public final static int FFT_RANGE_MULT = 65536;
