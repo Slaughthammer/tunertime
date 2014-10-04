@@ -180,7 +180,6 @@ public class Strobe extends Thread {
 	}
 
 	private boolean sound_start() {
-System.out.println("tt: sound_start()");
 		record_bufsz = AudioRecord.getMinBufferSize(
 				44100, AudioFormat.CHANNEL_IN_MONO,
 				AudioFormat.ENCODING_PCM_16BIT);
@@ -194,19 +193,16 @@ System.out.println("tt: sound_start()");
 			System.out.println("got funny format/channels back from AudioRecord!");
 			return false;
 		}
-System.out.println("tt: startRecording");
 		try {
 			recorder.startRecording();
 		} catch (IllegalStateException e) {
 			System.out.println("illegal state for startRecording()");
 			return false;
 		}
-System.out.println("tt: success");
 		return true;
 	}
 
 	private void sound_stop() {
-System.out.println("tt: sound_stop()");
 		if (recorder == null) {
 			return;
 		}
@@ -215,7 +211,6 @@ System.out.println("tt: sound_stop()");
 			recorder.release();
 		} catch (IllegalStateException e) { /* whatever */ }
 		recorder = null;
-System.out.println("tt: recorder cleared");
 	}
 
 	static {
