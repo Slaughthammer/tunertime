@@ -11,6 +11,7 @@ import android.app.AlertDialog;
 import java.text.DecimalFormat;
 import java.lang.*;
 import android.net.Uri;
+import android.os.PowerManager;
 
 public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private int A_freq = 440;
@@ -50,6 +51,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private View fft_buttons;
 	private TextView N_display;
 	private Button grid_button;
+
+	private PowerManager.WakeLock wakelock = null;
 
 	private Strobe strobe = null;
 	private SurfaceHolder holder = null;
@@ -114,9 +117,15 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				R.id.N_display);
 		grid_button = (Button)fft_buttons.findViewById(
 				R.id.grid_button);
+
+		PowerManager pm = (PowerManager)getSystemService(
+						Context.POWER_SERVICE);
+		wakelock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK,
+						"TunerTime");
 	}
 
 	public void onResume() {
+		wakelock.acquire();
 		stop_strobe();
 		load_config();
 		if (fft_mode) {
@@ -133,6 +142,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	}
 
 	public void onPause() {
+		wakelock.release();
 		stop_strobe();
 		save_config();
 		super.onPause();
