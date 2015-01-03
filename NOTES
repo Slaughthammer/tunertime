@@ -363,13 +363,13 @@ them at the end.
 XXX - loudness adaptation should be moving average not peak
 XXX - A freq adjustable by +/-0.1Hz?
 XXX - stretch factor should be cents/octave
+XXX - a bar of buttons in strobe mode to select note/A freq/stretch/temper/harmonics, so mode is just strobe/fft/help
 XXX - boundary between strobes should be explicit, not incidental
 XXX - mask jagged edge of strobes?
-XXX - make adjustable width of strobe sweeps
+XXX - make all strobes scan left->right at a constant speed (i.e., spread some vertical lines out to more than a pixel wide)
+XXX - make FFT have time horizontal to match strobe
 XXX - make fft samples all the same height, so more seconds are on the
-screen for bigger bins
+screen for bigger bins ???
 XXX - scroll mode (without history)
-XXX - would a full screen 'observe mode' and/or use of back button change
-the ui any?
 
 XXX - tone generator?
