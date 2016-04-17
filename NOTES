@@ -360,11 +360,42 @@ Klaus Knupfer sent a list of feature requests...  I'm putting a bunch of
 them at the end.
 
 
+April 17, 2016.
+
+This has not been touched in a while, and in fact I don't use it too
+often.  Mostly I use the FFT mode as a novelty to visualize bird and
+insect song.
+
+However, I recently got GGI to manage the FFT->IFFT correctly, and from
+that I believe that TunerTime FFT would benefit from windowing, which
+will reduce the amount of a tone which is smeared across the high
+frequencies.  Also, I think I will switch to GGI's technique of
+representing intensity with a rainbow, which provides a much larger range
+of perceptible gradations.
+
+I'm tempted to switch to FFTW (optimized FFT library) but I don't know of
+any performance problems with the existing situation so best to avoid the
+effort.
+
+Also, some of the suggestions from Klaus are worth implementing, though
+working with ggi has particularly convinced me there is little advantage
+to making TunerTime act more like an off-line viewer.  I think designing
+it like limited bench equipment was a sound decision.
+
+
+
+XXX - switch to rainbow for FFT intensity
+XXX - windowed FFT samples
 XXX - loudness adaptation should be moving average not peak
 XXX - A freq adjustable by +/-0.1Hz?
-XXX - stretch factor should be cents/octave
-XXX - a bar of buttons in strobe mode to select note/A freq/stretch/temper/harmonics, so mode is just strobe/fft/help
+XXX - stretch factor should be cents per octave
 XXX - boundary between strobes should be explicit, not incidental
+XXX - a bar of buttons along top of strobe: note/A freq/stretch/temper/harmonics
+    then menu is just strobe/fft/help
+XXX - tone generator (where should the button go?) 
+XXX - can i get rid of title bar without switching to newer API?
+XXX - fix multiple 1 second bars when switching notes often in strobe
+
 XXX - mask jagged edge of strobes?
 XXX - make all strobes scan left->right at a constant speed (i.e., spread some vertical lines out to more than a pixel wide)
 XXX - make FFT have time horizontal to match strobe
@@ -372,4 +403,3 @@ XXX - make fft samples all the same height, so more seconds are on the
 screen for bigger bins ???
 XXX - scroll mode (without history)
 
-XXX - tone generator?
