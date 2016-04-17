@@ -192,6 +192,15 @@ filled_rect(int x1, int y1, int x2, int y2, unsigned color)
 }
 
 static void
+hline(int x1, int y, int x2, unsigned color)
+{
+	int x;
+	for (x = x1; x < x2; x++) {
+		DRAW_PIXEL(x, y, color);
+	}
+}
+
+static void
 or_hline(int x1, int x2, int y, unsigned color)
 {
 	int x;
@@ -775,6 +784,11 @@ do_fft_display(void)
 		x1 = (i*width)/num_bins;
 		filled_rect(x1, y1, x1+xn, y2, color);
 	}
+	hline(0, (y2+0)%disp_height, width, 0x000000);
+	hline(0, (y2+1)%disp_height, width, 0x000000);
+	hline(0, (y2+2)%disp_height, width, 0x000000);
+	hline(0, (y2+3)%disp_height, width, 0x000000);
+	hline(0, (y2+4)%disp_height, width, 0x000000);
 
 		/* draw grid */
 	for (i = 0; i < num_grid_x; i++) {
