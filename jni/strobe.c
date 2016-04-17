@@ -42,14 +42,6 @@ struct strobe_rec {
 	int last_cleared_col;
 };
 
-/* for NOTES_NUM parallel note filters (starting at note NOTES_LOWEST) which are
- * used to estimate the currently playing note */
-struct note_filter_rec {
-	double freq;
-	int fft_bin_lo, fft_bin_hi;	/* range of fft bins covered */
-	double output;
-};
-
 
 static int sample_rate;
 static int base_cents;
@@ -762,7 +754,7 @@ newdata(void)
 				nf_curr_ridx = 0;
 			}
 		}
-	nf_curr_samp = i;
+		nf_curr_samp = i;
 	} else {
 		for (i = 0; i < NUM_STROBES; i++) {
 			strobe_newdata(&strobes[i]);
