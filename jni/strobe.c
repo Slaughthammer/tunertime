@@ -301,7 +301,7 @@ clear_col(struct strobe_rec *s, int col)
 		 * has looped to zero */
 		return;
 	}
-		
+
 	start_x = s->last_cleared_col;
 	stop_x = col+NUM_CLEAR;
 	s->last_cleared_col = (stop_x % width);
@@ -998,7 +998,7 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 	bitmap = NULL;
 
 	init_fft();
-	
+
 	recorder = (*env)->GetObjectField(env, this, fid_st_recorder);
 	record_bufsz = (*env)->GetIntField(env, this, fid_st_record_bufsz);
 	sample_rate = (*env)->CallIntMethod(env, recorder, mid_ar_getsamplerate);
