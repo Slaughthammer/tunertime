@@ -676,6 +676,59 @@ fft_draw_seconds(void)
 	}
 }
 
+/* x should be [0, 1.0] */
+static unsigned
+color_for_value(double x)
+{
+#define NUM_RANGES 5
+	static const unsigned spectrum[NUM_RANGES+1][3] =
+			{ { 0, 0, 0 },		/* black */
+			  { 1, 0, 1 },		/* purple */
+			  { 0, 0, 1 },		/* blue */
+			  { 0, 1, 0 },		/* green */
+			  { 1, 1, 0 },		/* orange */
+			  { 1, 0, 0 } };	/* red */
+	int range = 0;
+	unsigned r1, g1, b1;
+	unsigned r2, g2, b2;
+	unsigned r, g, b;
+	unsigned ix, i1mx;
+
+	if (x < 0.0000001) {
+		return 0x000000;
+	}
+	x = log(1.0 + x * 100.0) / 4.62;	/* log(101) = 4.62 */
+	if (x < 0.0) {
+		return 0x000000;
+	}
+	if (x > 1.0) {
+		x = 1.0;
+	}
+
+	x *= ((double)NUM_RANGES);
+	while (x > 1.0) {
+		x -= 1.0;
+		range++;
+	}
+	if (range > NUM_RANGES-1) {
+		range = NUM_RANGES-1;
+		x = 1.0;
+	}
+	r1 = spectrum[range][0];
+	g1 = spectrum[range][1];
+	b1 = spectrum[range][2];
+	r2 = spectrum[range+1][0];
+	g2 = spectrum[range+1][1];
+	b2 = spectrum[range+1][2];
+	ix = x*255.0;
+	i1mx = 255-ix;
+	r = i1mx*r1 + ix*r2;
+	g = i1mx*g1 + ix*g2;
+	b = i1mx*b1 + ix*b2;
+	return COLOR_VALUE(r,g,b);
+}
+
+
 static void
 do_fft_display(void)
 {
@@ -683,8 +736,7 @@ do_fft_display(void)
 	int i;
 	int y1, y2, xn;
 	int incr;
-	double avg = 0.;
-	double scale;
+	double dincr;
 	int disp_height = height-fft_legend_height;
 
 	y1 = fft_y;
@@ -702,25 +754,25 @@ do_fft_display(void)
 		/* normalize the data, and compute the average */
 	for (i = 0; i < num_bins; i++) {
 		int n = i+first_bin;
-		double t = fabs(fft_r[n]) + fabs(fft_i[n]);
+		double r = fft_r[n];
+		double i = fft_i[n];
+		double t = sqrt(r*r+i*i);
 		fft_r[n] = t;
-		avg += t;
 	}
-	avg /= (((double)num_bins) / ((double)incr));
-	scale = 32./avg;
 
+	dincr = incr;
 		/* draw fft data */
 	for (i = 0; i < num_bins; i+=incr) {
-		int x1 = (i*width)/num_bins;
+		int x1;
 		double val = 0;
 		unsigned color;
 		int j;
 		for (j = 0; j < incr; j++) {
 			val += fft_r[i+j+first_bin];
 		}
-		color = val * scale;
-		if (color > 255) color = 255;
-		color = COLOR_VALUE(0,color,color/2);
+		val /= dincr;
+		color = color_for_value(val);
+		x1 = (i*width)/num_bins;
 		filled_rect(x1, y1, x1+xn, y2, color);
 	}
 
