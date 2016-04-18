@@ -43,5 +43,12 @@
 	    android:text="scale"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
 	    android:onClick="grid_toggle" />
-   </LinearLayout>
+	<Button android:id="@+id/window_button"
+	    android:layout_width="fill_parent"
+	    android:layout_height="1dp"
+	    android:layout_weight="1"
+	    android:text="bartlett"
+	    android:textAppearance="?android:attr/textAppearanceMedium"
+	    android:onClick="window_toggle" />
+    </LinearLayout>
 </LinearLayout>

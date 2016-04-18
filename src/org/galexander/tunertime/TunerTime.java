@@ -24,6 +24,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 	private boolean fft_mode;
 	private int fft_size;
+	private int fft_window;
 	private int fft_width;
 	private int fft_offset;
 	private boolean fft_grid_freq;
@@ -51,6 +52,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private View fft_buttons;
 	private TextView N_display;
 	private Button grid_button;
+	private Button window_button;
 
 	private PowerManager.WakeLock wakelock = null;
 
@@ -117,6 +119,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				R.id.N_display);
 		grid_button = (Button)fft_buttons.findViewById(
 				R.id.grid_button);
+		window_button = (Button)fft_buttons.findViewById(
+				R.id.window_button);
 
 		PowerManager pm = (PowerManager)getSystemService(
 						Context.POWER_SERVICE);
@@ -170,6 +174,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		temper_enabled = prefs.getBoolean("temper_enabled", false);
 		fft_mode = prefs.getBoolean("fft_mode", false);
 		fft_size = prefs.getInt("fft_size", 2048);
+		fft_window = prefs.getInt("fft_window", 3);
 		fft_width = prefs.getInt("fft_width", Strobe.FFT_RANGE_MULT/4);
 		fft_offset = prefs.getInt("fft_offset", 0);
 		fft_grid_freq = prefs.getBoolean("fft_grid_freq", false);
@@ -198,6 +203,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		editor.putBoolean("temper_enabled", temper_enabled);
 		editor.putBoolean("fft_mode", fft_mode);
 		editor.putInt("fft_size", fft_size);
+		editor.putInt("fft_window", fft_window);
 		editor.putInt("fft_width", fft_width);
 		editor.putInt("fft_offset", fft_offset);
 		editor.putBoolean("fft_grid_freq", fft_grid_freq);
@@ -351,6 +357,13 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		fft_grid_freq = !fft_grid_freq;
 		update_status();
 	}
+	public void window_toggle(View v) {
+		fft_window++;
+		if (fft_window >= 5) {
+			fft_window = 0;
+		}
+		update_status();
+	}
 
 	private void do_help() {
 		Intent i = new Intent(Intent.ACTION_VIEW);
@@ -366,6 +379,9 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		}
 		return val;
 	}
+
+	private final String window_names[] = { "rectangle", "hamming",
+		"blackman", "bartlett", "hanning" };
 
 		/* note that ranges are checked in update_status() as well,
 		 * because status display is really the only part that will go
@@ -383,8 +399,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 		if (strobe != null) {
 			strobe.setCents(strobe_cents, harm1_mult, harm2_mult);
-			strobe.setFftParms(fft_size, fft_width, fft_offset,
-					fft_grid_freq);
+			strobe.setFftParms(fft_size, fft_window, fft_width,
+					fft_offset, fft_grid_freq);
 		}
 
 		int note_index = ((strobe_cents+50)%1200)/100;
@@ -429,6 +445,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 		N_display.setText(Integer.toString(fft_size));
 		grid_button.setText(fft_grid_freq ? "Hz" : "scale");
+		window_button.setText(window_names[fft_window]);
 	}
 
 	public double cents_to_freq(int cents, int harm_mult) {
@@ -445,7 +462,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		strobe.setSurface(holder, width, height);
 		strobe.setCents(strobe_cents, harm1_mult, harm2_mult);
 		strobe.setFft(fft_mode);
-		strobe.setFftParms(fft_size, fft_width, fft_offset, fft_grid_freq);
+		strobe.setFftParms(fft_size, fft_window, fft_width, fft_offset, fft_grid_freq);
 		strobe.start();
 	}
 
