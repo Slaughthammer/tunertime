@@ -384,8 +384,6 @@ it like limited bench equipment was a sound decision.
 
 
 
-XXX - switch to rainbow for FFT intensity
-XXX - windowed FFT samples
 XXX - loudness adaptation should be moving average not peak
 XXX - A freq adjustable by +/-0.1Hz?
 XXX - stretch factor should be cents per octave
