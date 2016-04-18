@@ -717,7 +717,7 @@ color_for_value(double x)
 	if (x < 0.0000001) {
 		return 0x000000;
 	}
-	x = log(1.0 + x * 100.0) / 4.62;	/* log(101) = 4.62 */
+	x = log(1.0 + x * 500.0) / 10.3;
 	if (x < 0.0) {
 		return 0x000000;
 	}
