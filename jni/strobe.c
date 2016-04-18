@@ -4,6 +4,7 @@
 #include <math.h>
 #include <assert.h>
 #include <jni.h>
+#include "window.h"
 
 /* this had better be bigger than record_bufsz, and being too big is kind of
  * harmless (record_bufsz on my system is just over 4kB, or 2ksamps) */
@@ -52,12 +53,14 @@ static struct strobe_rec strobes[NUM_STROBES];
 static short snd_buf[SND_BUFSAMPS];
 static int snd_ofs;
 
+static double fft_buf[MAX_FFT_SIZE];
 static double fft_r[MAX_FFT_SIZE];
 static double fft_i[MAX_FFT_SIZE];
-static int nf_curr_samp = 0;			/* input */
-static int nf_curr_ridx = 0;			/* output */
+static int fft_snd_i = 0;			/* input */
+static int fft_buf_i = 0;			/* output */
 static double fft_sr[32];
 static double fft_si[32];
+static struct window_rec *curr_window = NULL;
 
 static int fft_mode = 0;
 static int fft_size = 8192;
@@ -453,6 +456,14 @@ lg2(int x)
 	return ret;
 }
 
+/* applies the window to input in fft_buf, producing output in fft_r */
+static void
+do_fft_window(void)
+{
+	memcpy(fft_r, fft_buf, fft_size*(sizeof fft_buf[0]));
+	window_apply(curr_window, fft_r);
+}
+
 /* this is Fast Fourier Transform, cribbed from The Scientist and Engineer's
  * Guide to Digital Signal Processing by Steven W. Smith.
  * O(n*lg(n))
@@ -812,15 +823,21 @@ newdata(void)
 {
 	int i;
 	if (fft_mode) {
-		for (i = nf_curr_samp; i != snd_ofs; i = (i+1)%SND_BUFSAMPS) {
-			fft_r[nf_curr_ridx++] = ((double)snd_buf[i]) / 32768.0;
-			if (nf_curr_ridx >= fft_size) {
+		for (i = fft_snd_i; i != snd_ofs; i = (i+1)%SND_BUFSAMPS) {
+			fft_buf[fft_buf_i++] = ((double)snd_buf[i]) / 32768.0;
+			if (fft_buf_i >= fft_size) {
+				do_fft_window();
 				do_fft();
 				do_fft_display();
-				nf_curr_ridx = 0;
+
+					/* only advance half a buffer so window
+					 * doesn't lose detail */
+				memmove(fft_buf, &fft_buf[fft_size/2],
+					(sizeof fft_buf[0])*fft_size/2);
+				fft_buf_i = fft_size/2;
 			}
 		}
-		nf_curr_samp = i;
+		fft_snd_i = i;
 	} else {
 		for (i = 0; i < NUM_STROBES; i++) {
 			strobe_newdata(&strobes[i]);
@@ -971,6 +988,9 @@ fft_mode_changed(jobject this)
 			fft_draw_piano(this);
 		}
 		fft_draw_seconds();
+		memset(fft_r, 0, sizeof fft_r);
+		window_free(curr_window);
+		curr_window = window_init(wk_hanning, fft_size);
 	} else {
 		int i;
 		for (i = 0; i < NUM_STROBES; i++) {
