@@ -204,22 +204,22 @@ hline(int x1, int y, int x2, unsigned color)
 }
 
 static void
-or_hline(int x1, int x2, int y, unsigned color)
+xor_hline(int x1, int x2, int y)
 {
 	int x;
 	for (x = x1; x < x2; x++) {
 		jint *p = ADDR_PIXEL(x, y);
-		*p |= color;
+		*p ^= 0xFFFFFF;
 	}
 }
 
 static void
-or_vline(int x, int y1, int y2, unsigned color)
+xor_vline(int x, int y1, int y2)
 {
 	int y;
 	for (y = y1; y < y2; y++) {
 		jint *p = ADDR_PIXEL(x, y);
-		*p |= color;
+		*p ^= 0xFFFFFF;
 	}
 }
 
@@ -600,7 +600,7 @@ fft_draw_piano(jobject this)
 				seven_seg(x0, y1, name[0], 0x00AAAAFF);
 				seven_seg(x0+SEVEN_WID, y1, (i/12)+'0', 0x00AAAAFF);
 				last_x = x0 + (SEVEN_WID*2);
-				or_vline(x, 0, y1, 0x00444411);
+				xor_vline(x, 0, y1);
 				grid_x[num_grid_x++] = x;
 			}
 		} else {
@@ -672,7 +672,7 @@ fft_draw_freqs(void)
 		if (x2 > width) x2 = width;
 
 		filled_rect(x1, y2, x2, y3, 0x00FFFFFF);
-		or_vline(x, 0, y1, 0x00444411);
+		xor_vline(x, 0, y1);
 		grid_x[num_grid_x++] = x;
 		if ((x0 >= 0) && (x3 < width)) {
 			for (i = 0; label[i]; i++) {
@@ -692,7 +692,7 @@ fft_draw_seconds(void)
 
 	for (y = (y1/FFT_SECONDS); y < (y1-(FFT_SECONDS*2));
 	     y += (y1/FFT_SECONDS)) {
-		or_hline(0, width, y, 0x444411);
+		xor_hline(0, width, y);
 	}
 }
 
@@ -808,12 +808,12 @@ do_fft_display(void)
 
 		/* draw grid */
 	for (i = 0; i < num_grid_x; i++) {
-		or_vline(grid_x[i], y1, y2, 0x444411);
+		xor_vline(grid_x[i], y1, y2);
 	}
 	for (i = (disp_height/FFT_SECONDS); i < (disp_height-(FFT_SECONDS*2));
 	     i += (disp_height/FFT_SECONDS)) {
 		if ((y1 <= i) && (y2 > i)) {
-			or_hline(0, width, i, 0x444411);
+			xor_hline(0, width, i);
 		}
 	}
 
