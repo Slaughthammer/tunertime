@@ -147,19 +147,25 @@ waveform) into a frequency-domain signal (like a spectrum analyzer).</p>
 <p>The horizontal axis is frequency, with lower frequencies to the
 left.  In musical "scale" mode, the legend along the bottom of the screen
 has a little white line for each of the 52 white keys on a piano, and
-labels where they fit.  In "freq" mode, the legend indicates frequency
+labels where they fit.  In "Hz" mode, the legend indicates frequency
 in Hertz.</p>
 
-<p>The only tuning parameter is "N", which is the size of the block that
+<p>The useful tuning parameter is "N", which is the size of the block that
 the FFT operates on.  The rule is that bigger N means more precise
 frequency measurements for tones that do not change over time.  Smaller N
 means faster response and better display of tones that do change over
 time.</p>
 
+<p>You can also select the FFT windowing function.  If you don't already
+know about it, you probably want the "bartlett" window.  At any rate,
+"rectangle" is the one to avoid.</p>
+
+
 <p>Pinch to zoom, drag to scroll, tap to pause.</p>
 
 <h2>Change log</h2>
 
+<p><b>2016/04/XXX Version 1.6:</b> Improve FFT mode.</p>
 <p><b>2014/10/04 Version 1.5:</b> Fix crash, prevent screen from going to sleep.</p>
 
 <p><b>2014/08/30 Version 1.4:</b> Add pause, improve FFT mode, rewrite
