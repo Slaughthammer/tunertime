@@ -758,9 +758,14 @@ do_fft_display(void)
 	int incr;
 	double dincr;
 	int disp_height = height-fft_legend_height;
+	int rows;
 
 	y1 = fft_y;
-	y2 = y1 + ((disp_height*fft_size) / (FFT_SECONDS*sample_rate));
+	rows = ((disp_height*fft_size) / (2*FFT_SECONDS*sample_rate));
+	if (rows < 1) {
+		rows = 1;
+	}
+	y2 = y1 + rows;
 	if (y2 > disp_height) y2 = disp_height;
 
 	COMPUTE_BINS
