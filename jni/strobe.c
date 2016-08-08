@@ -206,6 +206,15 @@ hline(int x1, int y, int x2, unsigned color)
 }
 
 static void
+vline(int x, int y1, int y2, unsigned color)
+{
+	int y;
+	for (y = y1; y < y2; y++) {
+		DRAW_PIXEL(x, y, color);
+	}
+}
+
+static void
 xor_hline(int x1, int x2, int y)
 {
 	int x;
@@ -404,17 +413,16 @@ strobe_drawnew(struct strobe_rec *s)
 	s->samp_max = samp_max;
 }
 
-/* draw a horizontal tic mark at 1 second into the buffer */
+/* draw a vertical tic mark at 1 second into the buffer */
 static void
 strobe_draw_htic(struct strobe_rec *s)
 {
-	int x, y;
+	int x;
 	int step;
 	step = s->freq / s->multiplier;
 	for (x = step; x < width; x += step) {
-		for (y = (s->height*8)/10; y < s->height; y++) {
-			DRAW_PIXEL(x, y+s->y, COLOR_VALUE(0xff,0xff,0xaa));
-		}
+		int h = (s->height*2)/10;
+		vline(x, s->y + (s->height - h), s->y+s->height, 0xFFFFAA);
 	}
 }
 
