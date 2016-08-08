@@ -1028,7 +1028,7 @@ check_fft_mode(jobject this)
 	fft_window = (*env)->GetIntField(env, this, fid_st_fft_window);
 	fft_width = (*env)->GetIntField(env, this, fid_st_fft_width);
 	fft_offset = (*env)->GetIntField(env, this, fid_st_fft_offset);
-	fft_grid_freq = (*env)->GetIntField(env, this, fid_st_fft_grid_freq);
+	fft_grid_freq = (*env)->GetBooleanField(env, this, fid_st_fft_grid_freq);
 	fft_mode_changed(this);
 }
 

@@ -383,6 +383,16 @@ to making TunerTime act more like an off-line viewer.  I think designing
 it like limited bench equipment was a sound decision.
 
 
+August 7, 2016.
+
+I noticed that the Hz/scale button in the FFT view doesn't have any
+effect with the version on the google play store (1.5), or the one
+sitting here.
+
+Ah-hah!  It is using GetIntField() to read a boolean, and that is the
+problem.  It "worked" in 2014, but now (probably because of ARTS
+replacing Dalvik), it does not work.  Easy fix.
+
 
 XXX - loudness adaptation should be moving average not peak
 XXX - A freq adjustable by +/-0.1Hz?
