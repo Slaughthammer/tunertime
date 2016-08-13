@@ -352,7 +352,7 @@ strobe_drawnew(struct strobe_rec *s)
 	unsigned pos = s->prev_pos;
 	unsigned pos_width = s->msamps_per_col*width;
 	unsigned color, last_color = -1;
-	int samp_max = s->samp_max;
+	int samp_max = (s->samp_max*9)/10;
 	int samp_divider = 1+(samp_max/256);
 	int last_x = -1, last_y = -1;
 	int x,y;

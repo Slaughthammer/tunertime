@@ -394,7 +394,6 @@ problem.  It "worked" in 2014, but now (probably because of ARTS
 replacing Dalvik), it does not work.  Easy fix.
 
 
-XXX - loudness adaptation should be moving average not peak
 XXX - A freq adjustable by +/-0.1Hz?
 XXX - stretch factor should be cents per octave
 XXX - boundary between strobes should be explicit, not incidental
