@@ -371,6 +371,28 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		startActivity(i);
 	}
 
+	private String my_version() {
+		try {
+			return getPackageManager().
+				getPackageInfo(getPackageName(), 0).versionName;
+		} catch (Exception e) {
+			return "UNKNOWN";
+		}
+	}
+
+	private void do_about() {
+		AlertDialog.Builder b = new AlertDialog.Builder(this);
+		b.setCancelable(true);
+		b.setPositiveButton("OK",
+			new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface di, int which) { }
+			});
+		b.setIcon(android.R.drawable.ic_dialog_info);
+		b.setTitle("About");
+		b.setMessage("TunerTime version " + my_version());
+		b.show();
+	}
+
 	private int range_limit(int val, int lo, int hi) {
 		if (val < lo) {
 			return lo;
@@ -573,5 +595,28 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			}
 			return false;
 		}
+	}
+
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.option, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.action_strobe:
+			/* XXX */
+			return true;
+		case R.id.action_fft:
+			/* XXX */
+			return true;
+		case R.id.action_help:
+			do_help();
+			return true;
+		case R.id.action_about:
+			do_about();
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 }
