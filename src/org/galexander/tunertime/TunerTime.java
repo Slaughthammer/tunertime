@@ -224,8 +224,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			"stretch",
 			"temper",
 			"harmonics",
-			"FFT",
-			"help" },
+			"FFT" },
 			new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface d, int id) {
 					switch (id) {
@@ -235,7 +234,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				case 3: set_mode(temper_buttons, false);break;
 				case 4: set_mode(harm_buttons, false);	break;
 				case 5: set_mode(fft_buttons, true);	break;
-				case 6: do_help();			break;
 					}
 				}
 			});
