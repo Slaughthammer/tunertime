@@ -440,6 +440,13 @@ Well, "android:rotation" to have vertical text in a Button/TextView is
 new to SDK 13 and later, so I'm not keen on it (since it would probably
 not really be awesome anyways)..
 
+Considering landscape really makes it clear...  I don't mind giving up
+even a lot of horizontal space in landscape strobe mode, but could
+actually stand to claim *more* horizontal space in landscape FFT mode.
+
+I'm not keen on making FFT and strobe into different activities, but I
+think I'm gonna just make a new Surface for each mode change.
+
 
 XXX - A freq adjustable by +/-0.1Hz?
 XXX - stretch factor should be cents per octave
