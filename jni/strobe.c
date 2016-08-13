@@ -64,7 +64,6 @@ static struct window_rec *curr_window = NULL;
 
 static int fft_mode = 0;
 static int fft_size = 8192;
-static enum window_kind fft_window = wk_bartlett;
 static int fft_width = FFT_RANGE_MULT;	/* size of freq window we are viewing */
 static int fft_offset = 0;		/* offset, out of FFT_RANGE_MULT */
 static int fft_grid_freq = 0;
@@ -110,7 +109,6 @@ static jfieldID fid_st_ui;
 static jfieldID fid_st_fft_changed;
 static jfieldID fid_st_fft_mode;
 static jfieldID fid_st_fft_size;
-static jfieldID fid_st_fft_window;
 static jfieldID fid_st_fft_width;
 static jfieldID fid_st_fft_offset;
 static jfieldID fid_st_fft_grid_freq;
@@ -910,7 +908,6 @@ jni_init(JNIEnv *env_)
 	FIELD(st_fft_changed, strobe, "fft_changed", "Z")
 	FIELD(st_fft_mode, strobe, "fft_mode", "Z")
 	FIELD(st_fft_size, strobe, "fft_size", "I")
-	FIELD(st_fft_window, strobe, "fft_window", "I")
 	FIELD(st_fft_width, strobe, "fft_width", "I")
 	FIELD(st_fft_offset, strobe, "fft_offset", "I")
 	FIELD(st_fft_grid_freq, strobe, "fft_grid_freq", "Z")
@@ -1006,7 +1003,7 @@ fft_mode_changed(jobject this)
 		fft_draw_seconds();
 		memset(fft_r, 0, sizeof fft_r);
 		window_free(curr_window);
-		curr_window = window_init(fft_window, fft_size);
+		curr_window = window_init(wk_blackman, fft_size);
 	} else {
 		int i;
 		for (i = 0; i < NUM_STROBES; i++) {
@@ -1025,7 +1022,6 @@ check_fft_mode(jobject this)
 	(*env)->SetBooleanField(env, this, fid_st_fft_changed, JNI_FALSE);
 	fft_mode = (*env)->GetBooleanField(env, this, fid_st_fft_mode);
 	fft_size = (*env)->GetIntField(env, this, fid_st_fft_size);
-	fft_window = (*env)->GetIntField(env, this, fid_st_fft_window);
 	fft_width = (*env)->GetIntField(env, this, fid_st_fft_width);
 	fft_offset = (*env)->GetIntField(env, this, fid_st_fft_offset);
 	fft_grid_freq = (*env)->GetBooleanField(env, this, fid_st_fft_grid_freq);

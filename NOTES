@@ -394,6 +394,18 @@ problem.  It "worked" in 2014, but now (probably because of ARTS
 replacing Dalvik), it does not work.  Easy fix.
 
 
+August 13, 2016.
+
+I'm gonna actually release an update (first time since Oct 2014),
+so I'm doing some UI cleanup...
+
+I think I'm gonna get rid of the FFT window button.  I can readily see
+the difference between windowing and not windowing (i.e., "rectangle"
+window), but the differences between windows are pretty irrelevant.
+
+So, which window?  I'm gonna go with Blackman because.
+
+
 XXX - A freq adjustable by +/-0.1Hz?
 XXX - stretch factor should be cents per octave
 XXX - boundary between strobes should be explicit, not incidental
@@ -402,6 +414,7 @@ XXX - a bar of buttons along top of strobe: note/A freq/stretch/temper/harmonics
 XXX - tone generator (where should the button go?) 
 XXX - can i get rid of title bar without switching to newer API?
 XXX - fix multiple 1 second bars when switching notes often in strobe
+XXX - test with landscape
 
 XXX - mask jagged edge of strobes?
 XXX - make all strobes scan left->right at a constant speed (i.e., spread some vertical lines out to more than a pixel wide)
