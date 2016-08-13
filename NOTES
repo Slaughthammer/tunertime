@@ -405,14 +405,48 @@ window), but the differences between windows are pretty irrelevant.
 
 So, which window?  I'm gonna go with Blackman because.
 
+...
+
+I'm still struggling how to get rid of the "mode" list, which I really
+don't like.
+
+For the FFT mode, I really only want one button - return to "strobe"
+mode.
+
+For the strobe mode, I wouldn't mind an FFT button.  And also I would
+like to have note/A freq/stretch/temper/harmonics buttons.  That's 5 new
+buttons!
+
+I can put them inside the current button area, but that would really call
+out for expanding the button area, and then it would be wastefully large
+for FFT mode.  I'm not crazy about making the strobe/FFT Surface (that
+JNI writes into) change, but it's certainly possible.
+
+It would be kind of neat to make it possible to scroll or swipe from one
+set of buttons to another, but that seems like it would not be intuitive
+for new users, and it would not be clear how much further you have to go
+to get to the part you actually want.
+
+So that leaves the obvious option of putting the buttons inside of the
+Surface.  That presents a number of organizational and look/feel
+obstacles, though.
+
+There is also the question of landscape.  Putting the mode buttons in a
+vertical pile along the edge of the strobe Surface would be really
+awkward in landscape?  They could certainly fit along the bottom of the
+Surface, but then I'd want them to go away in FFT mode.
+
+Well, "android:rotation" to have vertical text in a Button/TextView is
+new to SDK 13 and later, so I'm not keen on it (since it would probably
+not really be awesome anyways)..
+
 
 XXX - A freq adjustable by +/-0.1Hz?
 XXX - stretch factor should be cents per octave
 XXX - boundary between strobes should be explicit, not incidental
 XXX - a bar of buttons along top of strobe: note/A freq/stretch/temper/harmonics
-    then menu is just strobe/fft/help
+    then menu is just strobe vs fft
 XXX - tone generator (where should the button go?) 
-XXX - can i get rid of title bar without switching to newer API?
 XXX - fix multiple 1 second bars when switching notes often in strobe
 XXX - test with landscape
 
