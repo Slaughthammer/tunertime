@@ -261,29 +261,12 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	}
 
 
-	public void do_menu(View v) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle("File");
-		builder.setItems(new CharSequence[] {
-			"note",
-			"A freq",
-			"stretch",
-			"temper",
-			"harmonics",
-			"FFT" },
-			new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface d, int id) {
-					switch (id) {
-				case 0: set_mode(note_buttons, false);	break;
-				case 1: set_mode(afreq_buttons, false);	break;
-				case 2: set_mode(stretch_buttons, false);break;
-				case 3: set_mode(temper_buttons, false);break;
-				case 4: set_mode(harm_buttons, false);	break;
-				case 5: set_mode(fft_buttons, true);	break;
-					}
-				}
-			});
-		builder.show();
+	public void do_mode(View v) {
+		if (fft_mode) {
+			set_mode(note_buttons, false);
+		} else {
+			set_mode(fft_buttons, true);
+		}
 	}
 
 	private void apply_temper() {

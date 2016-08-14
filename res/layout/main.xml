@@ -46,10 +46,10 @@
 	        android:layout_width="fill_parent"
 		android:layout_height="1dp"
 		android:layout_weight="1"
-		android:text="menu"
+		android:text="mode"
 		android:textColor="#060"
 		android:textAppearance="?android:attr/textAppearanceMedium"
-		android:onClick="do_menu" />
+		android:onClick="do_mode" />
 	</LinearLayout>
     </LinearLayout>
 </LinearLayout>

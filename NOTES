@@ -460,9 +460,10 @@ Supposedly Android is cool with that, at least visually.  Then I could
 simply measure the dimension of these buttons and pass that on to the
 JNI?
 
-XXX - change menu button to mode button
 XXX - boundary between strobes should be explicit, not incidental
 XXX - test with landscape
+
+XXX - update doc (at least with new mode ui)
 
 XXX - A freq adjustable by +/-0.1Hz?
 XXX - stretch factor should be cents per octave
