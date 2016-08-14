@@ -460,7 +460,6 @@ Supposedly Android is cool with that, at least visually.  Then I could
 simply measure the dimension of these buttons and pass that on to the
 JNI?
 
-XXX - boundary between strobes should be explicit, not incidental
 XXX - test with landscape
 
 XXX - update doc (at least with new mode ui)

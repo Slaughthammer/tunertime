@@ -331,7 +331,7 @@ clear_col(struct strobe_rec *s, int col)
 			start_x = 0;
 			stop_x = 0;
 		}
-		filled_rect(start_x, s->y, width, s->y+s->height, 0x000000);
+		filled_rect(start_x, s->y, width, s->y+s->height-1, 0x000000);
 		start_x = 0;
 		stop_x -= width;
 	}
@@ -339,7 +339,7 @@ clear_col(struct strobe_rec *s, int col)
 	if (start_x == stop_x) {
 		return;
 	}
-	filled_rect(start_x, s->y, stop_x+1, s->y+s->height, 0x000000);
+	filled_rect(start_x, s->y, stop_x+1, s->y+s->height-1, 0x000000);
 }
 
 static void
@@ -352,6 +352,7 @@ strobe_drawnew(struct strobe_rec *s)
 	int samp_max = (s->samp_max*9)/10;
 	int samp_divider = 1+(samp_max/256);
 	int last_x = -1, last_y = -1;
+	int h = s->height-1;
 	int x,y;
 	int i;
 	int multiplier = s->multiplier;
@@ -378,7 +379,7 @@ strobe_drawnew(struct strobe_rec *s)
 		pos += 1000;
 		pos %= (pos_width * multiplier);
 		x = pos / (s->msamps_per_col * multiplier);
-		y = ((pos % s->msamps_per_col) * s->height) / s->msamps_per_col;
+		y = ((pos % s->msamps_per_col) * h) / s->msamps_per_col;
 		if (x != last_x) {
 			clear_col(s, x);
 			last_x = x;
@@ -1023,6 +1024,19 @@ update_labels(jobject this)
 }
 
 static void
+strobe_separators(void)
+{
+	int h = strobes[0].height;
+	int y = h-1;
+	int i;
+
+	for (i = 0; i < NUM_STROBES-1; i++) {
+		hline(0, y, width, 0xFFFFFF);
+		y += h;
+	}
+}
+
+static void
 fft_mode_changed(jobject this)
 {
 	fft_y = 0;
@@ -1086,6 +1100,7 @@ check_parms(jobject this)
 		}
 		recalculate(this);
 		update_labels(this);
+		strobe_separators();
 	}
 }
 
