@@ -460,14 +460,15 @@ Supposedly Android is cool with that, at least visually.  Then I could
 simply measure the dimension of these buttons and pass that on to the
 JNI?
 
+XXX - move label and 1s line to top of strobe
+XXX - fix multiple 1 second bars when switching notes often in strobe
+XXX - change menu button to mode button
+XXX - boundary between strobes should be explicit, not incidental
+XXX - test with landscape
+
 XXX - A freq adjustable by +/-0.1Hz?
 XXX - stretch factor should be cents per octave
-XXX - boundary between strobes should be explicit, not incidental
-XXX - a bar of buttons along top of strobe: note/A freq/stretch/temper/harmonics
-    then menu is just strobe vs fft
-XXX - tone generator (where should the button go?) 
-XXX - fix multiple 1 second bars when switching notes often in strobe
-XXX - test with landscape
+XXX - tone generator (should split the 'mode' button in strobe mode?)
 
 XXX - mask jagged edge of strobes?
 XXX - make all strobes scan left->right at a constant speed (i.e., spread some vertical lines out to more than a pixel wide)
