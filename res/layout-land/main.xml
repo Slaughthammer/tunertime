@@ -4,10 +4,14 @@
     android:layout_height="fill_parent"
     android:layout_width="fill_parent"
     >
-    <SurfaceView android:id="@+id/strobe"
+    <FrameLayout android:id="@+id/surface_frame"
 	android:layout_height="fill_parent"
 	android:layout_width="1dp"
-	android:layout_weight="5" />
+	android:layout_weight="5">
+	<SurfaceView android:id="@+id/strobe"
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent" />
+    </FrameLayout>
     <LinearLayout
 	android:layout_height="fill_parent"
 	android:layout_width="1dp"
