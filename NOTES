@@ -447,6 +447,18 @@ actually stand to claim *more* horizontal space in landscape FFT mode.
 I'm not keen on making FFT and strobe into different activities, but I
 think I'm gonna just make a new Surface for each mode change.
 
+...
+
+Man, actually tearing up code to make that happen is super dissatisfying.
+It seems like I might as well make two different activities!  That bums
+me out because I am looking at things like the status region and menu
+(mode) button, which are currently shared.
+
+Another possibility is that if I use a FrameLayout to wrap the
+SurfaceView, I can attach a bar of buttons on top of the SurfaceView.
+Supposedly Android is cool with that, at least visually.  Then I could
+simply measure the dimension of these buttons and pass that on to the
+JNI?
 
 XXX - A freq adjustable by +/-0.1Hz?
 XXX - stretch factor should be cents per octave

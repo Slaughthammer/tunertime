@@ -9,7 +9,6 @@ import android.widget.TextView;
 import android.widget.Button;
 import android.app.AlertDialog;
 import java.text.DecimalFormat;
-import java.lang.*;
 import android.net.Uri;
 import android.os.PowerManager;
 
@@ -30,6 +29,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 	private SurfaceView w_strobe;
 	private ViewGroup buttons_holder;
+	private ViewGroup surface_frame;
 	private TextView center_display;
 	private TextView stretch_display;
 	private View note_buttons;
@@ -51,6 +51,9 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private View fft_buttons;
 	private TextView N_display;
 	private Button grid_button;
+	private View strobe_buttons;
+	private Button note_button, afreq_button, stretch_button,
+			temper_button, harm_button;
 
 	private PowerManager.WakeLock wakelock = null;
 
@@ -69,6 +72,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		w_strobe.getHolder().addCallback(this);
 		w_strobe.setOnTouchListener(new strobe_listener());
 		buttons_holder = (ViewGroup)findViewById(R.id.buttons_holder);
+		surface_frame = (ViewGroup)findViewById(R.id.surface_frame);
 		center_display = (TextView)findViewById(R.id.center_display);
 		stretch_display = (TextView)findViewById(R.id.stretch_display);
 
@@ -117,6 +121,19 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				R.id.N_display);
 		grid_button = (Button)fft_buttons.findViewById(
 				R.id.grid_button);
+
+		strobe_buttons = fl8r.inflate(
+				R.layout.strobe_buttons, surface_frame, false);
+		note_button = (Button)strobe_buttons.findViewById(
+				R.id.note_button);
+		afreq_button = (Button)strobe_buttons.findViewById(
+				R.id.afreq_button);
+		stretch_button = (Button)strobe_buttons.findViewById(
+				R.id.stretch_button);
+		temper_button = (Button)strobe_buttons.findViewById(
+				R.id.temper_button);
+		harm_button = (Button)strobe_buttons.findViewById(
+				R.id.harm_button);
 
 		PowerManager pm = (PowerManager)getSystemService(
 						Context.POWER_SERVICE);
@@ -204,10 +221,39 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		editor.commit();
 	}
 
+	private void darken_mode(Button b) {
+		b.getBackground().setColorFilter(
+                                new LightingColorFilter(0xff888888, 0));
+	}
+	private void brighten_mode(Button b) {
+		b.getBackground().clearColorFilter();
+	}
 	private void set_mode(View buttons, boolean fft_mode_) {
+		if (fft_mode_ == false) {
+			darken_mode(note_button);
+			darken_mode(afreq_button);
+			darken_mode(stretch_button);
+			darken_mode(temper_button);
+			darken_mode(harm_button);
+			if (buttons == note_buttons) {
+				brighten_mode(note_button);
+			} else if (buttons == afreq_buttons) {
+				brighten_mode(afreq_button);
+			} else if (buttons == stretch_buttons) {
+				brighten_mode(stretch_button);
+			} else if (buttons == temper_buttons) {
+				brighten_mode(temper_button);
+			} else if (buttons == harm_buttons) {
+				brighten_mode(harm_button);
+			}
+		}
 		buttons_holder.removeAllViews();
 		buttons_holder.addView(buttons);
 		fft_mode = fft_mode_;
+		surface_frame.removeView(strobe_buttons);
+		if (!fft_mode) {
+			surface_frame.addView(strobe_buttons);
+		}
 		if (strobe != null) {
 			strobe.setFft(fft_mode);
 		}
@@ -348,6 +394,22 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	public void grid_toggle(View v) {
 		fft_grid_freq = !fft_grid_freq;
 		update_status();
+	}
+
+	public void note_clicked(View v) {
+		set_mode(note_buttons, false);
+	}
+	public void afreq_clicked(View v) {
+		set_mode(afreq_buttons, false);
+	}
+	public void stretch_clicked(View v) {
+		set_mode(stretch_buttons, false);
+	}
+	public void temper_clicked(View v) {
+		set_mode(temper_buttons, false);
+	}
+	public void harm_clicked(View v) {
+		set_mode(harm_buttons, false);
 	}
 
 	private void do_help() {
