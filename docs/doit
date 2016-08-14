@@ -1,0 +1,1 @@
+rsync -z index.html shed:ga.org/software/tunertime/index.html
