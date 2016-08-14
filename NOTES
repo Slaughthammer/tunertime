@@ -460,7 +460,6 @@ Supposedly Android is cool with that, at least visually.  Then I could
 simply measure the dimension of these buttons and pass that on to the
 JNI?
 
-XXX - move label and 1s line to top of strobe
 XXX - fix multiple 1 second bars when switching notes often in strobe
 XXX - change menu button to mode button
 XXX - boundary between strobes should be explicit, not incidental

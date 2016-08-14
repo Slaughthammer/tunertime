@@ -419,8 +419,10 @@ strobe_draw_htic(struct strobe_rec *s)
 	int step;
 	step = s->freq / s->multiplier;
 	for (x = step; x < width; x += step) {
-		int h = (s->height*2)/10;
-		vline(x, s->y + (s->height - h), s->y+s->height, 0xFFFFAA);
+		int h = (s->height*3)/10;
+		vline(x, s->y, s->y+h, 0xFFFFAA);
+		vline(x-1, s->y, s->y+h, 0xFFFFAA);
+		vline(x-2, s->y, s->y+h, 0xFFFFAA);
 	}
 }
 
