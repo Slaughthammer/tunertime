@@ -18,7 +18,6 @@ public class Strobe extends Thread {
 
 	private volatile int cents;
 	private volatile int harm1_mult, harm2_mult;
-	private volatile boolean cents_changed = false;
 
 	private volatile int width = 0, height = 0;
 	private SurfaceHolder holder = null;
@@ -29,7 +28,7 @@ public class Strobe extends Thread {
 	private volatile int fft_width = FFT_RANGE_MULT/4; /* zoom level */
 	private volatile int fft_offset = 0;	/* offset in FFT_RANGE_MULTs of screen */
 	private volatile boolean fft_grid_freq = false;
-	private volatile boolean fft_changed = false;
+	private volatile boolean parms_changed = false;
 	private volatile boolean paused = false;
 
 	private AudioRecord recorder = null;
@@ -47,13 +46,6 @@ public class Strobe extends Thread {
 		ui = ui_;
 	}
 
-	public void setCents(int cents_, int harm1_mult_, int harm2_mult_) {
-		cents = cents_;
-		harm1_mult = harm1_mult_;
-		harm2_mult = harm2_mult_;
-		cents_changed = true;
-	}
-
 	public void setSurface(SurfaceHolder holder_, int width_, int height_) {
 		holder = holder_;
 		width = width_;
@@ -63,16 +55,20 @@ public class Strobe extends Thread {
 
 	public void setFft(boolean fft_mode_) {
 		fft_mode = fft_mode_;
-		fft_changed = true;
+		parms_changed = true;
 	}
 
-	public void setFftParms(int fft_size_, int fft_width_, int fft_offset_,
+	public void setParms(int cents_, int harm1_mult_, int harm2_mult_,
+			int fft_size_, int fft_width_, int fft_offset_,
 			boolean fft_grid_freq_) {
+		cents = cents_;
+		harm1_mult = harm1_mult_;
+		harm2_mult = harm2_mult_;
 		fft_size = fft_size_;
 		fft_width = fft_width_;
 		fft_offset = fft_offset_;
 		fft_grid_freq = fft_grid_freq_;
-		fft_changed = true;
+		parms_changed = true;
 	}
 
 	public void toggle_pause() {

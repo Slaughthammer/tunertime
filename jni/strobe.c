@@ -98,7 +98,7 @@ static jfieldID fid_out;
 static jfieldID fid_st_cents;
 static jfieldID fid_st_harm1_mult;
 static jfieldID fid_st_harm2_mult;
-static jfieldID fid_st_cents_changed;
+static jfieldID fid_st_parms_changed;
 static jfieldID fid_st_width;
 static jfieldID fid_st_height;
 static jfieldID fid_st_surface_changed;
@@ -106,7 +106,6 @@ static jfieldID fid_st_recorder;
 static jfieldID fid_st_record_bufsz;
 static jfieldID fid_st_labels;
 static jfieldID fid_st_ui;
-static jfieldID fid_st_fft_changed;
 static jfieldID fid_st_fft_mode;
 static jfieldID fid_st_fft_size;
 static jfieldID fid_st_fft_width;
@@ -899,7 +898,7 @@ jni_init(JNIEnv *env_)
 	FIELD(st_cents, strobe, "cents", "I")
 	FIELD(st_harm1_mult, strobe, "harm1_mult", "I")
 	FIELD(st_harm2_mult, strobe, "harm2_mult", "I")
-	FIELD(st_cents_changed, strobe, "cents_changed", "Z")
+	FIELD(st_parms_changed, strobe, "parms_changed", "Z")
 	FIELD(st_width, strobe, "width", "I")
 	FIELD(st_height, strobe, "height", "I")
 	FIELD(st_surface_changed, strobe, "surface_changed", "Z")
@@ -907,7 +906,6 @@ jni_init(JNIEnv *env_)
 	FIELD(st_record_bufsz, strobe, "record_bufsz", "I")
 	FIELD(st_labels, strobe, "labels", "[Ljava/lang/String;")
 	FIELD(st_ui, strobe, "ui", "Lorg/galexander/tunertime/TunerTime;")
-	FIELD(st_fft_changed, strobe, "fft_changed", "Z")
 	FIELD(st_fft_mode, strobe, "fft_mode", "Z")
 	FIELD(st_fft_size, strobe, "fft_size", "I")
 	FIELD(st_fft_width, strobe, "fft_width", "I")
@@ -992,42 +990,68 @@ update_labels(jobject this)
 static void
 fft_mode_changed(jobject this)
 {
+	fft_y = 0;
+	fft_legend_height = height/10;
+	fft_draw_slider();
+	if (fft_grid_freq) {
+		fft_draw_freqs();
+	} else {
+		fft_draw_piano(this);
+	}
+	fft_draw_seconds();
+	memset(fft_r, 0, sizeof fft_r);
+	window_free(curr_window);
+	curr_window = window_init(wk_blackman, fft_size);
+}
+
+static void
+check_surface(jobject this)
+{
+	if (!(*env)->GetBooleanField(env, this, fid_st_surface_changed)) {
+		return;
+	}
+
+	(*env)->SetBooleanField(env, this, fid_st_surface_changed, JNI_FALSE);
+
+	width = (*env)->GetIntField(env, this, fid_st_width);
+	height = (*env)->GetIntField(env, this, fid_st_height);
+	resize_bitmap();
+
+	/* force full update: */
+	(*env)->SetBooleanField(env, this, fid_st_parms_changed, JNI_TRUE);
+}
+
+static void
+check_parms(jobject this)
+{
+	if (!(*env)->GetBooleanField(env, this, fid_st_parms_changed)) {
+		return;
+	}
+
+	(*env)->SetBooleanField(env, this, fid_st_parms_changed, JNI_FALSE);
+
+	base_cents = (*env)->GetIntField(env, this, fid_st_cents);
+	harm1_mult = (*env)->GetIntField(env, this, fid_st_harm1_mult);
+	harm2_mult = (*env)->GetIntField(env, this, fid_st_harm2_mult);
+
+	fft_mode = (*env)->GetBooleanField(env, this, fid_st_fft_mode);
+	fft_size = (*env)->GetIntField(env, this, fid_st_fft_size);
+	fft_width = (*env)->GetIntField(env, this, fid_st_fft_width);
+	fft_offset = (*env)->GetIntField(env, this, fid_st_fft_offset);
+	fft_grid_freq = (*env)->GetBooleanField(env,this, fid_st_fft_grid_freq);
+
 	memset(bitmap_ptr, 0, width*height*sizeof *bitmap_ptr);
+	
 	if (fft_mode) {
-		fft_y = 0;
-		fft_legend_height = height/10;
-		fft_draw_slider();
-		if (fft_grid_freq) {
-			fft_draw_freqs();
-		} else {
-			fft_draw_piano(this);
-		}
-		fft_draw_seconds();
-		memset(fft_r, 0, sizeof fft_r);
-		window_free(curr_window);
-		curr_window = window_init(wk_blackman, fft_size);
+		fft_mode_changed(this);
 	} else {
 		int i;
 		for (i = 0; i < NUM_STROBES; i++) {
 			strobes[i].prev_pos = 0;
 		}
+		recalculate(this);
+		update_labels(this);
 	}
-}
-
-static void
-check_fft_mode(jobject this)
-{
-	if (!(*env)->GetBooleanField(env, this, fid_st_fft_changed)) {
-		return;
-	}
-
-	(*env)->SetBooleanField(env, this, fid_st_fft_changed, JNI_FALSE);
-	fft_mode = (*env)->GetBooleanField(env, this, fid_st_fft_mode);
-	fft_size = (*env)->GetIntField(env, this, fid_st_fft_size);
-	fft_width = (*env)->GetIntField(env, this, fid_st_fft_width);
-	fft_offset = (*env)->GetIntField(env, this, fid_st_fft_offset);
-	fft_grid_freq = (*env)->GetBooleanField(env, this, fid_st_fft_grid_freq);
-	fft_mode_changed(this);
 }
 
 /* This is the entry point from the Java code...it is a loop that checks for
@@ -1058,22 +1082,8 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 	while (1) {
 		int num_read, to_read;
 
-		/* first, check for any important state changes */
-		if ((*env)->GetBooleanField(env, this, fid_st_cents_changed)) {
-			(*env)->SetBooleanField(env, this, fid_st_cents_changed, JNI_FALSE);
-			base_cents = (*env)->GetIntField(env, this, fid_st_cents);
-			harm1_mult = (*env)->GetIntField(env, this, fid_st_harm1_mult);
-			harm2_mult = (*env)->GetIntField(env, this, fid_st_harm2_mult);
-			recalculate(this);
-			update_labels(this);
-		}
-		if ((*env)->GetBooleanField(env, this, fid_st_surface_changed)) {
-			(*env)->SetBooleanField(env, this, fid_st_surface_changed, JNI_FALSE);
-			width = (*env)->GetIntField(env, this, fid_st_width);
-			height = (*env)->GetIntField(env, this, fid_st_height);
-			recalculate(this);
-			resize_bitmap();
-		}
+		check_surface(this);
+
 		if ((*env)->CallBooleanMethod(env, this, mid_st_time_to_die)) {
 			/* thread was interrupted, must be time for it to die */
 			println("thread interrupted");
@@ -1095,8 +1105,7 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 		if (bitmap) {
 			/* process sound into bitmap */
 			bitmap_ptr = (*env)->GetPrimitiveArrayCritical(env, bitmap, 0);
-
-			check_fft_mode(this);
+			check_parms(this);
 
 			if (!(*env)->GetBooleanField(env,this,fid_st_paused)) {
 				newdata();

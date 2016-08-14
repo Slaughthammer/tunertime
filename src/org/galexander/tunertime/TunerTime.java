@@ -464,9 +464,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				Strobe.FFT_RANGE_MULT-fft_width);
 
 		if (strobe != null) {
-			strobe.setCents(strobe_cents, harm1_mult, harm2_mult);
-			strobe.setFftParms(fft_size, fft_width,
-					fft_offset, fft_grid_freq);
+			strobe.setParms(strobe_cents, harm1_mult, harm2_mult,
+				fft_size, fft_width, fft_offset, fft_grid_freq);
 		}
 
 		int note_index = ((strobe_cents+50)%1200)/100;
@@ -525,9 +524,9 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		stop_strobe();
 		strobe = new Strobe(this);
 		strobe.setSurface(holder, width, height);
-		strobe.setCents(strobe_cents, harm1_mult, harm2_mult);
 		strobe.setFft(fft_mode);
-		strobe.setFftParms(fft_size, fft_width, fft_offset, fft_grid_freq);
+		strobe.setParms(strobe_cents, harm1_mult, harm2_mult,
+			fft_size, fft_width, fft_offset, fft_grid_freq);
 		strobe.start();
 	}
 
