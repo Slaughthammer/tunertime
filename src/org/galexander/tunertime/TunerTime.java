@@ -223,7 +223,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 	private void darken_mode(Button b) {
 		b.getBackground().setColorFilter(
-                                new LightingColorFilter(0xff888888, 0));
+                                new LightingColorFilter(0x88888888, 0));
 	}
 	private void brighten_mode(Button b) {
 		b.getBackground().clearColorFilter();
