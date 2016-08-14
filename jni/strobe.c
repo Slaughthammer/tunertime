@@ -860,6 +860,41 @@ newdata(void)
 }
 
 
+static jshortArray snd_readbuf;
+static jobject snd_recorder;
+static jint snd_record_bufsz;
+
+static void
+sound_init(jobject this)
+{
+	snd_recorder = (*env)->GetObjectField(env, this, fid_st_recorder);
+	snd_record_bufsz = (*env)->GetIntField(env, this, fid_st_record_bufsz) /
+				sizeof(snd_buf[0]);
+	sample_rate = (*env)->CallIntMethod(env, snd_recorder,
+				mid_ar_getsamplerate);
+	snd_readbuf = (*env)->NewShortArray(env, snd_record_bufsz);
+}
+
+static int
+sound_input(void)
+{
+	int num_read, to_read;
+
+	to_read = SND_BUFSAMPS-snd_ofs;
+	if (to_read > snd_record_bufsz) {
+		to_read = snd_record_bufsz;
+	}
+	num_read = (*env)->CallIntMethod(env, snd_recorder, mid_ar_read,
+			snd_readbuf, 0, to_read);
+	if (num_read <= 0) {
+		return 0;
+	}
+	(*env)->GetShortArrayRegion(env, snd_readbuf, 0, num_read,
+			snd_buf+snd_ofs);
+	snd_ofs = (snd_ofs+num_read)%SND_BUFSAMPS;
+	return 1;
+}
+
 
 /* sets up the tokens needed to reference Java things */
 static int
@@ -1059,10 +1094,6 @@ check_parms(jobject this)
 JNIEXPORT void JNICALL
 Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 {
-	jshortArray readbuf;
-	jobject recorder;
-	jint record_bufsz;
-
 	if (!jni_init(env_)) {
 		return;
 	}
@@ -1072,35 +1103,19 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 
 	init_fft();
 
-	recorder = (*env)->GetObjectField(env, this, fid_st_recorder);
-	record_bufsz = (*env)->GetIntField(env, this, fid_st_record_bufsz);
-	sample_rate = (*env)->CallIntMethod(env, recorder, mid_ar_getsamplerate);
-	record_bufsz /= sizeof(snd_buf[0]);	/* was bytes */
-
-	readbuf = (*env)->NewShortArray(env, record_bufsz);
+	sound_init(this);
 
 	while (1) {
-		int num_read, to_read;
-
 		check_surface(this);
 
 		if ((*env)->CallBooleanMethod(env, this, mid_st_time_to_die)) {
-			/* thread was interrupted, must be time for it to die */
 			println("thread interrupted");
 			return;
 		}
 
-		/* then get sound */
-		to_read = SND_BUFSAMPS-snd_ofs;
-		if (to_read > record_bufsz) {
-			to_read = record_bufsz;
-		}
-		num_read = (*env)->CallIntMethod(env, recorder, mid_ar_read, readbuf, 0, to_read);
-		if (num_read <= 0) {
+		if (!sound_input()) {
 			return;
 		}
-		(*env)->GetShortArrayRegion(env, readbuf, 0, num_read, snd_buf+snd_ofs);
-		snd_ofs = (snd_ofs+num_read)%SND_BUFSAMPS;
 
 		if (bitmap) {
 			/* process sound into bitmap */
