@@ -82,6 +82,9 @@ public class Strobe extends Thread {
 	private String[] labels = null;
 
 	private void draw_labels(Canvas c) {
+		if ((labels == null) || (labels.length == 0)) {
+			return;
+		}
 		int strobe_height = height/labels.length;
 
 		if (label_p == null) {
