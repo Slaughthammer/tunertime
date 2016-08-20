@@ -460,14 +460,30 @@ Supposedly Android is cool with that, at least visually.  Then I could
 simply measure the dimension of these buttons and pass that on to the
 JNI?
 
+
+August 20, 2016.
+
+I sat down thinking I might make the three simultaneous strobes consume a
+constant amount of horizontal space per unit time, so that they remain in
+synch.  That way, you can easily see how a particular moment in time
+matches across the different octaves.
+
+I realized the problem is it will introduce aliasing.  No matter how I do
+it, in order to have ratios that are more complicated than 1:2 or 1:4, I
+will have to have different columns representing different weights of
+input signal.  That will result, visually, in aliasing.  That's just not
+acceptable.
+
+And while I'm at it, taking scrolling mode off my todo list.  It would be
+nice, but it really doesn't make a difference, and it definitely will
+increase the required graphics bandwidth by around 100x.  Probably, that
+is no big deal.  But somewhere, it will be a big deal, so why do it.
+
 XXX - A freq adjustable by +/-0.1Hz?
 XXX - stretch factor should be cents per octave
 XXX - tone generator (should split the 'mode' button in strobe mode?)
 
 XXX - mask jagged edge of strobes?
-XXX - make all strobes scan left->right at a constant speed (i.e., spread some vertical lines out to more than a pixel wide)
 XXX - make FFT have time horizontal to match strobe
 XXX - make fft samples all the same height, so more seconds are on the
 screen for bigger bins ???
-XXX - scroll mode (without history)
-
