@@ -14,7 +14,7 @@ import android.os.PowerManager;
 
 public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private int A_freq = 4400;		/* 440.0 *10 */
-	private int octave_stretch = 0;
+	private int cents_per_octave = 0;	/* *10 */
 	private int strobe_cents = 4800;
 	private int harm1_mult = 2;
 	private int harm2_mult = 4;
@@ -173,7 +173,18 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			 * as *10 (so there is one decimal point of info) */
 			A_freq *= 10;
 		}
-		octave_stretch = prefs.getInt("octave_stretch", 0);
+		cents_per_octave = prefs.getInt("cents_per_octave", 0);
+		if (cents_per_octave == 0) {
+			/* use older config option if available.
+			 * see derivation in NOTES Aug 21, 2016 */
+			int octave_stretch = prefs.getInt("octave_stretch", 0);
+			if (octave_stretch != 0) {
+				double os = ((double)octave_stretch)*0.00001d;
+				double lg = Math.log(2.0d+os)/Math.log(2.0d);
+				double t = (lg-1.0d)*12000.0d;
+				cents_per_octave = (int)Math.round(t);
+			}
+		}
 		strobe_cents = prefs.getInt("strobe_cents", 4800);
 		harm1_mult = prefs.getInt("harm1_mult", 2);
 		harm2_mult = prefs.getInt("harm2_mult", 4);
@@ -201,7 +212,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putInt("A_freq", A_freq);
-		editor.putInt("octave_stretch", octave_stretch);
+		editor.putInt("cents_per_octave", cents_per_octave);
+		editor.remove("octave_stretch");	/* obsolete */
 		editor.putInt("strobe_cents", strobe_cents);
 		editor.putInt("harm1_mult", harm1_mult);
 		editor.putInt("harm2_mult", harm2_mult);
@@ -334,15 +346,15 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	}
 
 	public void stretch_incr(View v) {
-		octave_stretch+=25;
+		cents_per_octave++;
 		update_status();
 	}
 	public void stretch_decr(View v) {
-		octave_stretch-=25;
+		cents_per_octave--;
 		update_status();
 	}
 	public void reset_stretch(View v) {
-		octave_stretch = 0;
+		cents_per_octave = 0;
 		update_status();
 	}
 
@@ -445,6 +457,12 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		return val;
 	}
 
+	private static String string_int10(int n) {
+		int v1 = n/10;
+		int vp1 = Math.abs(n)%10;
+		return Integer.toString(v1) + "." + Integer.toString(vp1);
+	}
+
 		/* note that ranges are checked in update_status() as well,
 		 * because status display is really the only part that will go
 		 * wonkers if the values go out-of-range anyways.  */
@@ -492,13 +510,11 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			temper_enable_button.setText("enable");
 		}
 
-		String center_str = Integer.toString(A_freq/10) +
-				"." + Integer.toString(A_freq%10);
+		String center_str = string_int10(A_freq);
 		center_display.setText("A="+center_str);
 		afreq_center_display.setText(center_str);
 
-		DecimalFormat stretch_fmt = new DecimalFormat("+00000;-00000");
-		String stretch_str = stretch_fmt.format(octave_stretch);
+		String stretch_str = string_int10(cents_per_octave);
 		stretch_display.setText(stretch_str);
 		stretch_stretch_display.setText(stretch_str);
 
@@ -510,11 +526,12 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	}
 
 	public double cents_to_freq(int cents, int harm_mult) {
-		double octbase = 2.0+(((double)octave_stretch)*0.00001);
-		double octpow = ((double)(cents-4800)) / 1200.0;
+		double c = (double)(cents-4800);
+		double frac = ((double)cents_per_octave)/12000.0d;
+		double octpow = c*(1.0d+frac) / 1200.0d;
 		octpow += Math.log((double)harm_mult) / Math.log(2.0d);
-		double mult = Math.pow(octbase, octpow);
-		return ((double)A_freq)*mult/10.0;
+		double mult = Math.pow(2.0d, octpow);
+		return ((double)A_freq)*mult/10.0d;
 	}
 
 	private void start_strobe() {

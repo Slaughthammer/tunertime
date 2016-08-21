@@ -508,7 +508,39 @@ setting today that they like, and do not expect its meaning to change
 under them.  We can detect an old setting and convert it to the closest
 equivalent of the new setting.....
 
-XXX - stretch factor should be cents per octave
+A thorough derivation of the octave stretch to cents_per_octave (which
+will be *10 and actually representing milis_per_octave):
+   c=cents-4800 (hope this cancels out)
+   os=octave_stretch*0.00001
+   cpo=cents_per_octave/10
+   freq=440 * ((2+os))^(c/1200)
+   freq=440 * 2^(c*(1+(cpo/1200))/1200)
+      equate:
+   440 * ((2+os))^(c/1200) = 440 * 2^(c*(1+(cpo/1200))/1200)
+   ((2+os))^(c/1200) = 2^(c*(1+(cpo/1200))/1200)
+      lg of both sides:
+   lg(((2+os))^(c/1200)) = c*(1+(cpo/1200))/1200
+      divide both sides by lg(2+os) (synthetic log_{2+os}(x)):
+   c/1200 = c*(1+(cpo/1200))/(1200*lg(2+os))
+      multiply by 1200*lg(2+os):
+   c*lg(2+os) = c*(1+(cpo/1200))
+   lg(2+os) = 1+(cpo/1200)
+   lg(2+os)-1 = cpo/1200
+   cpo = (lg(2+os)-1)*1200
+   cents_per_octave = (lg(2+octave_stretch*0.00001)-1)*12000;
+
+So the smallest step is octave_stretch +/- 25:
+   cents_per_octave = (lg(2.00025)-1)*12000 =  2.16391
+   cents_per_octave = (lg(1.99975)-1)*12000 = -2.16418
+It's not actually symmetric around 0, but it is close enough, and anyways
+the actual stretching is symmetric around 0 even if this conversion is
+not.
+
+It seems like it should be pretty reasonable, even rounded to int.
+
+
+
+XXX - test, document cents per octave, display string "cents per octave"?
 XXX - tone generator (should split the 'mode' button in strobe mode?)
 
 XXX - mask jagged edge of strobes?
