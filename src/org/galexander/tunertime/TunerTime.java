@@ -458,9 +458,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	}
 
 	private static String string_int10(int n) {
-		int v1 = n/10;
-		int vp1 = Math.abs(n)%10;
-		return Integer.toString(v1) + "." + Integer.toString(vp1);
+		return Integer.toString(n/10) + "." + Integer.toString(n%10);
 	}
 
 		/* note that ranges are checked in update_status() as well,
@@ -514,7 +512,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		center_display.setText("A="+center_str);
 		afreq_center_display.setText(center_str);
 
-		String stretch_str = string_int10(cents_per_octave);
+		String stretch_str = ((cents_per_octave >= 0) ? "+" : "-") +
+				string_int10(Math.abs(cents_per_octave));
 		stretch_display.setText(stretch_str);
 		stretch_stretch_display.setText(stretch_str);
 
