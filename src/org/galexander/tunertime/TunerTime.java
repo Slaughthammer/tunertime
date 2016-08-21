@@ -527,9 +527,9 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 	public double cents_to_freq(int cents, int harm_mult) {
 		double c = (double)(cents-4800);
+		c += 1200.0d * Math.log((double)harm_mult) / Math.log(2.0d);
 		double frac = ((double)cents_per_octave)/12000.0d;
 		double octpow = c*(1.0d+frac) / 1200.0d;
-		octpow += Math.log((double)harm_mult) / Math.log(2.0d);
 		double mult = Math.pow(2.0d, octpow);
 		return ((double)A_freq)*mult/10.0d;
 	}
