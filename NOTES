@@ -479,6 +479,35 @@ nice, but it really doesn't make a difference, and it definitely will
 increase the required graphics bandwidth by around 100x.  Probably, that
 is no big deal.  But somewhere, it will be a big deal, so why do it.
 
+
+August 21, 2016.
+
+Cleaning up some more long-standing TODOs...  A freq adjustable by
++/- 0.1Hz is easy to do and might be useful to someone who actually
+adjusts the A freq at all.
+
+But expressing the stretch factor in cents per octave is a bit of a
+conundrum for me.
+
+The current stretch factor counts in terms of
+   (2 + stretch*0.00025) ^ note
+Doing cents, instead, would be more like
+   2 ^ (note + stretch/1200)
+For note=1 and stretch=1, we're getting:
+   2.00025 (old)
+   2.00116 (new, cents/octave)
+
+So I think it would be cool to do cents/octave, but if I'm understanding
+correctly then I'd really want to do 0.1 cents/octave:
+   2 ^ (1 + stretch/12000) = 2.00012
+
+That's probably not hard to do, or to explain.  The positive is that it
+will give a concrete reference for people who know about cents, and that
+seems pretty big to me.  The negative is that some users probably have a
+setting today that they like, and do not expect its meaning to change
+under them.  We can detect an old setting and convert it to the closest
+equivalent of the new setting.....
+
 XXX - stretch factor should be cents per octave
 XXX - tone generator (should split the 'mode' button in strobe mode?)
 
