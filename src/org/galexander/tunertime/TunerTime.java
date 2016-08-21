@@ -13,7 +13,7 @@ import android.net.Uri;
 import android.os.PowerManager;
 
 public class TunerTime extends Activity implements SurfaceHolder.Callback {
-	private int A_freq = 440;
+	private int A_freq = 4400;		/* 440.0 *10 */
 	private int octave_stretch = 0;
 	private int strobe_cents = 4800;
 	private int harm1_mult = 2;
@@ -167,7 +167,12 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 	private void load_config() {
 		SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
-		A_freq = prefs.getInt("A_freq", 440);
+		A_freq = prefs.getInt("A_freq", 4400);
+		if (A_freq <= 880) {
+			/* the setting must come from before we encoded A_freq
+			 * as *10 (so there is one decimal point of info) */
+			A_freq *= 10;
+		}
 		octave_stretch = prefs.getInt("octave_stretch", 0);
 		strobe_cents = prefs.getInt("strobe_cents", 4800);
 		harm1_mult = prefs.getInt("harm1_mult", 2);
@@ -307,16 +312,24 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		update_status();
 	}
 
-	public void A_incr(View v) {
+	public void A_incrp1(View v) {
 		A_freq++;
 		update_status();
 	}
-	public void A_decr(View v) {
+	public void A_incr1(View v) {
+		A_freq+=10;
+		update_status();
+	}
+	public void A_decrp1(View v) {
 		A_freq--;
 		update_status();
 	}
+	public void A_decr1(View v) {
+		A_freq-=10;
+		update_status();
+	}
 	public void reset_afreq(View v) {
-		A_freq = 440;
+		A_freq = 4400;
 		update_status();
 	}
 
@@ -437,7 +450,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		 * wonkers if the values go out-of-range anyways.  */
 	private void update_status() {
 		strobe_cents = range_limit(strobe_cents, 0, 9600);
-		A_freq = range_limit(A_freq, 220, 880);
+		A_freq = range_limit(A_freq, 2200, 8800);
 		harm1_mult = range_limit(harm1_mult, 1, 20);
 		harm2_mult = range_limit(harm2_mult, 1, 20);
 
@@ -479,7 +492,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			temper_enable_button.setText("enable");
 		}
 
-		String center_str = Integer.toString(A_freq);
+		String center_str = Integer.toString(A_freq/10) +
+				"." + Integer.toString(A_freq%10);
 		center_display.setText("A="+center_str);
 		afreq_center_display.setText(center_str);
 
@@ -500,7 +514,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		double octpow = ((double)(cents-4800)) / 1200.0;
 		octpow += Math.log((double)harm_mult) / Math.log(2.0d);
 		double mult = Math.pow(octbase, octpow);
-		return ((double)A_freq)*mult;
+		return ((double)A_freq)*mult/10.0;
 	}
 
 	private void start_strobe() {

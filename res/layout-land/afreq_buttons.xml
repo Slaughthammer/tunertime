@@ -3,13 +3,26 @@
     android:orientation="vertical"
     android:layout_height="fill_parent"
     android:layout_width="fill_parent">
-    <Button
+    <LinearLayout
+	android:orientation="horizontal"
 	android:layout_width="fill_parent"
 	android:layout_height="1dp"
-	android:layout_weight="1"
-	android:text="A+"
-	android:textAppearance="?android:attr/textAppearanceMedium"
-	android:onClick="A_incr" />
+	android:layout_weight="1">
+	<Button
+	    android:layout_width="1dp"
+	    android:layout_height="fill_parent"
+	    android:layout_weight="1"
+	    android:text="+0.1"
+	    android:textAppearance="?android:attr/textAppearanceMedium"
+	    android:onClick="A_incrp1" />
+	<Button
+	    android:layout_width="1dp"
+	    android:layout_height="fill_parent"
+	    android:layout_weight="1"
+	    android:text="+1"
+	    android:textAppearance="?android:attr/textAppearanceMedium"
+	    android:onClick="A_incr1" />
+    </LinearLayout>
     <TextView android:id="@+id/center_display2"
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content"
@@ -18,13 +31,26 @@
 	android:singleLine="true"
 	android:textAppearance="?android:attr/textAppearanceLarge" 
 	android:textColor="#66F" />
-    <Button
+    <LinearLayout
+	android:orientation="horizontal"
 	android:layout_width="fill_parent"
 	android:layout_height="1dp"
-	android:layout_weight="1"
-	android:text="A-"
-	android:textAppearance="?android:attr/textAppearanceMedium"
-	android:onClick="A_decr" />
+	android:layout_weight="1">
+	<Button
+	    android:layout_width="1dp"
+	    android:layout_height="fill_parent"
+	    android:layout_weight="1"
+	    android:text="-0.1"
+	    android:textAppearance="?android:attr/textAppearanceMedium"
+	    android:onClick="A_decrp1" />
+	<Button
+	    android:layout_width="1dp"
+	    android:layout_height="fill_parent"
+	    android:layout_weight="1"
+	    android:text="-1"
+	    android:textAppearance="?android:attr/textAppearanceMedium"
+	    android:onClick="A_decr1" />
+    </LinearLayout>
     <Button
 	android:layout_height="1dp"
 	android:layout_width="fill_parent"
