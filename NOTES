@@ -559,14 +559,29 @@ release!
 
 I played with octave 6 a bit, and it seems to behave identically whether
 T_MULT is 1024 (current) or 16384.  And truly, 1974Hz would yield an
-error under +/-0.0013 Hz with T_MULT=1024.  Which would take around 100
+error under +/-0.0013 Hz with T_MULT=1024.  Which would take around 1000
 seconds to roll around entirely, while the error I'm seeing is rolling
 around in about 10 seconds.
 
 So that makes me wonder if the rounding error isn't in the strobe itself.
 Not sure what step there would introduce it, though...
 
+...
 
+Just thinking about it, I found the rounding error in the strobe.  I
+think its key value is msamps_per_col.  For 1974Hz, we're looking at
+around 22.340 samples per column.  If that was 22.341, instead, we get
++/-0.088 Hz, which is in the ballpark of our observation...
+
+So we should probably switch to, i.e., usamps (microsamples), but we
+really do have to make sure we've got plenty of range to cover low
+frequencies.  Absolute minimum seems to be 27.5Hz, or 1603 samples per
+column.  That's cutting it pretty close for a 32-bit int, but if we use
+unsigned and I check how it's accumulated, it might work.  At any rate,
+we really only need on the order of 1/100,000th of a sample.
+
+
+XXX - test tone with rotate
 XXX - figure out why octave 2 sounds vibratoy (imagination?)
 XXX - figure out why octave 6 is out of tune (is it the strobe itself?)
 XXX - release version 1.8
