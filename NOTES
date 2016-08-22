@@ -540,7 +540,6 @@ It seems like it should be pretty reasonable, even rounded to int.
 
 
 
-XXX - test, document cents per octave, display string "cents per octave"?
 XXX - tone generator (should split the 'mode' button in strobe mode?)
 
 XXX - mask jagged edge of strobes?
