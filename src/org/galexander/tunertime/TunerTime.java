@@ -292,6 +292,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		}
 		setTitle(fft_mode ? "TunerTime: FFT" : "TunerTime: strobe");
 		if (fft_mode) ToneGenerator.stop_tone();
+
+		update_status();
 	}
 
 
