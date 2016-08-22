@@ -31,9 +31,8 @@ public class ToneGenerator extends Thread {
 	}
 
 	public static void stop_tone() {
-		/* XXX - make sure onPause() calls this */
 		synchronized (lock) {
-			if (curr_thread) {
+			if (curr_thread != null) {
 				curr_thread.interrupt();
 				playing = false;
 				curr_thread = null;
@@ -45,13 +44,13 @@ public class ToneGenerator extends Thread {
 		synchronized(lock) {
 			if (sinetable == null) {
 				int i;
-				sinetable = new double[SINETABLE_LEN];
+				sinetable = new short[SINETABLE_LEN];
 				final double pi2 = Math.PI * 2.0d;
 				for (i = 0; i < SINETABLE_LEN; i++) {
 					double x = ((double)i) /
 							(double)SINETABLE_LEN;
-					double s = Math.sin(v * pi2);
-					short y = (short)Math.round(s*32767.0d);
+					double s = Math.sin(x * pi2);
+					short y = (short)Math.round(s*32766.0d);
 					sinetable[i] = y;
 				}
 			}
@@ -59,7 +58,7 @@ public class ToneGenerator extends Thread {
 	}
 
 
-	private long t, delta_t;
+	private int t, delta_t;
 	private double freq;
 	private AudioTrack player = null;
 	private static final int BUFSZ = 8192;
@@ -128,6 +127,15 @@ public class ToneGenerator extends Thread {
 		}
 	}
 
+	private void compute(short buf[]) {
+		int i;
+		for (i = 0; i < BUFSZ; i++) {
+			t &= T_MASK;
+			buf[i] = sinetable[t/T_MULT];
+			t += delta_t;
+		}
+	}
+
 	public void run() {
 		final short buf[] = new short[BUFSZ];
 
@@ -142,7 +150,7 @@ public class ToneGenerator extends Thread {
 			return;
 		}
 
-		set_freq(freq);
+		update_freq(freq);
 		t = 0;
 
 			/* first buffer and startup */
