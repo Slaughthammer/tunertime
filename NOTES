@@ -538,11 +538,28 @@ not.
 
 It seems like it should be pretty reasonable, even rounded to int.
 
+...
+
+Well, the tone generator worked pretty much as designed.  It seems to
+have a slight vibrato, and it also seems to have a high pitched overtone
+that is pronounced when playing low notes (octave 2).  That's likely to
+be psychosomatic based on its low volume and background noise..
+
+But more significantly, when the frequency is very high (octave 6), the
+display says it is a little out of tune.  It is possible that these
+higher frequencies simply exaggerate the out-of-tune-ness of the
+hardware, which is actually visible even in octave 4.  But it's also
+possible that the rounding error from my integer t/delta_t in
+ToneGenerator are becoming visible.
+
+So, I'll want to figure out what the deal is with both of those, and then
+release!
 
 
-XXX - tone generator (should split the 'mode' button in strobe mode?)
+XXX - figure out why octave 2 sounds vibratoy (imagination?)
+XXX - figure out why octave 6 is out of tune (is it T_MULT?)
+XXX - release version 1.8
 
-XXX - mask jagged edge of strobes?
 XXX - make FFT have time horizontal to match strobe
 XXX - make fft samples all the same height, so more seconds are on the
 screen for bigger bins ???
