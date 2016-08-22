@@ -123,6 +123,7 @@ public class ToneGenerator extends Thread {
 		synchronized (lock) {
 			if (curr_thread == this) {
 				curr_thread = null;
+				playing = false;
 			}
 		}
 	}

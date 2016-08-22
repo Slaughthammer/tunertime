@@ -30,6 +30,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private SurfaceView w_strobe;
 	private ViewGroup buttons_holder;
 	private ViewGroup surface_frame;
+	private ViewGroup mode_holder;
 	private TextView center_display;
 	private TextView stretch_display;
 	private View note_buttons;
@@ -54,6 +55,9 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private View strobe_buttons;
 	private Button note_button, afreq_button, stretch_button,
 			temper_button, harm_button;
+	private View strobe_mode_buttons;
+	private View fft_mode_buttons;
+	private Button tone_button;
 
 	private PowerManager.WakeLock wakelock = null;
 
@@ -73,6 +77,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		w_strobe.setOnTouchListener(new strobe_listener());
 		buttons_holder = (ViewGroup)findViewById(R.id.buttons_holder);
 		surface_frame = (ViewGroup)findViewById(R.id.surface_frame);
+		mode_holder = (ViewGroup)findViewById(R.id.mode_holder);
 		center_display = (TextView)findViewById(R.id.center_display);
 		stretch_display = (TextView)findViewById(R.id.stretch_display);
 
@@ -139,6 +144,13 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 						Context.POWER_SERVICE);
 		wakelock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK,
 						"TunerTime");
+
+		strobe_mode_buttons = fl8r.inflate(
+				R.layout.strobe_mode, mode_holder, false);
+		tone_button = (Button)strobe_mode_buttons.findViewById(
+				R.id.tone_button);
+		fft_mode_buttons = fl8r.inflate(
+				R.layout.fft_mode, mode_holder, false);
 	}
 
 	public void onResume() {
@@ -161,6 +173,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	public void onPause() {
 		wakelock.release();
 		stop_strobe();
+		ToneGenerator.stop_tone();
 		save_config();
 		super.onPause();
 	}
@@ -271,10 +284,14 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		if (!fft_mode) {
 			surface_frame.addView(strobe_buttons);
 		}
+		mode_holder.removeAllViews();
+		mode_holder.addView(fft_mode ? fft_mode_buttons
+					     : strobe_mode_buttons);
 		if (strobe != null) {
 			strobe.setFft(fft_mode);
 		}
 		setTitle(fft_mode ? "TunerTime: FFT" : "TunerTime: strobe");
+		if (fft_mode) ToneGenerator.stop_tone();
 	}
 
 
@@ -284,6 +301,16 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		} else {
 			set_mode(fft_buttons, true);
 		}
+	}
+
+	public void do_tone(View v) {
+		if (ToneGenerator.playing) {
+			ToneGenerator.stop_tone();
+		} else {
+			ToneGenerator.start_tone(
+				cents_to_freq(strobe_cents, 1));
+		}
+		update_status();
 	}
 
 	private void apply_temper() {
@@ -479,6 +506,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			strobe.setParms(strobe_cents, harm1_mult, harm2_mult,
 				fft_size, fft_width, fft_offset, fft_grid_freq);
 		}
+		ToneGenerator.set_freq(cents_to_freq(strobe_cents, 1));
 
 		int note_index = ((strobe_cents+50)%1200)/100;
 		int octave = (strobe_cents+50)/1200;
@@ -522,6 +550,13 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 		N_display.setText(Integer.toString(fft_size));
 		grid_button.setText(fft_grid_freq ? "Hz" : "scale");
+
+		if (ToneGenerator.playing) {
+			tone_button.getBackground().clearColorFilter();
+		} else {
+			tone_button.getBackground().setColorFilter(
+				new LightingColorFilter(0xff888888, 0));
+		}
 	}
 
 	public double cents_to_freq(int cents, int harm_mult) {
