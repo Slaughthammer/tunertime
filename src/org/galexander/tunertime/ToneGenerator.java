@@ -99,10 +99,12 @@ public class ToneGenerator extends Thread {
 	}
 
 	private void update_freq(double freq_) {
-		double dsf = (double)player.getPlaybackRate();
-		double dmult = (double)(T_MULT * SINETABLE_LEN);
-		double step = freq_ * dmult / dsf;
-		delta_t = (int)Math.round(step);
+		if (player != null) {
+			double dsf = (double)player.getPlaybackRate();
+			double dmult = (double)(T_MULT * SINETABLE_LEN);
+			double step = freq_ * dmult / dsf;
+			delta_t = (int)Math.round(step);
+		}
 	}
 
 	private boolean time_to_die() {
