@@ -61,7 +61,7 @@ public class ToneGenerator extends Thread {
 	private int t, delta_t;
 	private double freq;
 	private AudioTrack player = null;
-	private static final int BUFSZ = 8192;
+	private static final int BUFSZ = 4096;
 
 	ToneGenerator(double freq_) {
 		freq = freq_;
