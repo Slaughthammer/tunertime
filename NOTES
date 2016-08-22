@@ -555,9 +555,20 @@ ToneGenerator are becoming visible.
 So, I'll want to figure out what the deal is with both of those, and then
 release!
 
+...
+
+I played with octave 6 a bit, and it seems to behave identically whether
+T_MULT is 1024 (current) or 16384.  And truly, 1974Hz would yield an
+error under +/-0.0013 Hz with T_MULT=1024.  Which would take around 100
+seconds to roll around entirely, while the error I'm seeing is rolling
+around in about 10 seconds.
+
+So that makes me wonder if the rounding error isn't in the strobe itself.
+Not sure what step there would introduce it, though...
+
 
 XXX - figure out why octave 2 sounds vibratoy (imagination?)
-XXX - figure out why octave 6 is out of tune (is it T_MULT?)
+XXX - figure out why octave 6 is out of tune (is it the strobe itself?)
 XXX - release version 1.8
 
 XXX - make FFT have time horizontal to match strobe
