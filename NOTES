@@ -597,8 +597,23 @@ more than the 100,000 I was aiming for.
 That doesn't seem like it should be hard, but it's definitely more work
 than the s/1000/100000/ that I was planning on.
 
+...
+
+I think I got the xsamps_per_col to work, and now the tone display seems
+pretty solid.
+
+However, one thing I notice is that there is an aliasing effect already,
+especially pronounced at higher frequencies.  I'm not sure, but I think
+it is caused by making the vertical height be constant.  If one sample
+contributes to more than one vertical pixel, then this aliasing is almost
+guaranteed.
+
+So that makes me wonder if making the horizontal speed constant would
+really introduce that much new aliasing.
 
 XXX - release version 1.8
+
+XXX - experiment with constant horizontal speed in strobes
 
 XXX - make FFT have time horizontal to match strobe
 XXX - make fft samples all the same height, so more seconds are on the
