@@ -69,8 +69,36 @@ is 1 Hz flat.</p>
 
 <p>Tap on the strobe display to pause.</p>
 
+
+<h2>tone button</h2>
+
 <p>Tap on the "tone" button to toggle playback of a reference tone, so
-you can hear what fundamental the strobe display is aiming for.</p>
+you can hear what fundamental the strobe display is aiming for.  While
+the reference tone is playing, a few interesting effects may be
+observed.</p>
+
+<p>If the display is not showing perfectly horizontal red/green bands (in
+tune), then that indicates a calibration error in your phone's audio
+hardware.</p>
+
+<p>Background noises (talking, etc) show up as intermittent phase
+discrepancies.</p>
+
+<p>If the fundamental display is showing an octave high (i.e.,
+red/green/red/green instead of red/green), that usually indicates
+clipping distortion.  Your phone's microphone and speaker are so close to
+eachother that the microphone can be saturated beyond its capacity, and
+the clipping introduces overtones.</p>
+
+<p>If you output through an external (i.e., bluetooth) speaker, then the
+doppler effect is visible clear as day if you move the Android device
+relative to the speaker.</p>
+
+<p>When changing frequencies, the strobe display updates faster than the
+audio output buffer, so often there will be some period of the previous
+frequency visible on the new strobe.  This is clearest when using
+cent+/cent- to change the tone.</p>
+
 
 <h2>Strobe settings</h2>
 
