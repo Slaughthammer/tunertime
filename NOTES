@@ -581,6 +581,23 @@ unsigned and I check how it's accumulated, it might work.  At any rate,
 we really only need on the order of 1/100,000th of a sample.
 
 
+August 27, 2016.
+
+Conservatively, we have to assume the screen is up to 4000 pixels wide
+and the samples per column is up to 2000 pixels (22Hz).  Unfortunately,
+the current implementation multiplies width by msamps_per_col, yielding a
+maximum number of sub-samples of 536 -- less than the current 1000!
+Meaning if someone tuned the lowest note on a 4k screen, they might see
+some weird overflow-aliasing!
+
+I think the solution is to avoid multiplying by the width...then we have
+a maximum number of fractional samples around 2,147,483, which is much
+more than the 100,000 I was aiming for.
+
+That doesn't seem like it should be hard, but it's definitely more work
+than the s/1000/100000/ that I was planning on.
+
+
 XXX - test tone with rotate
 XXX - figure out why octave 2 sounds vibratoy (imagination?)
 XXX - figure out why octave 6 is out of tune (is it the strobe itself?)
