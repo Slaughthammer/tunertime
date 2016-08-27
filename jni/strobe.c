@@ -38,7 +38,8 @@ struct strobe_rec {
 	unsigned xsamps_per_col;        /* 100,000th samples per column */
 	int curr_samp;                  /* index into snd_buf/filtered */
 	unsigned prev_pos;              /* pos within column of last point */
-	unsigned prev_x;		/* column of last point */
+	unsigned prev_x, prev_y;	/* display location of last point */
+	unsigned prev_color;		/* display color of last point */
 	unsigned samp_max;              /* highest amplitude seen so far */
 	int multiplier;                 /* horizontal scale */
 	int last_cleared_col;
@@ -349,12 +350,12 @@ strobe_drawnew(struct strobe_rec *s)
 {
 	static int exptab[256] = { -1, };
 	unsigned pos = s->prev_pos;
-	unsigned color, last_color = -1;
+	unsigned color, last_color = s->prev_color;
 	int samp_max = (s->samp_max*9)/10;
 	int samp_divider = 1+(samp_max/256);
-	unsigned last_x = -1, last_y = -1;
+	unsigned last_x = s->prev_x, last_y = s->prev_y;
 	unsigned h = s->height-1;
-	unsigned x = s->prev_x, y;
+	unsigned x = last_x, y;
 	int i;
 	unsigned multiplier = s->multiplier;
 	unsigned xsamps_per_pos = s->xsamps_per_col * multiplier;
@@ -421,7 +422,9 @@ skip: ;
 		i = s->curr_samp%SND_BUFSAMPS;
 	}
 	s->prev_pos = pos;
-	s->prev_x = x;
+	s->prev_x = last_x;
+	s->prev_y = last_y;
+	s->prev_color = last_color;
 	s->samp_max = samp_max;
 }
 
