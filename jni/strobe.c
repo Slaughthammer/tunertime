@@ -35,13 +35,13 @@ struct strobe_rec {
 		/* filter output: */
 	signed short filtered[SND_BUFSAMPS];
 
-	unsigned xsamps_per_col;        /* 100,000th samples per column */
-	int curr_samp;                  /* index into snd_buf/filtered */
-	unsigned prev_pos;              /* pos within column of last point */
+	unsigned xsamps_per_col;	/* 100,000th samples per column */
+	int curr_samp;			/* index into snd_buf/filtered */
+	unsigned prev_pos;		/* pos within column of last point */
 	unsigned prev_x, prev_y;	/* display location of last point */
 	unsigned prev_color;		/* display color of last point */
-	unsigned samp_max;              /* highest amplitude seen so far */
-	int multiplier;                 /* horizontal scale */
+	int samp_max;			/* highest amplitude seen so far */
+	unsigned multiplier;		/* horizontal scale */
 	int last_cleared_col;
 };
 
