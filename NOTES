@@ -598,9 +598,6 @@ That doesn't seem like it should be hard, but it's definitely more work
 than the s/1000/100000/ that I was planning on.
 
 
-XXX - test tone with rotate
-XXX - figure out why octave 2 sounds vibratoy (imagination?)
-XXX - figure out why octave 6 is out of tune (is it the strobe itself?)
 XXX - release version 1.8
 
 XXX - make FFT have time horizontal to match strobe
