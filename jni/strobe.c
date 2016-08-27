@@ -35,9 +35,10 @@ struct strobe_rec {
 		/* filter output: */
 	signed short filtered[SND_BUFSAMPS];
 
-	unsigned msamps_per_col;        /* milisamples per column */
+	unsigned xsamps_per_col;        /* 100,000th samples per column */
 	int curr_samp;                  /* index into snd_buf/filtered */
-	int prev_pos;                   /* position of last strobe point */
+	unsigned prev_pos;              /* pos within column of last point */
+	unsigned prev_x;		/* column of last point */
 	unsigned samp_max;              /* highest amplitude seen so far */
 	int multiplier;                 /* horizontal scale */
 	int last_cleared_col;
@@ -149,7 +150,8 @@ strobe_recalc(struct strobe_rec *s)
 {
 	filter_recalc(s);
 
-	s->msamps_per_col = (sample_rate*1000) / s->freq;
+	double t = ((double)sample_rate) / (double)s->freq;
+	s->xsamps_per_col = t*100000.0+0.5;
 
 	s->multiplier = (s->freq + width) / width;
 	if (s->multiplier < 1) {
@@ -347,15 +349,17 @@ strobe_drawnew(struct strobe_rec *s)
 {
 	static int exptab[256] = { -1, };
 	unsigned pos = s->prev_pos;
-	unsigned pos_width = s->msamps_per_col*width;
 	unsigned color, last_color = -1;
 	int samp_max = (s->samp_max*9)/10;
 	int samp_divider = 1+(samp_max/256);
-	int last_x = -1, last_y = -1;
-	int h = s->height-1;
-	int x,y;
+	unsigned last_x = -1, last_y = -1;
+	unsigned h = s->height-1;
+	unsigned x = s->prev_x, y;
 	int i;
-	int multiplier = s->multiplier;
+	unsigned multiplier = s->multiplier;
+	unsigned xsamps_per_pos = s->xsamps_per_col * multiplier;
+	unsigned xsamps_per_col = s->xsamps_per_col;
+	unsigned msamps_per_col = s->xsamps_per_col/100;
 
 	if (exptab[0] == -1) {
 #define LOG_STEEP 40.0
@@ -376,10 +380,18 @@ strobe_drawnew(struct strobe_rec *s)
 		}
 		samp /= samp_divider;
 
-		pos += 1000;
-		pos %= (pos_width * multiplier);
-		x = pos / (s->msamps_per_col * multiplier);
-		y = ((pos % s->msamps_per_col) * h) / s->msamps_per_col;
+		pos += 100000;
+		while (pos > xsamps_per_pos) {
+			pos -= xsamps_per_pos;
+			x++;
+			x %= width;
+		}
+		if (pos > xsamps_per_col) {
+			/* multiplier must be greater than 1, skipping this
+			 * column.. */
+			goto skip;
+		}
+		y = ((pos/100) * h) / msamps_per_col;
 		if (x != last_x) {
 			clear_col(s, x);
 			last_x = x;
@@ -404,10 +416,12 @@ strobe_drawnew(struct strobe_rec *s)
 		last_y = y;
 		last_color = color;
 
+skip: ;
 		s->curr_samp++;
 		i = s->curr_samp%SND_BUFSAMPS;
 	}
 	s->prev_pos = pos;
+	s->prev_x = x;
 	s->samp_max = samp_max;
 }
 
