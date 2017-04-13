@@ -611,7 +611,7 @@ guaranteed.
 So that makes me wonder if making the horizontal speed constant would
 really introduce that much new aliasing.
 
-XXX - release version 1.8
+XXX - logarithmic frequency in FFT
 
 XXX - experiment with constant horizontal speed in strobes
 
