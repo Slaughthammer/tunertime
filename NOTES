@@ -612,6 +612,7 @@ So that makes me wonder if making the horizontal speed constant would
 really introduce that much new aliasing.
 
 XXX - logarithmic frequency in FFT
+XXX - tone generator in FFT - is there a simple UI for this?
 
 XXX - experiment with constant horizontal speed in strobes
 
