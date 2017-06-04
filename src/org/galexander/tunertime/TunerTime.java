@@ -91,6 +91,22 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				R.id.oct_display);
 		note_cent_display = (TextView)note_buttons.findViewById(
 				R.id.cent_display);
+		((Button)note_buttons.findViewById(R.id.semi_plus))
+			.setOnLongClickListener(new View.OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				fifth_incr();
+				return true;
+			}
+		});
+		((Button)note_buttons.findViewById(R.id.semi_minus))
+			.setOnLongClickListener(new View.OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				fifth_decr();
+				return true;
+			}
+		});
 
 		afreq_buttons = fl8r.inflate(
 				R.layout.afreq_buttons, buttons_holder, false);
@@ -333,6 +349,16 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	}
 	public void semi_decr(View v) {
 		strobe_cents -= 100;
+		apply_temper();
+		update_status();
+	}
+	public void fifth_incr() {
+		strobe_cents += 700;
+		apply_temper();
+		update_status();
+	}
+	public void fifth_decr() {
+		strobe_cents -= 700;
 		apply_temper();
 		update_status();
 	}
