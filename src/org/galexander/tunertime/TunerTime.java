@@ -95,7 +95,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			.setOnLongClickListener(new View.OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {
-				fifth_incr();
+				incr_cents(700);
 				return true;
 			}
 		});
@@ -103,7 +103,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			.setOnLongClickListener(new View.OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {
-				fifth_decr();
+				incr_cents(-700);
 				return true;
 			}
 		});
@@ -342,42 +342,18 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		strobe_cents = octave*1200 + note_index*100 + cents;
 	}
 
-	public void semi_incr(View v) {
-		strobe_cents += 100;
+	private void incr_cents(int delta) {
+		strobe_cents += delta;
 		apply_temper();
 		update_status();
 	}
-	public void semi_decr(View v) {
-		strobe_cents -= 100;
-		apply_temper();
-		update_status();
-	}
-	public void fifth_incr() {
-		strobe_cents += 700;
-		apply_temper();
-		update_status();
-	}
-	public void fifth_decr() {
-		strobe_cents -= 700;
-		apply_temper();
-		update_status();
-	}
-	public void oct_incr(View v) {
-		strobe_cents += 1200;
-		update_status();
-	}
-	public void oct_decr(View v) {
-		strobe_cents -= 1200;
-		update_status();
-	}
-	public void cent_incr(View v) {
-		strobe_cents++;
-		update_status();
-	}
-	public void cent_decr(View v) {
-		strobe_cents--;
-		update_status();
-	}
+
+	public void semi_incr(View v) { incr_cents(100); }
+	public void semi_decr(View v) { incr_cents(-100); }
+	public void oct_incr(View v) { incr_cents(1200); }
+	public void oct_decr(View v) { incr_cents(-1200); }
+	public void cent_incr(View v) { incr_cents(1); }
+	public void cent_decr(View v) { incr_cents(-1); }
 
 	public void A_incrp1(View v) {
 		A_freq++;
