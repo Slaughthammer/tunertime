@@ -72,7 +72,6 @@ static int fft_grid_freq = 0;
 static int fft_y = 0;
 static int fft_legend_height = 0;
 
-static jint *bitmap_ptr;
 #define COLOR_VALUE(r,g,b) (((r)<<16)|((g)<<8)|(b))
 #define ADDR_PIXEL(x,y) (&bitmap_ptr[(x)+((y)*width)])
 #define DRAW_PIXEL(x,y,c) *ADDR_PIXEL((x),(y)) = (c)
@@ -185,8 +184,9 @@ strobe_filter(struct strobe_rec *s)
 	s->x1 = x1; s->x2 = x2; s->y1 = y1; s->y2 = y2;
 }
 
+
 static void
-filled_rect(int x1, int y1, int x2, int y2, unsigned color)
+filled_rect(jint *bitmap_ptr, int x1, int y1, int x2, int y2, unsigned color)
 {
 	int x,y;
 	for (y = y1; y < y2; y++) {
@@ -197,7 +197,7 @@ filled_rect(int x1, int y1, int x2, int y2, unsigned color)
 }
 
 static void
-hline(int x1, int y, int x2, unsigned color)
+hline(jint *bitmap_ptr, int x1, int y, int x2, unsigned color)
 {
 	int x;
 	for (x = x1; x < x2; x++) {
@@ -206,7 +206,7 @@ hline(int x1, int y, int x2, unsigned color)
 }
 
 static void
-vline(int x, int y1, int y2, unsigned color)
+vline(jint *bitmap_ptr, int x, int y1, int y2, unsigned color)
 {
 	int y;
 	for (y = y1; y < y2; y++) {
@@ -215,7 +215,7 @@ vline(int x, int y1, int y2, unsigned color)
 }
 
 static void
-xor_hline(int x1, int x2, int y)
+xor_hline(jint *bitmap_ptr, int x1, int x2, int y)
 {
 	int x;
 	for (x = x1; x < x2; x++) {
@@ -225,7 +225,7 @@ xor_hline(int x1, int x2, int y)
 }
 
 static void
-xor_vline(int x, int y1, int y2)
+xor_vline(jint *bitmap_ptr, int x, int y1, int y2)
 {
 	int y;
 	for (y = y1; y < y2; y++) {
@@ -271,7 +271,7 @@ char_to_bits(char c)
 }
 
 static void
-seven_seg(int x, int y, char c, unsigned color)
+seven_seg(jint *bitmap_ptr, int x, int y, char c, unsigned color)
 {
 	unsigned bits = char_to_bits(c);
 	int l1,l2;
@@ -297,18 +297,18 @@ seven_seg(int x, int y, char c, unsigned color)
 	y6 = y5+l1;
 	if ((y1 < 0) || (y6 > height)) return;
 
-	if (bits & 0x01) filled_rect(x2,y1,x3,y2, color);
-	if (bits & 0x02) filled_rect(x1,y2,x2,y3, color);
-	if (bits & 0x04) filled_rect(x3,y2,x4,y3, color);
-	if (bits & 0x08) filled_rect(x2,y3,x3,y4, color);
-	if (bits & 0x10) filled_rect(x1,y4,x2,y5, color);
-	if (bits & 0x20) filled_rect(x3,y4,x4,y5, color);
-	if (bits & 0x40) filled_rect(x2,y5,x3,y6, color);
+	if (bits & 0x01) filled_rect(bitmap_ptr, x2,y1,x3,y2, color);
+	if (bits & 0x02) filled_rect(bitmap_ptr, x1,y2,x2,y3, color);
+	if (bits & 0x04) filled_rect(bitmap_ptr, x3,y2,x4,y3, color);
+	if (bits & 0x08) filled_rect(bitmap_ptr, x2,y3,x3,y4, color);
+	if (bits & 0x10) filled_rect(bitmap_ptr, x1,y4,x2,y5, color);
+	if (bits & 0x20) filled_rect(bitmap_ptr, x3,y4,x4,y5, color);
+	if (bits & 0x40) filled_rect(bitmap_ptr, x2,y5,x3,y6, color);
 }
 
 #define NUM_CLEAR 25	/* number of columns to clear at once */
 static void
-clear_col(struct strobe_rec *s, int col)
+clear_col(jint *bitmap_ptr, struct strobe_rec *s, int col)
 {
 	int start_x, stop_x;
 	if (col < s->last_cleared_col) {
@@ -334,7 +334,8 @@ clear_col(struct strobe_rec *s, int col)
 			start_x = 0;
 			stop_x = 0;
 		}
-		filled_rect(start_x, s->y, width, s->y+s->height-1, 0x000000);
+		filled_rect(bitmap_ptr,
+			start_x, s->y, width, s->y+s->height-1, 0x000000);
 		start_x = 0;
 		stop_x -= width;
 	}
@@ -342,11 +343,12 @@ clear_col(struct strobe_rec *s, int col)
 	if (start_x == stop_x) {
 		return;
 	}
-	filled_rect(start_x, s->y, stop_x+1, s->y+s->height-1, 0x000000);
+	filled_rect(bitmap_ptr,
+		start_x, s->y, stop_x+1, s->y+s->height-1, 0x000000);
 }
 
 static void
-strobe_drawnew(struct strobe_rec *s)
+strobe_drawnew(jint *bitmap_ptr, struct strobe_rec *s)
 {
 	static int exptab[256] = { -1, };
 	unsigned pos = s->prev_pos;
@@ -394,7 +396,7 @@ strobe_drawnew(struct strobe_rec *s)
 		}
 		y = ((pos/100) * h) / msamps_per_col;
 		if (x != last_x) {
-			clear_col(s, x);
+			clear_col(bitmap_ptr, s, x);
 			last_x = x;
 		} else if (y > last_y+1) {
 			/* if there are more pixels than samples, then fill in
@@ -430,29 +432,29 @@ skip: ;
 
 /* draw a vertical tic mark at 1 second into the buffer */
 static void
-strobe_draw_htic(struct strobe_rec *s)
+strobe_draw_htic(jint *bitmap_ptr, struct strobe_rec *s)
 {
 	int x;
 	int step;
 	step = s->freq / s->multiplier;
 	for (x = step; x < width; x += step) {
 		int h = (s->height*3)/10;
-		vline(x, s->y, s->y+h, 0xFFFFAA);
-		vline(x-1, s->y, s->y+h, 0xFFFFAA);
-		vline(x-2, s->y, s->y+h, 0xFFFFAA);
+		vline(bitmap_ptr, x, s->y, s->y+h, 0xFFFFAA);
+		vline(bitmap_ptr, x-1, s->y, s->y+h, 0xFFFFAA);
+		vline(bitmap_ptr, x-2, s->y, s->y+h, 0xFFFFAA);
 	}
 }
 
 static void
-strobe_newdata(struct strobe_rec *s)
+strobe_newdata(jint *bitmap_ptr, struct strobe_rec *s)
 {
 	if (s->curr_samp == snd_ofs) {
 		/* not really any new data */
 		return;
 	}
 	strobe_filter(s);
-	strobe_drawnew(s);
-	strobe_draw_htic(s);
+	strobe_drawnew(bitmap_ptr, s);
+	strobe_draw_htic(bitmap_ptr, s);
 }
 
 
@@ -556,7 +558,7 @@ fft_freq2ind(double freq)
 }
 
 static void
-fft_draw_slider(void)
+fft_draw_slider(jint *bitmap_ptr)
 {
 	int x1 = (fft_offset*width) / FFT_RANGE_MULT;
 	int x2 = ((fft_offset+fft_width)*width)/FFT_RANGE_MULT;
@@ -567,12 +569,27 @@ fft_draw_slider(void)
 	if (x2 < 0) x2 = 0;
 	if (x2 > width) x2 = width;
 	if (x1 > 0) {
-		filled_rect(0,y1,x1,height, 0x00FF0000);
+		filled_rect(bitmap_ptr, 0,y1,x1,height, 0x00FF0000);
 	}
-	filled_rect(x1,y1,x2,height, 0x0000FF00);
+	filled_rect(bitmap_ptr, x1,y1,x2,height, 0x0000FF00);
 	if (x2 < width) {
-		filled_rect(x2,y1,width,height,0x00FF0000);
+		filled_rect(bitmap_ptr, x2,y1,width,height, 0x00FF0000);
 	}
+}
+
+
+static double piano_freqs[88];
+
+static void
+fft_compute_piano(jobject this)
+{
+	jobject ui = (*env)->GetObjectField(env, this, fid_st_ui);
+	int i;
+	for (i = 0; i < 88; i++) {
+		piano_freqs[i] = (*env)->CallDoubleMethod(env,
+				ui, mid_tt_cents_to_freq, (jint)i*100, (jint)1);
+	}
+	(*env)->DeleteLocalRef(env, ui);
 }
 
 static int grid_x[SEVEN_CHARS];
@@ -587,9 +604,8 @@ static int num_grid_x = 0;
 	if (first_bin + num_bins > tot_bins) first_bin = tot_bins - num_bins;
 
 static void
-fft_draw_piano(jobject this)
+fft_draw_piano(jint *bitmap_ptr)
 {
-	jobject ui = (*env)->GetObjectField(env, this, fid_st_ui);
 	int y1,y2,y3;
 	int tot_bins, first_bin, num_bins;
 	int last_x = 0;
@@ -608,7 +624,7 @@ fft_draw_piano(jobject this)
 		static const char *(names[12]) = { "A", NULL, "B", "C", NULL, "D", NULL, "E", "F", NULL, "G", NULL };
 		const char *name = names[i % 12];
 
-		freq = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq, (jint)i*100, (jint)1);
+		freq = piano_freqs[i];
 
 		bin = ((double)fft_size)*(freq/((double)sample_rate));
 		if ((int)bin < first_bin) continue;
@@ -622,20 +638,20 @@ fft_draw_piano(jobject this)
 		if (x2 > width) x2 = width;
 
 		if (name) {			/* white keys */
-			filled_rect(x1, y2, x2, y3, 0x00FFFFFF);
+			filled_rect(bitmap_ptr, x1, y2, x2, y3, 0x00FFFFFF);
 			if (x0 >= last_x) {
-				seven_seg(x0, y1, name[0], 0x00AAAAFF);
-				seven_seg(x0+SEVEN_WID, y1, (i/12)+'0', 0x00AAAAFF);
+				seven_seg(bitmap_ptr, x0, y1,
+					name[0], 0x00AAAAFF);
+				seven_seg(bitmap_ptr, x0+SEVEN_WID, y1,
+					(i/12)+'0', 0x00AAAAFF);
 				last_x = x0 + (SEVEN_WID*2);
-				xor_vline(x, 0, y1);
+				xor_vline(bitmap_ptr, x, 0, y1);
 				grid_x[num_grid_x++] = x;
 			}
 		} else {
-			filled_rect(x1, y2, x2, y3, 0x00666666);
+			filled_rect(bitmap_ptr, x1, y2, x2, y3, 0x00666666);
 		}
 	}
-
-	(*env)->DeleteLocalRef(env, ui);
 }
 
 static int
@@ -656,7 +672,7 @@ round_up(int i)
 }
 
 static void
-fft_draw_freqs(void)
+fft_draw_freqs(jint *bitmap_ptr)
 {
 	int tot_bins, first_bin, num_bins;
 	int y1,y2,y3;
@@ -698,20 +714,21 @@ fft_draw_freqs(void)
 		if (x1 < 0) x1 = 0;
 		if (x2 > width) x2 = width;
 
-		filled_rect(x1, y2, x2, y3, 0x00FFFFFF);
-		xor_vline(x, 0, y1);
+		filled_rect(bitmap_ptr, x1, y2, x2, y3, 0x00FFFFFF);
+		xor_vline(bitmap_ptr, x, 0, y1);
 		grid_x[num_grid_x++] = x;
 		if ((x0 >= 0) && (x3 < width)) {
 			for (i = 0; label[i]; i++) {
-				seven_seg(x0 + (SEVEN_WID*i), y1, label[i],
-							0x00AAAAFF);
+				seven_seg(bitmap_ptr,
+					x0 + (SEVEN_WID*i), y1, label[i],
+					0x00AAAAFF);
 			}
 		}
 	}
 }
 
 static void
-fft_draw_seconds(void)
+fft_draw_seconds(jint *bitmap_ptr)
 {
 	int y, y1;
 
@@ -719,7 +736,7 @@ fft_draw_seconds(void)
 
 	for (y = (y1/FFT_SECONDS); y < (y1-(FFT_SECONDS*2));
 	     y += (y1/FFT_SECONDS)) {
-		xor_hline(0, width, y);
+		xor_hline(bitmap_ptr, 0, width, y);
 	}
 }
 
@@ -777,7 +794,7 @@ color_for_value(double x)
 
 
 static void
-do_fft_display(void)
+do_fft_display(jint *bitmap_ptr)
 {
 	int tot_bins, first_bin, num_bins;
 	int i;
@@ -825,22 +842,22 @@ do_fft_display(void)
 		val /= dincr;
 		color = color_for_value(val);
 		x1 = (i*width)/num_bins;
-		filled_rect(x1, y1, x1+xn, y2, color);
+		filled_rect(bitmap_ptr, x1, y1, x1+xn, y2, color);
 	}
-	hline(0, (y2+0)%disp_height, width, 0x000000);
-	hline(0, (y2+1)%disp_height, width, 0x000000);
-	hline(0, (y2+2)%disp_height, width, 0x000000);
-	hline(0, (y2+3)%disp_height, width, 0x000000);
-	hline(0, (y2+4)%disp_height, width, 0x000000);
+	hline(bitmap_ptr, 0, (y2+0)%disp_height, width, 0x000000);
+	hline(bitmap_ptr, 0, (y2+1)%disp_height, width, 0x000000);
+	hline(bitmap_ptr, 0, (y2+2)%disp_height, width, 0x000000);
+	hline(bitmap_ptr, 0, (y2+3)%disp_height, width, 0x000000);
+	hline(bitmap_ptr, 0, (y2+4)%disp_height, width, 0x000000);
 
 		/* draw grid */
 	for (i = 0; i < num_grid_x; i++) {
-		xor_vline(grid_x[i], y1, y2);
+		xor_vline(bitmap_ptr, grid_x[i], y1, y2);
 	}
 	for (i = (disp_height/FFT_SECONDS); i < (disp_height-(FFT_SECONDS*2));
 	     i += (disp_height/FFT_SECONDS)) {
 		if ((y1 <= i) && (y2 > i)) {
-			xor_hline(0, width, i);
+			xor_hline(bitmap_ptr, 0, width, i);
 		}
 	}
 
@@ -850,17 +867,31 @@ do_fft_display(void)
 	}
 }
 
+static void
+strobe_separators(jint *bitmap_ptr)
+{
+	int h = strobes[0].height;
+	int y = h-1;
+	int i;
+
+	for (i = 0; i < NUM_STROBES-1; i++) {
+		hline(bitmap_ptr, 0, y, width, 0xFFFFFF);
+		y += h;
+	}
+}
+
 void
-newdata(void)
+newdata(jint *bitmap_ptr)
 {
 	int i;
+
 	if (fft_mode) {
 		for (i = fft_snd_i; i != snd_ofs; i = (i+1)%SND_BUFSAMPS) {
 			fft_buf[fft_buf_i++] = ((double)snd_buf[i]) / 32768.0;
 			if (fft_buf_i >= fft_size) {
 				do_fft_window();
 				do_fft();
-				do_fft_display();
+				do_fft_display(bitmap_ptr);
 
 					/* only advance half a buffer so window
 					 * doesn't lose detail */
@@ -871,8 +902,9 @@ newdata(void)
 		}
 		fft_snd_i = i;
 	} else {
+		strobe_separators(bitmap_ptr);
 		for (i = 0; i < NUM_STROBES; i++) {
-			strobe_newdata(&strobes[i]);
+			strobe_newdata(bitmap_ptr, &strobes[i]);
 		}
 	}
 }
@@ -1041,30 +1073,17 @@ update_labels(jobject this)
 }
 
 static void
-strobe_separators(void)
-{
-	int h = strobes[0].height;
-	int y = h-1;
-	int i;
-
-	for (i = 0; i < NUM_STROBES-1; i++) {
-		hline(0, y, width, 0xFFFFFF);
-		y += h;
-	}
-}
-
-static void
-fft_mode_changed(jobject this)
+fft_mode_changed(jint *bitmap_ptr)
 {
 	fft_y = 0;
 	fft_legend_height = height/10;
-	fft_draw_slider();
+	fft_draw_slider(bitmap_ptr);
 	if (fft_grid_freq) {
-		fft_draw_freqs();
+		fft_draw_freqs(bitmap_ptr);
 	} else {
-		fft_draw_piano(this);
+		fft_draw_piano(bitmap_ptr);
 	}
-	fft_draw_seconds();
+	fft_draw_seconds(bitmap_ptr);
 	memset(fft_r, 0, sizeof fft_r);
 	window_free(curr_window);
 	curr_window = window_init(wk_blackman, fft_size);
@@ -1087,11 +1106,11 @@ check_surface(jobject this)
 	(*env)->SetBooleanField(env, this, fid_st_parms_changed, JNI_TRUE);
 }
 
-static void
+static int
 check_parms(jobject this)
 {
 	if (!(*env)->GetBooleanField(env, this, fid_st_parms_changed)) {
-		return;
+		return 0;
 	}
 
 	(*env)->SetBooleanField(env, this, fid_st_parms_changed, JNI_FALSE);
@@ -1106,10 +1125,8 @@ check_parms(jobject this)
 	fft_offset = (*env)->GetIntField(env, this, fid_st_fft_offset);
 	fft_grid_freq = (*env)->GetBooleanField(env,this, fid_st_fft_grid_freq);
 
-	memset(bitmap_ptr, 0, width*height*sizeof *bitmap_ptr);
-	
 	if (fft_mode) {
-		fft_mode_changed(this);
+		fft_compute_piano(this);
 	} else {
 		int i;
 		for (i = 0; i < NUM_STROBES; i++) {
@@ -1117,8 +1134,8 @@ check_parms(jobject this)
 		}
 		recalculate(this);
 		update_labels(this);
-		strobe_separators();
 	}
+	return 1;
 }
 
 /* This is the entry point from the Java code...it is a loop that checks for
@@ -1149,15 +1166,22 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 			return;
 		}
 
+		/* process sound into bitmap */
 		if (bitmap) {
-			/* process sound into bitmap */
-			bitmap_ptr = (*env)->GetPrimitiveArrayCritical(env, bitmap, 0);
-			check_parms(this);
+			int changed = check_parms(this);
 
 			if (!(*env)->GetBooleanField(env,this,fid_st_paused)) {
-				newdata();
+				jint *bitmap_ptr = (*env)->GetPrimitiveArrayCritical(env, bitmap, 0);
+				if (changed) {
+					memset(bitmap_ptr, 0,
+					       width*height*sizeof *bitmap_ptr);
+					if (fft_mode) {
+						fft_mode_changed(bitmap_ptr);
+					}
+				}
+				newdata(bitmap_ptr);
+				(*env)->ReleasePrimitiveArrayCritical(env, bitmap, bitmap_ptr, 0);
 			}
-			(*env)->ReleasePrimitiveArrayCritical(env, bitmap, bitmap_ptr, 0);
 			/* send bitmap to surface */
 			if ((*env)->CallBooleanMethod(env, this, mid_st_do_draw, bitmap, width, height)) {
 				/* thread was interrupted, must be time for it to die */
