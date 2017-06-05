@@ -611,6 +611,54 @@ guaranteed.
 So that makes me wonder if making the horizontal speed constant would
 really introduce that much new aliasing.
 
+
+June 4, 2017.
+
+Ben Forsberg has given the suggestion to make the FFT display be
+logarithmic in frequency.  It seems like a winner to me.
+
+But sitting down to do it, I'm not sure where to start exactly.
+
+The way it currently works is that there are fft_size/2 bins, which are
+spread linearly across a virtual x coordinate that is
+[0..FFT_RANGE_MULT).  fft_offset and fft_width define the current
+viewport in that coordinate space.  The frequency of a bin is
+bin_index*samplerate/fft_size.  So the bins cover frequencies of
+[0..samplerate/2), regardless of how many bins there are.
+   x(bin) = bin*FFT_RANGE_MULT/tot_bins
+
+I want to spread the same bins logarithmically across the same
+virtual x coordinate space.  So in both modes, we need to preserve
+  x(0) = 0
+  x(tot_size/2) = FFT_RANGE_MULT
+
+I think it's going to be some sort of x(bin) = c*log(a*bin+b)+d
+
+Let's try first with b=1 (so logarithm is always positive), and a=1
+(*shrug*).
+   x(bin) = c*log(bin+1)+d
+   x(0) = 0 = c*log(1)+d
+   d=0
+   x(bin) = c*log(bin+1)
+   x(tot_size/2) = FFT_RANGE_MULT = c*log(tot_size/2+1)
+   c = FFT_RANGE_MULT/log(tot_size/2+1)
+   x(bin) = log(bin+1)*FFT_RANGE_MULT/log(tot_size/2+1)
+
+That wasn't so hard, and I like that there is a single right answer.
+
+Will be useful to know that backwards, probably...
+   x = log(bin+1)*FFT_RANGE_MULT/log(tot_size/2+1)
+   x*log(tot_size/2+1)/FFT_RANGE_MULT = log(bin+1)
+   exp(x*log(tot_size/2+1)/FFT_RANGE_MULT) = bin+1
+   bin(x) = exp(x*log(tot_size/2+1)/FFT_RANGE_MULT)-1
+   bin(x) = (tot_size/2+1)^(x/FFT_RANGE_MULT)-1
+
+I think everything will fall out in a fairly straightforward manner
+except for the drawing itself, which is somewhat difficult because the
+number of bins per pixel will change....
+
+
+
 XXX - logarithmic frequency in FFT
 XXX - tone generator in FFT - is there a simple UI for this?
 
