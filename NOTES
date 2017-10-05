@@ -659,6 +659,7 @@ number of bins per pixel will change....
 
 
 
+XXX - crash from integer divide by zero at "newdata+1000" and "newdata+2722" ?  which must be an inlined function?
 XXX - logarithmic frequency in FFT
 XXX - tone generator in FFT - is there a simple UI for this?
 
