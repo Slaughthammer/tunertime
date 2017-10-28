@@ -1176,8 +1176,7 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 			if (!(*env)->GetBooleanField(env,this,fid_st_paused)) {
 				jint *bitmap_ptr = (*env)->GetPrimitiveArrayCritical(env, bitmap, 0);
 				if (changed) {
-					memset(bitmap_ptr, 0,
-					       width*height*sizeof *bitmap_ptr);
+					filled_rect(bitmap_ptr, 0, 0, width, height, 0xFF000000);
 					if (fft_mode) {
 						fft_mode_changed(bitmap_ptr);
 					} else {
