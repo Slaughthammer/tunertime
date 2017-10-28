@@ -73,7 +73,7 @@ static int fft_logmode = 0;
 static int fft_y = 0;
 static int fft_legend_height = 0;
 
-#define COLOR_VALUE(r,g,b) (((r)<<16)|((g)<<8)|(b))
+#define COLOR_VALUE(r,g,b) (0xFF000000|((r)<<16)|((g)<<8)|(b))
 #define ADDR_PIXEL(x,y) (&bitmap_ptr[(x)+((y)*width)])
 #define DRAW_PIXEL(x,y,c) *ADDR_PIXEL((x),(y)) = (c)
 
@@ -337,7 +337,7 @@ clear_col(jint *bitmap_ptr, struct strobe_rec *s, int col)
 			stop_x = 0;
 		}
 		filled_rect(bitmap_ptr,
-			start_x, s->y, width, s->y+s->height-1, 0x000000);
+			start_x, s->y, width, s->y+s->height-1, 0xFF000000);
 		start_x = 0;
 		stop_x -= width;
 	}
@@ -346,7 +346,7 @@ clear_col(jint *bitmap_ptr, struct strobe_rec *s, int col)
 		return;
 	}
 	filled_rect(bitmap_ptr,
-		start_x, s->y, stop_x+1, s->y+s->height-1, 0x000000);
+		start_x, s->y, stop_x+1, s->y+s->height-1, 0xFF000000);
 }
 
 static void
@@ -441,9 +441,9 @@ strobe_draw_htic(jint *bitmap_ptr, struct strobe_rec *s)
 	step = s->freq / s->multiplier;
 	for (x = step; x < width; x += step) {
 		int h = (s->height*3)/10;
-		vline(bitmap_ptr, x, s->y, s->y+h, 0xFFFFAA);
-		vline(bitmap_ptr, x-1, s->y, s->y+h, 0xFFFFAA);
-		vline(bitmap_ptr, x-2, s->y, s->y+h, 0xFFFFAA);
+		vline(bitmap_ptr, x, s->y, s->y+h, 0xFFFFFFAA);
+		vline(bitmap_ptr, x-1, s->y, s->y+h, 0xFFFFFFAA);
+		vline(bitmap_ptr, x-2, s->y, s->y+h, 0xFFFFFFAA);
 	}
 }
 
@@ -571,11 +571,11 @@ fft_draw_slider(jint *bitmap_ptr)
 	if (x2 < 0) x2 = 0;
 	if (x2 > width) x2 = width;
 	if (x1 > 0) {
-		filled_rect(bitmap_ptr, 0,y1,x1,height, 0x00FF0000);
+		filled_rect(bitmap_ptr, 0,y1,x1,height, 0xFFFF0000);
 	}
 	filled_rect(bitmap_ptr, x1,y1,x2,height, 0x0000FF00);
 	if (x2 < width) {
-		filled_rect(bitmap_ptr, x2,y1,width,height, 0x00FF0000);
+		filled_rect(bitmap_ptr, x2,y1,width,height, 0xFFFF0000);
 	}
 }
 
@@ -640,18 +640,18 @@ fft_draw_piano(jint *bitmap_ptr)
 		if (x2 > width) x2 = width;
 
 		if (name) {			/* white keys */
-			filled_rect(bitmap_ptr, x1, y2, x2, y3, 0x00FFFFFF);
+			filled_rect(bitmap_ptr, x1, y2, x2, y3, 0xFFFFFFFF);
 			if (x0 >= last_x) {
 				seven_seg(bitmap_ptr, x0, y1,
-					name[0], 0x00AAAAFF);
+					name[0], 0xFFAAAAFF);
 				seven_seg(bitmap_ptr, x0+SEVEN_WID, y1,
-					(i/12)+'0', 0x00AAAAFF);
+					(i/12)+'0', 0xFFAAAAFF);
 				last_x = x0 + (SEVEN_WID*2);
 				xor_vline(bitmap_ptr, x, 0, y1);
 				grid_x[num_grid_x++] = x;
 			}
 		} else {
-			filled_rect(bitmap_ptr, x1, y2, x2, y3, 0x00666666);
+			filled_rect(bitmap_ptr, x1, y2, x2, y3, 0xFF666666);
 		}
 	}
 }
@@ -716,14 +716,14 @@ fft_draw_freqs(jint *bitmap_ptr)
 		if (x1 < 0) x1 = 0;
 		if (x2 > width) x2 = width;
 
-		filled_rect(bitmap_ptr, x1, y2, x2, y3, 0x00FFFFFF);
+		filled_rect(bitmap_ptr, x1, y2, x2, y3, 0xFFFFFFFF);
 		xor_vline(bitmap_ptr, x, 0, y1);
 		grid_x[num_grid_x++] = x;
 		if ((x0 >= 0) && (x3 < width)) {
 			for (i = 0; label[i]; i++) {
 				seven_seg(bitmap_ptr,
 					x0 + (SEVEN_WID*i), y1, label[i],
-					0x00AAAAFF);
+					0xFFAAAAFF);
 			}
 		}
 	}
@@ -761,11 +761,11 @@ color_for_value(double x)
 	unsigned ix, i1mx;
 
 	if (x < 0.0000001) {
-		return 0x000000;
+		return 0xFF000000;
 	}
 	x = log(1.0 + x * 500.0) / 10.3;
 	if (x < 0.0) {
-		return 0x000000;
+		return 0xFF000000;
 	}
 	if (x > 1.0) {
 		x = 1.0;
@@ -846,11 +846,11 @@ do_fft_display(jint *bitmap_ptr)
 		x1 = (i*width)/num_bins;
 		filled_rect(bitmap_ptr, x1, y1, x1+xn, y2, color);
 	}
-	hline(bitmap_ptr, 0, (y2+0)%disp_height, width, 0x000000);
-	hline(bitmap_ptr, 0, (y2+1)%disp_height, width, 0x000000);
-	hline(bitmap_ptr, 0, (y2+2)%disp_height, width, 0x000000);
-	hline(bitmap_ptr, 0, (y2+3)%disp_height, width, 0x000000);
-	hline(bitmap_ptr, 0, (y2+4)%disp_height, width, 0x000000);
+	hline(bitmap_ptr, 0, (y2+0)%disp_height, width, 0xFF000000);
+	hline(bitmap_ptr, 0, (y2+1)%disp_height, width, 0xFF000000);
+	hline(bitmap_ptr, 0, (y2+2)%disp_height, width, 0xFF000000);
+	hline(bitmap_ptr, 0, (y2+3)%disp_height, width, 0xFF000000);
+	hline(bitmap_ptr, 0, (y2+4)%disp_height, width, 0xFF000000);
 
 		/* draw grid */
 	for (i = 0; i < num_grid_x; i++) {
@@ -877,7 +877,7 @@ strobe_separators(jint *bitmap_ptr)
 	int i;
 
 	for (i = 0; i < NUM_STROBES-1; i++) {
-		hline(bitmap_ptr, 0, y, width, 0xFFFFFF);
+		hline(bitmap_ptr, 0, y, width, 0xFFFFFFFF);
 		y += h;
 	}
 }
