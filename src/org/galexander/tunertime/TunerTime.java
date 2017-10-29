@@ -26,7 +26,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private int fft_width;
 	private int fft_offset;
 	private boolean fft_grid_freq;
-	private boolean fft_logmode;
 
 	private SurfaceView w_strobe;
 	private ViewGroup buttons_holder;
@@ -53,7 +52,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private View fft_buttons;
 	private TextView N_display;
 	private Button grid_button;
-	private Button loglin_button;
 	private View strobe_buttons;
 	private Button note_button, afreq_button, stretch_button,
 			temper_button, harm_button;
@@ -144,8 +142,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				R.id.N_display);
 		grid_button = (Button)fft_buttons.findViewById(
 				R.id.grid_button);
-		loglin_button = (Button)fft_buttons.findViewById(
-				R.id.loglin_button);
 
 		strobe_buttons = fl8r.inflate(
 				R.layout.strobe_buttons, surface_frame, false);
@@ -239,7 +235,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		fft_width = prefs.getInt("fft_width", Strobe.FFT_RANGE_MULT/4);
 		fft_offset = prefs.getInt("fft_offset", 0);
 		fft_grid_freq = prefs.getBoolean("fft_grid_freq", false);
-		fft_logmode = prefs.getBoolean("fft_logmode", false);
 	}
 
 	private void save_config() {
@@ -269,7 +264,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		editor.putInt("fft_width", fft_width);
 		editor.putInt("fft_offset", fft_offset);
 		editor.putBoolean("fft_grid_freq", fft_grid_freq);
-		editor.putBoolean("fft_logmode", fft_logmode);
 		editor.commit();
 	}
 
@@ -440,10 +434,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		fft_grid_freq = !fft_grid_freq;
 		update_status();
 	}
-	public void loglin_toggle(View v) {
-		fft_logmode = !fft_logmode;
-		update_status();
-	}
 
 	public void note_clicked(View v) {
 		set_mode(note_buttons, false);
@@ -518,8 +508,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 		if (strobe != null) {
 			strobe.setParms(strobe_cents, harm1_mult, harm2_mult,
-				fft_size, fft_width, fft_offset,
-				fft_grid_freq, fft_logmode);
+				fft_size, fft_width, fft_offset, fft_grid_freq);
 		}
 		ToneGenerator.set_freq(cents_to_freq(strobe_cents, 1));
 
@@ -565,7 +554,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 		N_display.setText(Integer.toString(fft_size));
 		grid_button.setText(fft_grid_freq ? "Hz" : "scale");
-		loglin_button.setText(fft_logmode ? "log" : "lin");
 
 		if (ToneGenerator.playing) {
 			tone_button.getBackground().clearColorFilter();
@@ -590,8 +578,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		strobe.setSurface(holder, width, height);
 		strobe.setFft(fft_mode);
 		strobe.setParms(strobe_cents, harm1_mult, harm2_mult,
-			fft_size, fft_width, fft_offset,
-			fft_grid_freq, fft_logmode);
+			fft_size, fft_width, fft_offset, fft_grid_freq);
 		strobe.start();
 	}
 

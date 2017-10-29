@@ -69,7 +69,6 @@ static int fft_size = 8192;
 static int fft_width = FFT_RANGE_MULT;	/* size of freq window we are viewing */
 static int fft_offset = 0;		/* offset, out of FFT_RANGE_MULT */
 static int fft_grid_freq = 0;
-static int fft_logmode = 0;
 static int fft_y = 0;
 static int fft_legend_height = 0;
 
@@ -113,7 +112,6 @@ static jfieldID fid_st_fft_size;
 static jfieldID fid_st_fft_width;
 static jfieldID fid_st_fft_offset;
 static jfieldID fid_st_fft_grid_freq;
-static jfieldID fid_st_fft_logmode;
 static jfieldID fid_st_paused;
 
 static jintArray bitmap;
@@ -997,7 +995,6 @@ jni_init(JNIEnv *env_)
 	FIELD(st_fft_width, strobe, "fft_width", "I")
 	FIELD(st_fft_offset, strobe, "fft_offset", "I")
 	FIELD(st_fft_grid_freq, strobe, "fft_grid_freq", "Z")
-	FIELD(st_fft_logmode, strobe, "fft_logmode", "Z")
 	FIELD(st_paused, strobe, "paused", "Z");
 
 	return 1;
@@ -1126,7 +1123,6 @@ check_parms(jobject this)
 	fft_width = (*env)->GetIntField(env, this, fid_st_fft_width);
 	fft_offset = (*env)->GetIntField(env, this, fid_st_fft_offset);
 	fft_grid_freq = (*env)->GetBooleanField(env,this, fid_st_fft_grid_freq);
-	fft_logmode = (*env)->GetBooleanField(env,this, fid_st_fft_logmode);
 
 	if (fft_mode) {
 		fft_compute_piano(this);

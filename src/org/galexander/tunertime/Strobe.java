@@ -28,7 +28,6 @@ public class Strobe extends Thread {
 	private volatile int fft_width = FFT_RANGE_MULT/4; /* zoom level */
 	private volatile int fft_offset = 0;	/* offset in FFT_RANGE_MULTs of screen */
 	private volatile boolean fft_grid_freq = false;
-	private volatile boolean fft_logmode = false;
 	private volatile boolean parms_changed = false;
 	private volatile boolean paused = false;
 
@@ -61,7 +60,7 @@ public class Strobe extends Thread {
 
 	public void setParms(int cents_, int harm1_mult_, int harm2_mult_,
 			int fft_size_, int fft_width_, int fft_offset_,
-			boolean fft_grid_freq_, boolean fft_logmode_) {
+			boolean fft_grid_freq_) {
 		cents = cents_;
 		harm1_mult = harm1_mult_;
 		harm2_mult = harm2_mult_;
@@ -69,7 +68,6 @@ public class Strobe extends Thread {
 		fft_width = fft_width_;
 		fft_offset = fft_offset_;
 		fft_grid_freq = fft_grid_freq_;
-		fft_logmode = fft_logmode_;
 		parms_changed = true;
 	}
 
