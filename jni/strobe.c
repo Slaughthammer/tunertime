@@ -575,7 +575,7 @@ fft_draw_slider(jint *bitmap_ptr)
 	if (x1 > 0) {
 		filled_rect(bitmap_ptr, 0,y1,x1,height, 0xFFFF0000);
 	}
-	filled_rect(bitmap_ptr, x1,y1,x2,height, 0x0000FF00);
+	filled_rect(bitmap_ptr, x1,y1,x2,height, 0xFF00FF00);
 	if (x2 < width) {
 		filled_rect(bitmap_ptr, x2,y1,width,height, 0xFFFF0000);
 	}

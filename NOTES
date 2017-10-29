@@ -671,8 +671,6 @@ as a "log_fft" branch, and gonna strip it away from the main branch.
 
 
 
-XXX - the bar on the bottom of the FFT needs full alpha
-
 XXX - someday bring in log_fft branch
 
 XXX - tone generator in FFT - is there a simple UI for this?
