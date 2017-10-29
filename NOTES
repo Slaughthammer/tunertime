@@ -665,16 +665,17 @@ hasAlpha=false without any documentation or API change.  Google kind of
 sucks.
 
 Anyways, that means I have to shit or get off the pot with regards to the
-logarithmic mode in the FFT.  I really am sold that it is a good design,
+logarithmic mode in the FFT.  I really am sold that it is a good idea,
 but I'm not motivated to puzzle it out right now.  So I'm checking it in
 as a "log_fft" branch, and gonna strip it away from the main branch.
 
 
 
+XXX - the bar on the bottom of the FFT needs full alpha
+XXX - crash from integer divide by zero at "newdata+1000" and "newdata+2722" ?  which must be an inlined function?
+
 XXX - someday bring in log_fft branch
 
-XXX - crash from integer divide by zero at "newdata+1000" and "newdata+2722" ?  which must be an inlined function?
-XXX - logarithmic frequency in FFT
 XXX - tone generator in FFT - is there a simple UI for this?
 
 XXX - experiment with constant horizontal speed in strobes
