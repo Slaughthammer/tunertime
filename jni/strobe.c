@@ -364,6 +364,10 @@ strobe_drawnew(jint *bitmap_ptr, struct strobe_rec *s)
 	unsigned xsamps_per_col = s->xsamps_per_col;
 	unsigned msamps_per_col = s->xsamps_per_col/100;
 
+	if (!width) {				/* prevent divide by zero */
+		return;
+	}
+
 	if (exptab[0] == -1) {
 #define LOG_STEEP 40.0
 		int i;
@@ -813,6 +817,10 @@ do_fft_display(jint *bitmap_ptr)
 	if (y2 > disp_height) y2 = disp_height;
 
 	COMPUTE_BINS
+
+	if (!width || !num_bins) {		/* prevent divide by zero */
+		return;
+	}
 
 	incr = num_bins / width;
 	if (incr < 1) incr = 1;
