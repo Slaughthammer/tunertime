@@ -14,9 +14,6 @@
 #define FFT_RANGE_MULT 65536	/* for normalized values in fft_offset et al */
 #define FFT_SECONDS 5		/* 5 seconds on the screen at once */
 
-#define NOTES_NUM 76
-#define NOTES_LOWEST 12
-
 #define NUM_STROBES 3
 
 struct strobe_rec {
