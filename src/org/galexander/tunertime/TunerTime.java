@@ -66,7 +66,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private int width = 0;
 	private int height = 0;
 
-	private static final String NOTE_NAMES[] = new String[] { "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#" };
+	private static final String NOTE_NAMES[] = new String[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -512,9 +512,11 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		}
 		ToneGenerator.set_freq(cents_to_freq(strobe_cents, 1));
 
-		int note_index = ((strobe_cents+50)%1200)/100;
-		int octave = (strobe_cents+50)/1200;
-		int cents = (((strobe_cents%100)+50)%100)-50;
+				/* strobe_cents is based on A, adj_cents on C */
+		int adj_cents = strobe_cents+900;
+		int note_index = ((adj_cents+50)%1200)/100;
+		int octave = (adj_cents+50)/1200;
+		int cents = (((adj_cents%100)+50)%100)-50;
 		String note_name = NOTE_NAMES[note_index];
 		DecimalFormat cents_fmt = new DecimalFormat("+00c;-00c");
 		String cents_str = cents_fmt.format(cents);
