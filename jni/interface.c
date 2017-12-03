@@ -4,7 +4,7 @@
 #include <math.h>
 #include <assert.h>
 #include <jni.h>
-#inclue "interface.h"
+#include "interface.h"
 
 int width;
 int height;
@@ -103,8 +103,6 @@ xor_vline(jint *bitmap_ptr, int x, int y1, int y2)
 
 
 
-#define SEVEN_CHARS 40
-#define SEVEN_WID (width/SEVEN_CHARS)
 /* seven segment display:
  *      0x01
  *  0x02    0x04
@@ -177,8 +175,6 @@ seven_seg(jint *bitmap_ptr, int x, int y, char c, unsigned color)
 void
 newdata(jint *bitmap_ptr)
 {
-	int i;
-
 	if (fft_mode) {
 		fft_newdata(bitmap_ptr);
 	} else {
@@ -297,13 +293,13 @@ println(const char *fmt, ...)
 
 
 double
-cents_to_freq(jint cents, jint mult)
+cents_to_freq(jobject this, jint cents, jint mult)
 {
-	double ret;
 	jobject ui = (*env)->GetObjectField(env, this, fid_st_ui);
-	ui = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq,
+	double ret = (*env)->CallDoubleMethod(env, ui, mid_tt_cents_to_freq,
 			cents, mult);
 	(*env)->DeleteLocalRef(env, ui);
+	return ret;
 }
 
 
@@ -384,10 +380,10 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 		return;
 	}
 
-	memset(strobes, 0, sizeof strobes);
 	bitmap = NULL;
 
-	init_fft();
+	fft_init();
+	strobe_init();
 
 	sound_init(this);
 
@@ -412,9 +408,9 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 				if (changed) {
 					filled_rect(bitmap_ptr, 0, 0, width, height, 0xFF000000);
 					if (fft_mode) {
-						fft_mode_changed(bitmap_ptr);
+						fft_redraw(bitmap_ptr);
 					} else {
-						strobe_separators(bitmap_ptr);
+						strobe_redraw(bitmap_ptr);
 					}
 				}
 				newdata(bitmap_ptr);

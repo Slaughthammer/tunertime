@@ -38,6 +38,12 @@ int harm1_mult, harm2_mult;
 static struct strobe_rec strobes[NUM_STROBES];
 
 
+void
+strobe_init(void)
+{
+	memset(strobes, 0, sizeof strobes);
+}
+
 static void
 filter_recalc(struct strobe_rec *s)
 {
@@ -249,8 +255,9 @@ strobe_draw_htic(jint *bitmap_ptr, struct strobe_rec *s)
 }
 
 
-static void
-strobe_separators(jint *bitmap_ptr)
+/* just draws the separators...everything else is redrawn by strobe_newdata */
+void
+strobe_redraw(jint *bitmap_ptr)
 {
 	int h = strobes[0].height;
 	int y = h-1;
@@ -309,7 +316,7 @@ strobe_recalculate(jobject this)
 		strobes[i].prev_pos = 0;
 		strobes[i].y = y;
 		strobes[i].height = sheight;
-		strobes[i].freq = cents_to_freq(cents, mult);
+		strobes[i].freq = cents_to_freq(this, cents, mult);
 		strobe_recalc_single(&strobes[i]);
 
 		y += sheight;

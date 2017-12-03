@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include "interface.h"
 #include "window.h"
 
 int fft_mode = 0;
@@ -26,7 +27,7 @@ static int fft_legend_height = 0;
 
 /* just precompute the needed cos/sin values for FFT */
 void
-init_fft(void)
+fft_init(void)
 {
 	int l, le, le2;
 	for (l = 1; l < (sizeof fft_sr/sizeof fft_sr[0]); l++) {
@@ -458,7 +459,7 @@ fft_newdata(jint *bitmap_ptr)
 
 
 void
-fft_mode_changed(jint *bitmap_ptr)
+fft_redraw(jint *bitmap_ptr)
 {
 	fft_y = 0;
 	fft_legend_height = height/10;
