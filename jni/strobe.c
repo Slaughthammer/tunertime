@@ -625,8 +625,8 @@ fft_draw_piano(jint *bitmap_ptr)
 	for (i = 0; i < 88; i++) {
 		double freq, bin;
 		int x, x0, x1, x2;
-		static const char *(names[12]) = { "A", NULL, "B", "C", NULL, "D", NULL, "E", "F", NULL, "G", NULL };
-		const char *name = names[i % 12];
+		static const char *(names[12]) = { "C", NULL, "D", NULL, "E", "F", NULL, "G", NULL, "A", NULL, "B" };
+		const char *name = names[(i+9) % 12];
 
 		freq = piano_freqs[i];
 
@@ -647,7 +647,7 @@ fft_draw_piano(jint *bitmap_ptr)
 				seven_seg(bitmap_ptr, x0, y1,
 					name[0], 0xFFAAAAFF);
 				seven_seg(bitmap_ptr, x0+SEVEN_WID, y1,
-					(i/12)+'0', 0xFFAAAAFF);
+					((i+9)/12)+'0', 0xFFAAAAFF);
 				last_x = x0 + (SEVEN_WID*2);
 				xor_vline(bitmap_ptr, x, 0, y1);
 				grid_x[num_grid_x++] = x;
