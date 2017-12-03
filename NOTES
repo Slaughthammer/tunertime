@@ -670,12 +670,21 @@ but I'm not motivated to puzzle it out right now.  So I'm checking it in
 as a "log_fft" branch, and gonna strip it away from the main branch.
 
 
+December 3, 2017.
+
+Andy Newton finally convinced me to make the octave start at C, which
+turns out to have been really simple (of course).  Knock on wood, I
+haven't broken anything.
+
+I want to do constant horizontal speed in the strobes, and then push out
+another release.
+
+
+XXX - experiment with constant horizontal speed in strobes
 
 XXX - someday bring in log_fft branch
 
 XXX - tone generator in FFT - is there a simple UI for this?
-
-XXX - experiment with constant horizontal speed in strobes
 
 XXX - make FFT have time horizontal to match strobe
 XXX - make fft samples all the same height, so more seconds are on the
