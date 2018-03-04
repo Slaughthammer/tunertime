@@ -36,6 +36,7 @@ extern int snd_ofs;
 void println(const char *fmt, ...);
 double cents_to_freq(jobject this, jint cents, jint mult);
 void set_labels(jobject this, char *labels[NUM_STROBES]);
+void set_pianoname(jobject this, char *pianoname);
 
 
 /* strobe.c: */

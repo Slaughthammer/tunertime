@@ -40,6 +40,7 @@ static jfieldID fid_st_surface_changed;
 static jfieldID fid_st_recorder;
 static jfieldID fid_st_record_bufsz;
 static jfieldID fid_st_labels;
+static jfieldID fid_st_pianoname;
 static jfieldID fid_st_ui;
 static jfieldID fid_st_fft_mode;
 static jfieldID fid_st_fft_size;
@@ -263,6 +264,7 @@ jni_init(JNIEnv *env_)
 	FIELD(st_recorder, strobe, "recorder", "Landroid/media/AudioRecord;")
 	FIELD(st_record_bufsz, strobe, "record_bufsz", "I")
 	FIELD(st_labels, strobe, "labels", "[Ljava/lang/String;")
+	FIELD(st_pianoname, strobe, "pianoname", "Ljava/lang/String;")
 	FIELD(st_ui, strobe, "ui", "Lorg/galexander/tunertime/TunerTime;")
 	FIELD(st_fft_mode, strobe, "fft_mode", "Z")
 	FIELD(st_fft_size, strobe, "fft_size", "I")
@@ -315,6 +317,14 @@ set_labels(jobject this, char *labels[NUM_STROBES])
 	}
 	(*env)->SetObjectField(env, this, fid_st_labels, j_labels);
 	(*env)->DeleteLocalRef(env, j_labels);
+}
+
+void
+set_pianoname(jobject this, char *pianoname)
+{
+	jstring j_pianoname = (*env)->NewStringUTF(env, pianoname);
+	(*env)->SetObjectField(env, this, fid_st_pianoname, j_pianoname);
+	(*env)->DeleteLocalRef(env, j_pianoname);
 }
 
 

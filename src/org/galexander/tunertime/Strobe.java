@@ -79,7 +79,9 @@ public class Strobe extends Thread {
 
 	private Paint label_p = null;
 	private Paint pause_p = null;
+	private Paint pianoname_p = null;
 	private String[] labels = null;
+	private String pianoname = null;
 
 	private void draw_labels(Canvas c) {
 		if ((labels == null) || (labels.length == 0) || fft_mode) {
@@ -118,6 +120,25 @@ public class Strobe extends Thread {
 		c.drawText("paused", 0, height/2, pause_p);
 	}
 
+	/* like "A49" for A-4 */
+	private void draw_pianoname(Canvas c) {
+		if (fft_mode || (pianoname == null)) {
+			return;
+		}
+		if (pianoname_p == null) {
+			pianoname_p = new Paint();
+			pianoname_p.setARGB(0xff,0xff,0xff,0xff);
+			pianoname_p.setTextAlign(Paint.Align.RIGHT);
+			pianoname_p.setTextSize(height/24);
+			pianoname_p.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));
+			pianoname_p.setFakeBoldText(true);
+			pianoname_p.setAntiAlias(true);
+			pianoname_p.setSubpixelText(true);
+		}
+		int y = -(int)label_p.getFontMetrics().ascent;
+		c.drawText(pianoname, width-1, y, pianoname_p);
+	}
+
 	/* Called from JNI to handle all of the Canvas interactions to draw the
 	 * bitmap.  Returns true iff the thread is interrupted and should exit. */
 	private boolean do_draw(int[] bitmap, int w, int h) {
@@ -141,6 +162,7 @@ public class Strobe extends Thread {
 				if (paused) {
 					draw_paused(c);
 				}
+				draw_pianoname(c);
 			}
 		} finally {
 			holder.unlockCanvasAndPost(c);
