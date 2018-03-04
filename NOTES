@@ -708,6 +708,9 @@ And I'm gonna punt on the other improvements (constant horizontal speed,
 log_fft) just so people can enjoy the new octave starts.
 
 
+XXX - if temper is enabled, then can't set cents in temper panel!
+XXX - if tempering is enabled then indefinite oct- gets error
+XXX - 4 crashes in file "crash"
 
 XXX - experiment with constant horizontal speed in strobes
 
