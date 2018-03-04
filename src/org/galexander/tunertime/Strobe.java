@@ -140,7 +140,7 @@ public class Strobe extends Thread {
 			if ((c.getWidth() == w) && (c.getHeight() == h)) {
 				c.drawBitmap(bitmap, /*offset=*/0, /*stride=*/w,
 					/*x=*/0, /*y=*/0, /*wid=*/w, /*hght=*/h,
-					/*hasAlpha=*/false, /*paint=*/null);
+					/*hasAlpha=*/true, /*paint=*/null);
 				draw_labels(c);
 			}
 		} finally {

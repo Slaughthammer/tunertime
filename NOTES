@@ -708,7 +708,6 @@ And I'm gonna punt on the other improvements (constant horizontal speed,
 log_fft) just so people can enjoy the new octave starts.
 
 
-XXX - c.drawBitmap hasAlpha=true, test on old phones
 XXX - add A49 sort of display on rhs of strobe
 XXX - release version 11!
 
