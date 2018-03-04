@@ -332,11 +332,11 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	}
 
 	private void apply_temper() {
-		if (!temper_enabled) {
+		if (!temper_enabled || (strobe_cents < 0)) {
 			return;
 		}
 
-		int note_index = ((strobe_cents+50)%1200)/100;
+		int note_index = ((strobe_cents+50)/100)%12;
 		int octave = (strobe_cents+50)/1200;
 		int cents = temper[note_index];
 		strobe_cents = octave*1200 + note_index*100 + cents;
@@ -344,6 +344,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 	private void incr_cents(int delta, boolean temper) {
 		strobe_cents += delta;
+		strobe_cents = range_limit(strobe_cents, 0, 9600);
 		if (temper) {
 			apply_temper();
 		}
@@ -352,8 +353,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 	public void semi_incr(View v) { incr_cents(  100, /*temper=*/true ); }
 	public void semi_decr(View v) { incr_cents( -100, /*temper=*/true ); }
-	public void oct_incr(View v)  { incr_cents( 1200, /*temper=*/false); }
-	public void oct_decr(View v)  { incr_cents(-1200, /*temper=*/false); }
+	public void oct_incr(View v)  { incr_cents( 1200, /*temper=*/true); }
+	public void oct_decr(View v)  { incr_cents(-1200, /*temper=*/true); }
 	public void cent_incr(View v) { incr_cents(    1, /*temper=*/false); }
 	public void cent_decr(View v) { incr_cents(   -1, /*temper=*/false); }
 
@@ -447,6 +448,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		set_mode(stretch_buttons, false);
 	}
 	public void temper_clicked(View v) {
+		apply_temper();
 		set_mode(temper_buttons, false);
 	}
 	public void harm_clicked(View v) {
