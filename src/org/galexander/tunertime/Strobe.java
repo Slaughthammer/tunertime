@@ -91,7 +91,7 @@ public class Strobe extends Thread {
 			label_p = new Paint();
 			label_p.setARGB(0xff,0xff,0xff,0xff);
 			label_p.setTextAlign(Paint.Align.LEFT);
-			label_p.setTextSize(50);
+			label_p.setTextSize(height/18);
 			label_p.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));
 			label_p.setFakeBoldText(true);
 			label_p.setAntiAlias(true);
@@ -101,7 +101,7 @@ public class Strobe extends Thread {
 			pause_p = new Paint();
 			pause_p.setARGB(0xff,0xff,0xff,0xff);
 			pause_p.setTextAlign(Paint.Align.LEFT);
-			pause_p.setTextSize(100);
+			pause_p.setTextSize(height/10);
 			pause_p.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));
 			pause_p.setFakeBoldText(true);
 			pause_p.setAntiAlias(true);
