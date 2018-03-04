@@ -680,6 +680,39 @@ I want to do constant horizontal speed in the strobes, and then push out
 another release.
 
 
+March 4, 2018.
+
+I now get weekly emails from new people telling me the octave starts at
+C.  It is my fault, because I didn't push out a new release after
+implementing that...
+
+Anyways, having looked again in the Reblitz book, it occurs to me it
+might be appreciated to put the piano key number as well.  That is,
+A-4 440Hz: A49.
+
+And also, I got an email from M. Caldwell saying his Galaxy J3 Prime does
+not like version 10 - it displays a blank screen, which is the problem on
+most phones that version 10 was supposed to fix.  I sent him version 1.8
+and he says it works for him.
+
+Version 10 has a work-around for a pervasive Android 8 Oreo bug where
+c.drawBitmap() does not honor hasAlpha=false.  I worked around it by
+providing an 0xFF000000 alpha channel, but still using hasAlpha=false.
+It sounds like this one Samsung phone has a problem with hasAlpha=false
+when a non-zero alpha channel is provided anyways.  I think that is
+stupid, but I think we can probably work around it by simply setting
+hasAlpha=true, then it will work everywhere!  Hah, I jest.
+
+
+And I'm gonna punt on the other improvements (constant horizontal speed,
+log_fft) just so people can enjoy the new octave starts.
+
+
+XXX - c.drawBitmap hasAlpha=true, test on old phones
+XXX - add A49 sort of display on rhs of strobe
+XXX - release version 11!
+
+
 XXX - experiment with constant horizontal speed in strobes
 
 XXX - someday bring in log_fft branch
