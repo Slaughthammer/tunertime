@@ -82,21 +82,29 @@ public class Strobe extends Thread {
 	private String[] labels = null;
 
 	private void draw_labels(Canvas c) {
-		if ((labels == null) || (labels.length == 0)) {
+		if ((labels == null) || (labels.length == 0) || fft_mode) {
 			return;
 		}
-		int strobe_height = height/labels.length;
 
+		int strobe_height = height/labels.length;
 		if (label_p == null) {
 			label_p = new Paint();
 			label_p.setARGB(0xff,0xff,0xff,0xff);
 			label_p.setTextAlign(Paint.Align.LEFT);
-			label_p.setTextSize(height/18);
+			label_p.setTextSize(strobe_height/6);
 			label_p.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));
 			label_p.setFakeBoldText(true);
 			label_p.setAntiAlias(true);
 			label_p.setSubpixelText(true);
 		}
+		int y = -(int)label_p.getFontMetrics().ascent;
+		for (int i = 0; i < labels.length; i++) {
+			c.drawText(labels[i], 0, y, label_p);
+			y += strobe_height;
+		}
+	}
+
+	private void draw_paused(Canvas c) {
 		if (pause_p == null) {
 			pause_p = new Paint();
 			pause_p.setARGB(0xff,0xff,0xff,0xff);
@@ -107,19 +115,7 @@ public class Strobe extends Thread {
 			pause_p.setAntiAlias(true);
 			pause_p.setSubpixelText(true);
 		}
-		if (paused) {
-			c.drawText("paused", 0, height/2, pause_p);
-			return;
-		}
-
-		if (fft_mode || (labels == null)) {
-			return;
-		}
-		int y = -(int)label_p.getFontMetrics().ascent;
-		for (int i = 0; i < labels.length; i++) {
-			c.drawText(labels[i], 0, y, label_p);
-			y += strobe_height;
-		}
+		c.drawText("paused", 0, height/2, pause_p);
 	}
 
 	/* Called from JNI to handle all of the Canvas interactions to draw the
@@ -142,6 +138,9 @@ public class Strobe extends Thread {
 					/*x=*/0, /*y=*/0, /*wid=*/w, /*hght=*/h,
 					/*hasAlpha=*/true, /*paint=*/null);
 				draw_labels(c);
+				if (paused) {
+					draw_paused(c);
+				}
 			}
 		} finally {
 			holder.unlockCanvasAndPost(c);
