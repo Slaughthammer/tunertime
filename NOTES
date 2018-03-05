@@ -707,8 +707,33 @@ hasAlpha=true, then it will work everywhere!  Hah, I jest.
 And I'm gonna punt on the other improvements (constant horizontal speed,
 log_fft) just so people can enjoy the new octave starts.
 
+...
 
-XXX - 4 crashes in file "crash"
+I happened to look at the play store and find 4 distinct crashes had been
+reported against version 10, so I'd like to take care of them.
+
+The obvious crash is a race case on holder, fixed in commit dd6d7ea.
+
+Tempering also had gotten a little fubared, and I fixed the crash from
+apply_temper() working on negative cents in commit 8cfa260.
+
+And wakelock.release() sometimes fails, just stabbing in the dark with
+commit 7cd7a05.
+
+But the real odd one is an IllegalArgumentException thrown from
+android.media.AudioRecord.audioBuffSizeCheck (AudioRecord.java:751),
+which is called from the "new AudioRecord" call.  Most likely
+getMinBufferSize() is returning a negative number (error code), which I'm
+guessing means that 44100 isn't supported.  There is a single report of
+this, and it is on a "Galaxy Tab S2", and there is at least one report on
+stackoverflow of a "Galaxy Tab" that didn't want to initialize its
+AudioRecord.  In that report, they were unable to find a rate that did
+work, but they did not try 48000.
+
+If it becomes a bigger problem, we should probably try a variety of rates
+and make the rate variable.  But for now, I think it's just a single
+oddball.
+
 
 XXX - experiment with constant horizontal speed in strobes
 
