@@ -25,6 +25,7 @@ static jclass cl_audiorecord;
 static jmethodID mid_println;
 static jmethodID mid_st_do_draw;
 static jmethodID mid_st_time_to_die;
+static jmethodID mid_st_check_surface;
 static jmethodID mid_tt_cents_to_freq;
 static jmethodID mid_ar_getsamplerate;
 static jmethodID mid_ar_read;
@@ -34,9 +35,6 @@ static jfieldID fid_st_cents;
 static jfieldID fid_st_harm1_mult;
 static jfieldID fid_st_harm2_mult;
 static jfieldID fid_st_parms_changed;
-static jfieldID fid_st_width;
-static jfieldID fid_st_height;
-static jfieldID fid_st_surface_changed;
 static jfieldID fid_st_recorder;
 static jfieldID fid_st_record_bufsz;
 static jfieldID fid_st_labels;
@@ -249,6 +247,7 @@ jni_init(JNIEnv *env_)
 	METHOD(println, printstream, "println", "(Ljava/lang/String;)V")
 	METHOD(st_do_draw, strobe, "do_draw", "([III)Z")
 	METHOD(st_time_to_die, strobe, "time_to_die", "()Z")
+	METHOD(st_check_surface, strobe, "check_surface", "()[I")
 	METHOD(tt_cents_to_freq, tunertime, "cents_to_freq", "(II)D")
 	METHOD(ar_getsamplerate, audiorecord, "getSampleRate", "()I")
 	METHOD(ar_read, audiorecord, "read", "([SII)I")
@@ -258,9 +257,6 @@ jni_init(JNIEnv *env_)
 	FIELD(st_harm1_mult, strobe, "harm1_mult", "I")
 	FIELD(st_harm2_mult, strobe, "harm2_mult", "I")
 	FIELD(st_parms_changed, strobe, "parms_changed", "Z")
-	FIELD(st_width, strobe, "width", "I")
-	FIELD(st_height, strobe, "height", "I")
-	FIELD(st_surface_changed, strobe, "surface_changed", "Z")
 	FIELD(st_recorder, strobe, "recorder", "Landroid/media/AudioRecord;")
 	FIELD(st_record_bufsz, strobe, "record_bufsz", "I")
 	FIELD(st_labels, strobe, "labels", "[Ljava/lang/String;")
@@ -340,14 +336,17 @@ resize_bitmap(void)
 static void
 check_surface(jobject this)
 {
-	if (!(*env)->GetBooleanField(env, this, fid_st_surface_changed)) {
+	jintArray arr;
+	jint c_arr[2] = { 0 };
+	arr = (*env)->CallObjectMethod(env, this, mid_st_check_surface);
+	if ((*env)->IsSameObject(env, arr, NULL)) {
+		/* null means surface did not change */
 		return;
 	}
-
-	(*env)->SetBooleanField(env, this, fid_st_surface_changed, JNI_FALSE);
-
-	width = (*env)->GetIntField(env, this, fid_st_width);
-	height = (*env)->GetIntField(env, this, fid_st_height);
+	(*env)->GetIntArrayRegion(env, arr, 0, 2, c_arr);
+	width = c_arr[0];
+	height = c_arr[1];
+	(*env)->DeleteLocalRef(env, arr);
 	resize_bitmap();
 
 	/* force full update: */

@@ -47,10 +47,26 @@ public class Strobe extends Thread {
 	}
 
 	public void setSurface(SurfaceHolder holder_, int width_, int height_) {
-		holder = holder_;
-		width = width_;
-		height = height_;
-		surface_changed = true;
+		synchronized(lock) {
+			holder = holder_;
+			width = width_;
+			height = height_;
+			surface_changed = true;
+		}
+	}
+
+	/* if the surface has changed, return [width, height].  else, null */
+	public int[] check_surface() {
+		int[] ret = null;
+		synchronized(lock) {
+			if (surface_changed) {
+				ret = new int[2];
+				ret[0] = width;
+				ret[1] = height;
+				surface_changed = false;
+			}
+		}
+		return ret;
 	}
 
 	public void setFft(boolean fft_mode_) {
@@ -139,33 +155,37 @@ public class Strobe extends Thread {
 		c.drawText(pianoname, width-1, y, pianoname_p);
 	}
 
+	private void draw_all(Canvas c, int[] bitmap, int w, int h) {
+		if ((c.getWidth() == w) && (c.getHeight() == h)) {
+			c.drawBitmap(bitmap, /*offset=*/0, /*stride=*/w,
+				/*x=*/0, /*y=*/0, /*wid=*/w, /*hght=*/h,
+				/*hasAlpha=*/true, /*paint=*/null);
+			draw_labels(c);
+			if (paused) {
+				draw_paused(c);
+			}
+			draw_pianoname(c);
+		}
+	}
+
 	/* Called from JNI to handle all of the Canvas interactions to draw the
-	 * bitmap.  Returns true iff the thread is interrupted and should exit. */
+	 * bitmap.  Returns true iff the thread is interrupted and should exit.
+	 */
 	private boolean do_draw(int[] bitmap, int w, int h) {
-		if (holder == null) {
-			return false;
-		}
-		Canvas c = holder.lockCanvas();
-		if (c == null) {
-			return false;
-		}
 		if (time_to_die()) {
-			holder.unlockCanvasAndPost(c);
 			return true;
 		}
-		try {
-			if ((c.getWidth() == w) && (c.getHeight() == h)) {
-				c.drawBitmap(bitmap, /*offset=*/0, /*stride=*/w,
-					/*x=*/0, /*y=*/0, /*wid=*/w, /*hght=*/h,
-					/*hasAlpha=*/true, /*paint=*/null);
-				draw_labels(c);
-				if (paused) {
-					draw_paused(c);
+		synchronized(lock) {
+			if (holder != null) {
+				Canvas c = holder.lockCanvas();
+				if (c != null) {
+					try {
+						draw_all(c, bitmap, w, h);
+					} finally {
+						holder.unlockCanvasAndPost(c);
+					}
 				}
-				draw_pianoname(c);
 			}
-		} finally {
-			holder.unlockCanvasAndPost(c);
 		}
 		return false;
 	}
