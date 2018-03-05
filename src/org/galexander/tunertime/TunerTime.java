@@ -344,6 +344,13 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		strobe_cents = octave*1200 + note_index*100 + cents;
 	}
 
+	private boolean in_temper() {
+		int note_index = ((strobe_cents+50)/100)%12;
+		int octave = (strobe_cents+50)/1200;
+		int cents = temper[note_index];
+		return (strobe_cents == octave*1200 + note_index*100 + cents);
+	}
+
 	private void incr_cents(int delta, boolean temper) {
 		strobe_cents += delta;
 		strobe_cents = range_limit(strobe_cents, 0, 9600);
@@ -355,8 +362,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 	public void semi_incr(View v) { incr_cents(  100, /*temper=*/true ); }
 	public void semi_decr(View v) { incr_cents( -100, /*temper=*/true ); }
-	public void oct_incr(View v)  { incr_cents( 1200, /*temper=*/true); }
-	public void oct_decr(View v)  { incr_cents(-1200, /*temper=*/true); }
+	public void oct_incr(View v)  { incr_cents( 1200, /*temper=*/true ); }
+	public void oct_decr(View v)  { incr_cents(-1200, /*temper=*/true ); }
 	public void cent_incr(View v) { incr_cents(    1, /*temper=*/false); }
 	public void cent_decr(View v) { incr_cents(   -1, /*temper=*/false); }
 
@@ -395,7 +402,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	}
 
 	public void do_temper_save(View v) {
-		int note_index = ((strobe_cents+50)%1200)/100;
+		int note_index = ((strobe_cents+50)/100)%12;
 		int cents = (((strobe_cents%100)+50)%100)-50;
 		temper[note_index] = cents;
 		update_status();
@@ -520,7 +527,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 				/* strobe_cents is based on A, adj_cents on C */
 		int adj_cents = strobe_cents+900;
-		int note_index = ((adj_cents+50)%1200)/100;
+		int note_index = ((adj_cents+50)/100)%12;
 		int octave = (adj_cents+50)/1200;
 		int cents = (((adj_cents%100)+50)%100)-50;
 		String note_name = NOTE_NAMES[note_index];
@@ -533,7 +540,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 		temper_semi_display.setText(note_name);
 		temper_cent_display.setText(cents_str);
-		if (cents == temper[note_index]) {
+		if (in_temper()) {
 			temper_save_button.getBackground().setColorFilter(
 				new LightingColorFilter(0xff888888, 0));
 		} else {
