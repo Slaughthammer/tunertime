@@ -187,7 +187,9 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	}
 
 	public void onPause() {
-		wakelock.release();
+		if (wakelock.isHeld()) {
+			wakelock.release();
+		}
 		stop_strobe();
 		ToneGenerator.stop_tone();
 		save_config();
