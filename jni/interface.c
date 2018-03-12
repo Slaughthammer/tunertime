@@ -190,8 +190,8 @@ static void
 sound_init(jobject this)
 {
 	snd_recorder = (*env)->GetObjectField(env, this, fid_st_recorder);
-	snd_record_bufsz = (*env)->GetIntField(env, this, fid_st_record_bufsz) /
-				sizeof(snd_buf[0]);
+	snd_record_bufsz =
+		(*env)->GetIntField(env, this, fid_st_record_bufsz) / 2;
 	sample_rate = (*env)->CallIntMethod(env, snd_recorder,
 				mid_ar_getsamplerate);
 	snd_readbuf = (*env)->NewShortArray(env, snd_record_bufsz);

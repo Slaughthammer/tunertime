@@ -32,7 +32,7 @@ public class Strobe extends Thread {
 	private volatile boolean paused = false;
 
 	private AudioRecord recorder = null;
-	private int record_bufsz = 0;
+	private int record_bufsz = 0;			/* in bytes */
 	private TunerTime ui = null;
 
 	Strobe(TunerTime ui_) {
@@ -231,13 +231,17 @@ public class Strobe extends Thread {
 	}
 
 	private boolean sound_start() {
+					/* in bytes */
 		record_bufsz = AudioRecord.getMinBufferSize(
 				44100, AudioFormat.CHANNEL_IN_MONO,
 				AudioFormat.ENCODING_PCM_16BIT);
+		record_bufsz *= 4;		/* some extra */
+		record_bufsz = ((record_bufsz < 8192) ? 8192 : record_bufsz);
+
 		recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
 				44100, AudioFormat.CHANNEL_IN_MONO,
 				AudioFormat.ENCODING_PCM_16BIT,
-				record_bufsz*4);
+				record_bufsz);
 		if ((recorder.getAudioFormat() !=
 					AudioFormat.ENCODING_PCM_16BIT) ||
 		    (recorder.getChannelCount() != 1)) {
