@@ -22,7 +22,6 @@ struct strobe_rec {
 	signed short filtered[SND_BUFSAMPS];
 
 	unsigned xsamps_per_col;	/* 100,000th samples per column */
-	int curr_samp;			/* index into snd_buf/filtered */
 	unsigned prev_pos;		/* pos within column of last point */
 	unsigned prev_x, prev_y;	/* display location of last point */
 	unsigned prev_color;		/* display color of last point */
@@ -95,8 +94,7 @@ strobe_filter(struct strobe_rec *s)
 	a0 = s->a0; a1 = s->a1; a2 = s->a2; b1 = s->b1; b2 = s->b2;
 	x1 = s->x1; x2 = s->x2; y1 = s->y1; y2 = s->y2;
 
-	i = s->curr_samp % SND_BUFSAMPS;
-	while (i != snd_ofs) {
+	for (i = 0; i < snd_buflen; i++) {
 		double in = snd_buf[i];
 		y0 = ((a0*in) + (a1*x1) + (a2*x2) + (b1*y1) + (b2*y2));
 		x2 = x1;
@@ -104,7 +102,6 @@ strobe_filter(struct strobe_rec *s)
 		y2 = y1;
 		y1 = y0;
 		s->filtered[i] = y0;
-		i = (i+1)%SND_BUFSAMPS;
 	}
 
 	s->x1 = x1; s->x2 = x2; s->y1 = y1; s->y2 = y2;
@@ -182,8 +179,7 @@ strobe_drawnew(jint *bitmap_ptr, struct strobe_rec *s)
 		}
 	}
 
-	i = s->curr_samp % SND_BUFSAMPS;
-	while (i != snd_ofs) {
+	for (i = 0; i < snd_buflen; i++) {
 		int samp = s->filtered[i];
 
 		if (abs(samp) > samp_max) {
@@ -201,7 +197,7 @@ strobe_drawnew(jint *bitmap_ptr, struct strobe_rec *s)
 		if (pos > xsamps_per_col) {
 			/* multiplier must be greater than 1, skipping this
 			 * column.. */
-			goto skip;
+			continue;
 		}
 		y = ((pos/100) * h) / msamps_per_col;
 		if (x != last_x) {
@@ -227,10 +223,6 @@ strobe_drawnew(jint *bitmap_ptr, struct strobe_rec *s)
 
 		last_y = y;
 		last_color = color;
-
-skip: ;
-		s->curr_samp++;
-		i = s->curr_samp%SND_BUFSAMPS;
 	}
 	s->prev_pos = pos;
 	s->prev_x = last_x;
@@ -275,7 +267,7 @@ strobe_newdata(jint *bitmap_ptr)
 	int i;
 	for (i = 0; i < NUM_STROBES; i++) {
 		struct strobe_rec *s = &strobes[i];
-		if (s->curr_samp == snd_ofs) {
+		if (snd_buflen == 0) {
 			/* not really any new data */
 			continue;
 		}

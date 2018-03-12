@@ -31,7 +31,7 @@ void seven_seg(jint *bitmap_ptr, int x, int y, char c, unsigned color);
 
 extern int sample_rate;
 extern short snd_buf[SND_BUFSAMPS];
-extern int snd_ofs;
+extern int snd_buflen;
 
 void println(const char *fmt, ...);
 double cents_to_freq(jobject this, jint cents, jint mult);

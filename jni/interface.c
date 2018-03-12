@@ -11,7 +11,7 @@ int height;
 
 int sample_rate;
 short snd_buf[SND_BUFSAMPS];
-int snd_ofs;
+int snd_buflen;			/* new data in snd_buf goes [0..snd_buflen) */
 
 static JNIEnv *env;
 
@@ -202,18 +202,15 @@ sound_input(void)
 {
 	int num_read, to_read;
 
-	to_read = SND_BUFSAMPS-snd_ofs;
-	if (to_read > snd_record_bufsz) {
-		to_read = snd_record_bufsz;
-	}
+	to_read = ((snd_record_bufsz < SND_BUFSAMPS) ? snd_record_bufsz
+						     : SND_BUFSAMPS);
 	num_read = (*env)->CallIntMethod(env, snd_recorder, mid_ar_read,
 			snd_readbuf, 0, to_read);
 	if (num_read <= 0) {
 		return 0;
 	}
-	(*env)->GetShortArrayRegion(env, snd_readbuf, 0, num_read,
-			snd_buf+snd_ofs);
-	snd_ofs = (snd_ofs+num_read)%SND_BUFSAMPS;
+	(*env)->GetShortArrayRegion(env, snd_readbuf, 0, num_read, snd_buf);
+	snd_buflen = num_read;
 	return 1;
 }
 

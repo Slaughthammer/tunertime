@@ -15,7 +15,6 @@ int fft_grid_freq = 0;
 static double fft_buf[MAX_FFT_SIZE];
 static double fft_r[MAX_FFT_SIZE];
 static double fft_i[MAX_FFT_SIZE];
-static int fft_snd_i = 0;			/* input */
 static int fft_buf_i = 0;			/* output */
 static double fft_sr[32];
 static double fft_si[32];
@@ -440,7 +439,7 @@ fft_newdata(jint *bitmap_ptr)
 {
 	int i;
 
-	for (i = fft_snd_i; i != snd_ofs; i = (i+1)%SND_BUFSAMPS) {
+	for (i = 0; i < snd_buflen; i++) {
 		fft_buf[fft_buf_i++] = ((double)snd_buf[i]) / 32768.0;
 		if (fft_buf_i >= fft_size) {
 			do_fft_window();
@@ -454,7 +453,6 @@ fft_newdata(jint *bitmap_ptr)
 			fft_buf_i = fft_size/2;
 		}
 	}
-	fft_snd_i = i;
 }
 
 
