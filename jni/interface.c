@@ -26,9 +26,9 @@ static jmethodID mid_println;
 static jmethodID mid_st_do_draw;
 static jmethodID mid_st_time_to_die;
 static jmethodID mid_st_check_surface;
+static jmethodID mid_st_sound_read;
 static jmethodID mid_tt_cents_to_freq;
 static jmethodID mid_ar_getsamplerate;
-static jmethodID mid_ar_read;
 
 static jfieldID fid_out;
 static jfieldID fid_st_cents;
@@ -183,30 +183,33 @@ newdata(jint *bitmap_ptr)
 
 
 static jshortArray snd_readbuf;
-static jobject snd_recorder;
 static jint snd_record_bufsz;
 
 static void
 sound_init(jobject this)
 {
+	jobject snd_recorder;
+
 	snd_recorder = (*env)->GetObjectField(env, this, fid_st_recorder);
-	snd_record_bufsz =
-		(*env)->GetIntField(env, this, fid_st_record_bufsz) / 2;
 	sample_rate = (*env)->CallIntMethod(env, snd_recorder,
 				mid_ar_getsamplerate);
+	(*env)->DeleteLocalRef(env, snd_recorder);
+
+	snd_record_bufsz =
+		(*env)->GetIntField(env, this, fid_st_record_bufsz) / 2;
 	snd_readbuf = (*env)->NewShortArray(env, snd_record_bufsz);
 }
 
 static int
-sound_input(void)
+sound_input(jobject this)
 {
 	int num_read, to_read;
 
 	to_read = ((snd_record_bufsz < SND_BUFSAMPS) ? snd_record_bufsz
 						     : SND_BUFSAMPS);
-	num_read = (*env)->CallIntMethod(env, snd_recorder, mid_ar_read,
-			snd_readbuf, 0, to_read);
-	if (num_read <= 0) {
+	num_read = (*env)->CallIntMethod(env, this, mid_st_sound_read,
+			snd_readbuf, to_read);
+	if (num_read < 0) {
 		return 0;
 	}
 	(*env)->GetShortArrayRegion(env, snd_readbuf, 0, num_read, snd_buf);
@@ -245,9 +248,9 @@ jni_init(JNIEnv *env_)
 	METHOD(st_do_draw, strobe, "do_draw", "([III)Z")
 	METHOD(st_time_to_die, strobe, "time_to_die", "()Z")
 	METHOD(st_check_surface, strobe, "check_surface", "()[I")
+	METHOD(st_sound_read, strobe, "sound_read", "([SI)I")
 	METHOD(tt_cents_to_freq, tunertime, "cents_to_freq", "(II)D")
 	METHOD(ar_getsamplerate, audiorecord, "getSampleRate", "()I")
-	METHOD(ar_read, audiorecord, "read", "([SII)I")
 
 	STFIELD(out, system, "out", "Ljava/io/PrintStream;")
 	FIELD(st_cents, strobe, "cents", "I")
@@ -401,7 +404,7 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 			return;
 		}
 
-		if (!sound_input()) {
+		if (!sound_input(this)) {
 			return;
 		}
 

@@ -6,6 +6,7 @@ import android.graphics.Typeface;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.view.SurfaceHolder;
 import java.util.concurrent.Semaphore;
 
@@ -237,7 +238,11 @@ public class Strobe extends Thread {
 				AudioFormat.ENCODING_PCM_16BIT);
 
 		record_bufsz *= 2;		/* some extra */
-		record_bufsz = ((record_bufsz < 8820) ? 8820 : record_bufsz);
+			/* with non-blocking I/O, a 200ms buffer is
+			 * harmless...with blocking I/O (pre-Marshmallow), limit
+			 * it to 100ms for responsive display...below about */
+		int min_bufsz = ((Build.VERSION.SDK_INT >= 23) ? 17640 : 8820);
+		record_bufsz = Math.max(record_bufsz, min_bufsz);
 
 		recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
 				44100, AudioFormat.CHANNEL_IN_MONO,
@@ -256,6 +261,15 @@ public class Strobe extends Thread {
 			return false;
 		}
 		return true;
+	}
+
+	private int sound_read(short[] dst, int len) {
+		if (Build.VERSION.SDK_INT >= 23) {
+			return recorder.read(dst, 0, len,
+					AudioRecord.READ_NON_BLOCKING);
+		} else {
+			return recorder.read(dst, 0, len);
+		}
 	}
 
 	private void sound_stop() {
