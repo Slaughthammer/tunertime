@@ -235,8 +235,9 @@ public class Strobe extends Thread {
 		record_bufsz = AudioRecord.getMinBufferSize(
 				44100, AudioFormat.CHANNEL_IN_MONO,
 				AudioFormat.ENCODING_PCM_16BIT);
-		record_bufsz *= 4;		/* some extra */
-		record_bufsz = ((record_bufsz < 8192) ? 8192 : record_bufsz);
+
+		record_bufsz *= 2;		/* some extra */
+		record_bufsz = ((record_bufsz < 8820) ? 8820 : record_bufsz);
 
 		recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
 				44100, AudioFormat.CHANNEL_IN_MONO,
