@@ -6,8 +6,8 @@ import android.media.AudioTrack;
 
 public class ToneGenerator extends Thread {
 	private static final Object lock = new Object();
-	private static ToneGenerator curr_thread = null;
-	public static boolean playing = false;
+	private volatile static ToneGenerator curr_thread = null;
+	public volatile static boolean playing = false;
 	private static final int SINETABLE_LEN = 32768;
 	private static final int T_MULT = 1024;
 	private static final int T_MASK = (32768 * 1024) - 1;

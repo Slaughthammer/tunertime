@@ -20,23 +20,21 @@ static jclass cl_printstream;
 static jclass cl_string;
 static jclass cl_strobe;
 static jclass cl_tunertime;
-static jclass cl_audiorecord;
+static jclass cl_listener;
 
 static jmethodID mid_println;
 static jmethodID mid_st_do_draw;
 static jmethodID mid_st_time_to_die;
 static jmethodID mid_st_check_surface;
-static jmethodID mid_st_sound_read;
 static jmethodID mid_tt_cents_to_freq;
-static jmethodID mid_ar_getsamplerate;
+static jmethodID mid_li_read;
+static jmethodID mid_li_get_samplerate;
 
 static jfieldID fid_out;
 static jfieldID fid_st_cents;
 static jfieldID fid_st_harm1_mult;
 static jfieldID fid_st_harm2_mult;
 static jfieldID fid_st_parms_changed;
-static jfieldID fid_st_recorder;
-static jfieldID fid_st_record_bufsz;
 static jfieldID fid_st_labels;
 static jfieldID fid_st_pianoname;
 static jfieldID fid_st_ui;
@@ -183,36 +181,27 @@ newdata(jint *bitmap_ptr)
 
 
 static jshortArray snd_readbuf;
-static jint snd_record_bufsz;
 
 static void
 sound_init(jobject this)
 {
-	jobject snd_recorder;
+	sample_rate = (*env)->CallStaticIntMethod(env, cl_listener,
+				mid_li_get_samplerate);
 
-	snd_recorder = (*env)->GetObjectField(env, this, fid_st_recorder);
-	sample_rate = (*env)->CallIntMethod(env, snd_recorder,
-				mid_ar_getsamplerate);
-	(*env)->DeleteLocalRef(env, snd_recorder);
-
-	snd_record_bufsz =
-		(*env)->GetIntField(env, this, fid_st_record_bufsz) / 2;
-	snd_readbuf = (*env)->NewShortArray(env, snd_record_bufsz);
+	snd_readbuf = (*env)->NewShortArray(env, SND_BUFSAMPS);
 }
 
 static int
 sound_input(jobject this)
 {
-	int num_read, to_read;
-
-	to_read = ((snd_record_bufsz < SND_BUFSAMPS) ? snd_record_bufsz
-						     : SND_BUFSAMPS);
-	num_read = (*env)->CallIntMethod(env, this, mid_st_sound_read,
-			snd_readbuf, to_read);
+	int num_read = (*env)->CallStaticIntMethod(env,
+			cl_listener, mid_li_read, snd_readbuf, SND_BUFSAMPS);
 	if (num_read < 0) {
 		return 0;
+	} else if (num_read > 0) {
+		(*env)->GetShortArrayRegion(env, snd_readbuf, 0, num_read,
+				snd_buf);
 	}
-	(*env)->GetShortArrayRegion(env, snd_readbuf, 0, num_read, snd_buf);
 	snd_buflen = num_read;
 	return 1;
 }
@@ -229,6 +218,9 @@ jni_init(JNIEnv *env_)
 #define METHOD(var, mycl, id, sig) \
 	mid_##var = (*env)->GetMethodID(env, cl_##mycl, id, sig); \
 	if (!mid_##var) return 0;
+#define STMETHOD(var, mycl, id, sig) \
+	mid_##var = (*env)->GetStaticMethodID(env, cl_##mycl, id, sig); \
+	if (!mid_##var) return 0;
 #define FIELD(var, mycl, id, sig) \
 	fid_##var = (*env)->GetFieldID(env, cl_##mycl, id, sig); \
 	if (!fid_##var) return 0;
@@ -242,23 +234,21 @@ jni_init(JNIEnv *env_)
 	CLASS(string, "java/lang/String")
 	CLASS(strobe, "org/galexander/tunertime/Strobe")
 	CLASS(tunertime, "org/galexander/tunertime/TunerTime")
-	CLASS(audiorecord, "android/media/AudioRecord")
+	CLASS(listener, "org/galexander/tunertime/Listener")
 
 	METHOD(println, printstream, "println", "(Ljava/lang/String;)V")
 	METHOD(st_do_draw, strobe, "do_draw", "([III)Z")
 	METHOD(st_time_to_die, strobe, "time_to_die", "()Z")
 	METHOD(st_check_surface, strobe, "check_surface", "()[I")
-	METHOD(st_sound_read, strobe, "sound_read", "([SI)I")
 	METHOD(tt_cents_to_freq, tunertime, "cents_to_freq", "(II)D")
-	METHOD(ar_getsamplerate, audiorecord, "getSampleRate", "()I")
+	STMETHOD(li_read, listener, "read", "([SI)I")
+	STMETHOD(li_get_samplerate, listener, "get_samplerate", "()I")
 
 	STFIELD(out, system, "out", "Ljava/io/PrintStream;")
 	FIELD(st_cents, strobe, "cents", "I")
 	FIELD(st_harm1_mult, strobe, "harm1_mult", "I")
 	FIELD(st_harm2_mult, strobe, "harm2_mult", "I")
 	FIELD(st_parms_changed, strobe, "parms_changed", "Z")
-	FIELD(st_recorder, strobe, "recorder", "Landroid/media/AudioRecord;")
-	FIELD(st_record_bufsz, strobe, "record_bufsz", "I")
 	FIELD(st_labels, strobe, "labels", "[Ljava/lang/String;")
 	FIELD(st_pianoname, strobe, "pianoname", "Ljava/lang/String;")
 	FIELD(st_ui, strobe, "ui", "Lorg/galexander/tunertime/TunerTime;")

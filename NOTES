@@ -735,6 +735,8 @@ and make the rate variable.  But for now, I think it's just a single
 oddball.
 
 
+XXX - println()s should become Toasts
+
 XXX - experiment with constant horizontal speed in strobes
 
 XXX - someday bring in log_fft branch

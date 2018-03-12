@@ -3,10 +3,6 @@ package org.galexander.tunertime;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Typeface;
-import android.media.AudioFormat;
-import android.media.AudioRecord;
-import android.media.MediaRecorder;
-import android.os.Build;
 import android.view.SurfaceHolder;
 import java.util.concurrent.Semaphore;
 
@@ -14,7 +10,7 @@ public class Strobe extends Thread {
 	public final static int FFT_RANGE_MULT = 65536;
 
 	private static final Object lock = new Object();
-	private static Strobe curr_thread = null;
+	private static volatile Strobe curr_thread = null;
 	private static final Semaphore sem = new Semaphore(1);
 
 	private volatile int cents;
@@ -32,8 +28,6 @@ public class Strobe extends Thread {
 	private volatile boolean parms_changed = false;
 	private volatile boolean paused = false;
 
-	private AudioRecord recorder = null;
-	private int record_bufsz = 0;			/* in bytes */
 	private TunerTime ui = null;
 
 	Strobe(TunerTime ui_) {
@@ -203,11 +197,10 @@ public class Strobe extends Thread {
 			return;
 		}
 		try {
-			if (sound_start()) {
-				runner();
-			}
+			Listener.start_recording();
+			runner();
 		} finally {
-			sound_stop();
+			Listener.stop_recording();
 			synchronized(lock) {
 				if (curr_thread == this) {
 					curr_thread = null;
@@ -229,58 +222,6 @@ public class Strobe extends Thread {
 			}
 		}
 		return false;
-	}
-
-	private boolean sound_start() {
-					/* in bytes */
-		record_bufsz = AudioRecord.getMinBufferSize(
-				44100, AudioFormat.CHANNEL_IN_MONO,
-				AudioFormat.ENCODING_PCM_16BIT);
-
-		record_bufsz *= 2;		/* some extra */
-			/* with non-blocking I/O, a 200ms buffer is
-			 * harmless...with blocking I/O (pre-Marshmallow), limit
-			 * it to 100ms for responsive display...below about */
-		int min_bufsz = ((Build.VERSION.SDK_INT >= 23) ? 17640 : 8820);
-		record_bufsz = Math.max(record_bufsz, min_bufsz);
-
-		recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
-				44100, AudioFormat.CHANNEL_IN_MONO,
-				AudioFormat.ENCODING_PCM_16BIT,
-				record_bufsz);
-		if ((recorder.getAudioFormat() !=
-					AudioFormat.ENCODING_PCM_16BIT) ||
-		    (recorder.getChannelCount() != 1)) {
-			System.out.println("got funny format/channels back from AudioRecord!");
-			return false;
-		}
-		try {
-			recorder.startRecording();
-		} catch (IllegalStateException e) {
-			System.out.println("illegal state for startRecording()");
-			return false;
-		}
-		return true;
-	}
-
-	private int sound_read(short[] dst, int len) {
-		if (Build.VERSION.SDK_INT >= 23) {
-			return recorder.read(dst, 0, len,
-					AudioRecord.READ_NON_BLOCKING);
-		} else {
-			return recorder.read(dst, 0, len);
-		}
-	}
-
-	private void sound_stop() {
-		if (recorder == null) {
-			return;
-		}
-		try {
-			recorder.stop();
-			recorder.release();
-		} catch (IllegalStateException e) { /* whatever */ }
-		recorder = null;
 	}
 
 	static {
