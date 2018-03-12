@@ -79,9 +79,13 @@ you can hear what fundamental the strobe display is aiming for.  While
 the reference tone is playing, a few interesting effects may be
 observed.</p>
 
-<p>If the display is not showing perfectly horizontal red/green bands (in
-tune), then that indicates a calibration error in your phone's audio
-hardware.</p>
+<p>It is a self-test, if the display is not showing perfectly horizontal
+red/green bands (in tune) in the top strobe display, there is a problem.
+If they gently but consistently slope one way or the other, that
+indicates a calibration failure in your phone's audio hardware.  If there
+are erratic phase changes (the line jumps up and down even without
+background noise, or doesn't return to the same level once the noise
+stops), it indicates buffer overruns or similar (e-mail me!)</p>
 
 <p>Background noises (talking, etc) show up as intermittent phase
 discrepancies.</p>
@@ -90,11 +94,11 @@ discrepancies.</p>
 red/green/red/green instead of red/green), that usually indicates
 clipping distortion.  Your phone's microphone and speaker are so close to
 eachother that the microphone can be saturated beyond its capacity, and
-the clipping introduces overtones.</p>
+the clipping effectively introduces overtones.</p>
 
-<p>If you output through an external (i.e., bluetooth) speaker, then the
-doppler effect is visible clear as day if you move the Android device
-relative to the speaker.</p>
+<p>If you output through an external (i.e., bluetooth) speaker or a
+second Android device, then the doppler effect is visible clear as day if
+you move the Android device relative to the speaker.</p>
 
 <p>When changing frequencies, the strobe display updates faster than the
 audio output buffer, so often there will be some period of the previous
