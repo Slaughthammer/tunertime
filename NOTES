@@ -735,6 +735,64 @@ and make the rate variable.  But for now, I think it's just a single
 oddball.
 
 
+March 12, 2018.
+
+Ben Hemmendinger has two requests.  First is a black-and-white or
+selectable-color mode to help people work around red-green
+color-blindness.  That's a no-brainer, just a UI question.
+
+The other is more interesting.  He wants "presets" like for the 6
+specific strings on his guitar, so he doesn't need to do semi+ 5 (or 4)
+times between strings, and he's got some zany tempering for a guitar!
+So it's a tedious process for him to tune each of the strings, and if he
+wants to nail this designed temper, he'll want to tune each string with
+the strobe, rather than doing most by ear.
+
+I like the idea because it obviates "temper" -- that's just a preset list
+that happens to have 12 entries.  And because it's better than the "hold
+down semi+/- to go by 5ths", which isn't actually what you want for a
+guitar anyways, in addition to being kind of obscure.
+
+So I could make a catch-all normal android preferences activity (hanging
+off the menu), which would have the color setting.  Then I could throw
+"harmonics" in there, because there's no advantage to seeing the results
+of that in real time (IMO).
+
+Then I could replace the "temper" panel with a "presets" panel.  Its 3
+columns of buttons would be:
+
+   note+/-    circulate through the presets
+   oct+/-     an octave bias to presets, so 12 presets is a complete temper
+   select     brings up preset-selection screen
+
+The preset-selection screen would be a list of the presets, with a button
+at the bottom for "new".  Long-tap a preset for context menu of
+edit/delete.
+
+Editing a preset (new or existing) would be a list of the notes in the
+preset, with a button at the bottom for "new".  Long-tap a note for
+context menu of edit/delete.
+
+Editing a note in a preset is a question.  I could go into a strobe mode
+like the "note" panel, with an "OK" button.  Or I could just use the
+Android UI to select note/octave/cents.  Note would probably be an C-B
+dropdown, a checkbox for sharp.  Octave would be 1-8 dropdown.  Cents
+would be numeric entry (TextView).  That would be simple, and it would
+fit in probably a Dialog sort of thing, and I think most people arranging
+presets don't mind thinking about what they really want off-line.
+I think everyone knows a guitar is E/A/D/G/B/E over two full octaves, for
+example.
+
+
+XXX - add preferences, with just color (probably give a red/green, blue/red, blue/green, black/white options?)
+XXX - move harmonics into preferences
+XXX - implement preset data storage, and a one-off hack to import a temper as a preset
+XXX - replace temper panel with presets panel
+XXX - implement preset list
+XXX - implement note list
+XXX - implement note selection
+
+
 XXX - println()s should become Toasts
 
 XXX - experiment with constant horizontal speed in strobes
