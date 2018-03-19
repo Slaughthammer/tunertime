@@ -44,6 +44,7 @@ extern int base_cents;
 extern int harm1_mult, harm2_mult;
 
 void strobe_init(void);
+void strobe_color(const char *s);
 void strobe_redraw(jint *bitmap_ptr);
 void strobe_newdata(jint *bitmap_ptr);
 void strobe_recalculate(jobject this);

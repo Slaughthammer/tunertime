@@ -3,6 +3,7 @@ package org.galexander.tunertime;
 public class Parms {
 	static public volatile int strobe_cents = 4800;
 	static public volatile int harm1_mult = 2, harm2_mult = 4;
+	static public volatile String strobe_color = "redgreen";
 
 	static public volatile boolean fft_mode = false;
 			/* number of samples in FFT window */

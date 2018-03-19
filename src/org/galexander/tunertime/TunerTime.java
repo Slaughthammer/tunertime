@@ -11,6 +11,7 @@ import android.app.AlertDialog;
 import java.text.DecimalFormat;
 import android.net.Uri;
 import android.os.PowerManager;
+import android.preference.PreferenceManager;
 
 public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private SurfaceView w_strobe;
@@ -183,7 +184,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	}
 
 	private void load_config() {
-		SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		Parms.A_freq = prefs.getInt("A_freq", 4400);
 		if (Parms.A_freq <= 880) {
 			/* the setting must come from before we encoded A_freq
@@ -205,6 +206,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		Parms.strobe_cents = prefs.getInt("strobe_cents", 4800);
 		Parms.harm1_mult = prefs.getInt("harm1_mult", 2);
 		Parms.harm2_mult = prefs.getInt("harm2_mult", 4);
+		Parms.strobe_color = prefs.getString("strobe_color", "redgreen");
 		Parms.temper[0] = prefs.getInt("temper0", 0);
 		Parms.temper[1] = prefs.getInt("temper1", 0);
 		Parms.temper[2] = prefs.getInt("temper2", 0);
@@ -226,7 +228,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	}
 
 	private void save_config() {
-		SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putInt("A_freq", Parms.A_freq);
 		editor.putInt("cents_per_octave", Parms.cents_per_octave);

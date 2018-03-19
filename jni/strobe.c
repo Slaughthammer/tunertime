@@ -43,6 +43,53 @@ strobe_init(void)
 	memset(strobes, 0, sizeof strobes);
 }
 
+
+static unsigned color_red(int x) {
+	return COLOR_VALUE(x, x/2, x/2);
+}
+static unsigned color_green(int x) {
+	return COLOR_VALUE(x/2, x, x/2);
+}
+static unsigned color_white(int x) {
+	x = 0x80 + (x/2);
+	return COLOR_VALUE(x, x, x);
+}
+static unsigned color_black(int x) {
+	x = 0x80 - (x/2);
+	return COLOR_VALUE(x, x, x);
+}
+static unsigned color_blue(int x) {
+	return COLOR_VALUE(x/2, x/2, x);
+}
+static unsigned color_yellow(int x) {
+	return COLOR_VALUE(x, x, x/2);
+}
+
+static unsigned (*color1)(int x) = color_red;
+static unsigned (*color2)(int x) = color_green;
+
+void
+strobe_color(const char *s)
+{
+	if (!s) {
+		color1 = color_red;
+		color2 = color_green;
+	} else if (!strcmp(s, "blackwhite")) {
+		color1 = color_black;
+		color2 = color_white;
+	} else if (!strcmp(s, "blueyellow")) {
+		color1 = color_blue;
+		color2 = color_yellow;
+	} else if (!strcmp(s, "redblue")) {
+		color1 = color_red;
+		color2 = color_blue;
+	} else {
+		color1 = color_red;
+		color2 = color_green;
+	}
+}
+
+
 static void
 filter_recalc(struct strobe_rec *s)
 {
@@ -213,11 +260,9 @@ strobe_drawnew(jint *bitmap_ptr, struct strobe_rec *s)
 		}
 
 		if (samp >= 0) {
-			int e = exptab[samp];
-			color = COLOR_VALUE(e, e/2, e/2);
+			color = color1(exptab[samp]);
 		} else {
-			int e = exptab[-samp];
-			color = COLOR_VALUE(e/2, e, e/2);
+			color = color2(exptab[-samp]);
 		}
 		DRAW_PIXEL(x, y+s->y, color);
 

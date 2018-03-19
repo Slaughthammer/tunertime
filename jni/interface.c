@@ -39,6 +39,7 @@ static jfieldID fid_st_paused;
 static jfieldID fid_p_strobe_cents;
 static jfieldID fid_p_harm1_mult;
 static jfieldID fid_p_harm2_mult;
+static jfieldID fid_p_strobe_color;
 static jfieldID fid_p_fft_mode;
 static jfieldID fid_p_fft_size;
 static jfieldID fid_p_fft_width;
@@ -255,6 +256,7 @@ jni_init(JNIEnv *env_)
 	STFIELD(p_strobe_cents, parms, "strobe_cents", "I")
 	STFIELD(p_harm1_mult, parms, "harm1_mult", "I")
 	STFIELD(p_harm2_mult, parms, "harm2_mult", "I")
+	STFIELD(p_strobe_color, parms, "strobe_color", "Ljava/lang/String;")
 	STFIELD(p_fft_mode, parms, "fft_mode", "Z")
 	STFIELD(p_fft_size, parms, "fft_size", "I")
 	STFIELD(p_fft_width, parms, "fft_width", "I")
@@ -358,6 +360,14 @@ check_parms(jobject this)
 	base_cents = (*env)->GetStaticIntField(env, cl_parms, fid_p_strobe_cents);
 	harm1_mult = (*env)->GetStaticIntField(env, cl_parms, fid_p_harm1_mult);
 	harm2_mult = (*env)->GetStaticIntField(env, cl_parms, fid_p_harm2_mult);
+
+	{
+		jstring t = (*env)->GetStaticObjectField(env, cl_parms, fid_p_strobe_color);
+		const char *s = (*env)->GetStringUTFChars(env, t, NULL);
+		strobe_color(s);
+		(*env)->ReleaseStringUTFChars(env, t, s);
+		(*env)->DeleteLocalRef(env, t);
+	}
 
 	fft_mode = (*env)->GetStaticBooleanField(env, cl_parms, fid_p_fft_mode);
 	fft_size = (*env)->GetStaticIntField(env, cl_parms, fid_p_fft_size);
