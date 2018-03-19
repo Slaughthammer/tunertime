@@ -21,6 +21,7 @@ static jclass cl_string;
 static jclass cl_strobe;
 static jclass cl_tunertime;
 static jclass cl_listener;
+static jclass cl_parms;
 
 static jmethodID mid_println;
 static jmethodID mid_st_do_draw;
@@ -31,19 +32,19 @@ static jmethodID mid_li_read;
 static jmethodID mid_li_get_samplerate;
 
 static jfieldID fid_out;
-static jfieldID fid_st_cents;
-static jfieldID fid_st_harm1_mult;
-static jfieldID fid_st_harm2_mult;
-static jfieldID fid_st_parms_changed;
 static jfieldID fid_st_labels;
 static jfieldID fid_st_pianoname;
 static jfieldID fid_st_ui;
-static jfieldID fid_st_fft_mode;
-static jfieldID fid_st_fft_size;
-static jfieldID fid_st_fft_width;
-static jfieldID fid_st_fft_offset;
-static jfieldID fid_st_fft_grid_freq;
 static jfieldID fid_st_paused;
+static jfieldID fid_p_strobe_cents;
+static jfieldID fid_p_harm1_mult;
+static jfieldID fid_p_harm2_mult;
+static jfieldID fid_p_fft_mode;
+static jfieldID fid_p_fft_size;
+static jfieldID fid_p_fft_width;
+static jfieldID fid_p_fft_offset;
+static jfieldID fid_p_fft_grid_freq;
+static jfieldID fid_p_changed;
 
 static jintArray bitmap;
 
@@ -235,6 +236,7 @@ jni_init(JNIEnv *env_)
 	CLASS(strobe, "org/galexander/tunertime/Strobe")
 	CLASS(tunertime, "org/galexander/tunertime/TunerTime")
 	CLASS(listener, "org/galexander/tunertime/Listener")
+	CLASS(parms, "org/galexander/tunertime/Parms")
 
 	METHOD(println, printstream, "println", "(Ljava/lang/String;)V")
 	METHOD(st_do_draw, strobe, "do_draw", "([III)Z")
@@ -245,19 +247,20 @@ jni_init(JNIEnv *env_)
 	STMETHOD(li_get_samplerate, listener, "get_samplerate", "()I")
 
 	STFIELD(out, system, "out", "Ljava/io/PrintStream;")
-	FIELD(st_cents, strobe, "cents", "I")
-	FIELD(st_harm1_mult, strobe, "harm1_mult", "I")
-	FIELD(st_harm2_mult, strobe, "harm2_mult", "I")
-	FIELD(st_parms_changed, strobe, "parms_changed", "Z")
 	FIELD(st_labels, strobe, "labels", "[Ljava/lang/String;")
 	FIELD(st_pianoname, strobe, "pianoname", "Ljava/lang/String;")
 	FIELD(st_ui, strobe, "ui", "Lorg/galexander/tunertime/TunerTime;")
-	FIELD(st_fft_mode, strobe, "fft_mode", "Z")
-	FIELD(st_fft_size, strobe, "fft_size", "I")
-	FIELD(st_fft_width, strobe, "fft_width", "I")
-	FIELD(st_fft_offset, strobe, "fft_offset", "I")
-	FIELD(st_fft_grid_freq, strobe, "fft_grid_freq", "Z")
 	FIELD(st_paused, strobe, "paused", "Z");
+
+	STFIELD(p_strobe_cents, parms, "strobe_cents", "I")
+	STFIELD(p_harm1_mult, parms, "harm1_mult", "I")
+	STFIELD(p_harm2_mult, parms, "harm2_mult", "I")
+	STFIELD(p_fft_mode, parms, "fft_mode", "Z")
+	STFIELD(p_fft_size, parms, "fft_size", "I")
+	STFIELD(p_fft_width, parms, "fft_width", "I")
+	STFIELD(p_fft_offset, parms, "fft_offset", "I")
+	STFIELD(p_fft_grid_freq, parms, "fft_grid_freq", "Z")
+	STFIELD(p_changed, parms, "changed", "Z")
 
 	return 1;
 }
@@ -340,27 +343,27 @@ check_surface(jobject this)
 	resize_bitmap();
 
 	/* force full update: */
-	(*env)->SetBooleanField(env, this, fid_st_parms_changed, JNI_TRUE);
+	(*env)->SetStaticBooleanField(env, cl_parms, fid_p_changed, JNI_TRUE);
 }
 
 static int
 check_parms(jobject this)
 {
-	if (!(*env)->GetBooleanField(env, this, fid_st_parms_changed)) {
+	if (!(*env)->GetStaticBooleanField(env, cl_parms, fid_p_changed)) {
 		return 0;
 	}
 
-	(*env)->SetBooleanField(env, this, fid_st_parms_changed, JNI_FALSE);
+	(*env)->SetStaticBooleanField(env, cl_parms, fid_p_changed, JNI_FALSE);
 
-	base_cents = (*env)->GetIntField(env, this, fid_st_cents);
-	harm1_mult = (*env)->GetIntField(env, this, fid_st_harm1_mult);
-	harm2_mult = (*env)->GetIntField(env, this, fid_st_harm2_mult);
+	base_cents = (*env)->GetStaticIntField(env, cl_parms, fid_p_strobe_cents);
+	harm1_mult = (*env)->GetStaticIntField(env, cl_parms, fid_p_harm1_mult);
+	harm2_mult = (*env)->GetStaticIntField(env, cl_parms, fid_p_harm2_mult);
 
-	fft_mode = (*env)->GetBooleanField(env, this, fid_st_fft_mode);
-	fft_size = (*env)->GetIntField(env, this, fid_st_fft_size);
-	fft_width = (*env)->GetIntField(env, this, fid_st_fft_width);
-	fft_offset = (*env)->GetIntField(env, this, fid_st_fft_offset);
-	fft_grid_freq = (*env)->GetBooleanField(env,this, fid_st_fft_grid_freq);
+	fft_mode = (*env)->GetStaticBooleanField(env, cl_parms, fid_p_fft_mode);
+	fft_size = (*env)->GetStaticIntField(env, cl_parms, fid_p_fft_size);
+	fft_width = (*env)->GetStaticIntField(env, cl_parms, fid_p_fft_width);
+	fft_offset = (*env)->GetStaticIntField(env, cl_parms, fid_p_fft_offset);
+	fft_grid_freq = (*env)->GetStaticBooleanField(env, cl_parms, fid_p_fft_grid_freq);
 
 	if (fft_mode) {
 		fft_recalculate(this);

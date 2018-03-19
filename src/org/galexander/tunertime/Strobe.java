@@ -13,19 +13,10 @@ public class Strobe extends Thread {
 	private static volatile Strobe curr_thread = null;
 	private static final Semaphore sem = new Semaphore(1);
 
-	private volatile int cents;
-	private volatile int harm1_mult, harm2_mult;
-
 	private volatile int width = 0, height = 0;
 	private SurfaceHolder holder = null;
 	private volatile boolean surface_changed = false;
 
-	private volatile boolean fft_mode = false;
-	private volatile int fft_size = 8192;	/* number of samples in FFT window */
-	private volatile int fft_width = FFT_RANGE_MULT/4; /* zoom level */
-	private volatile int fft_offset = 0;	/* offset in FFT_RANGE_MULTs of screen */
-	private volatile boolean fft_grid_freq = false;
-	private volatile boolean parms_changed = false;
 	private volatile boolean paused = false;
 
 	private TunerTime ui = null;
@@ -64,24 +55,6 @@ public class Strobe extends Thread {
 		return ret;
 	}
 
-	public void setFft(boolean fft_mode_) {
-		fft_mode = fft_mode_;
-		parms_changed = true;
-	}
-
-	public void setParms(int cents_, int harm1_mult_, int harm2_mult_,
-			int fft_size_, int fft_width_, int fft_offset_,
-			boolean fft_grid_freq_) {
-		cents = cents_;
-		harm1_mult = harm1_mult_;
-		harm2_mult = harm2_mult_;
-		fft_size = fft_size_;
-		fft_width = fft_width_;
-		fft_offset = fft_offset_;
-		fft_grid_freq = fft_grid_freq_;
-		parms_changed = true;
-	}
-
 	public void toggle_pause() {
 		paused = !paused;
 	}
@@ -95,7 +68,7 @@ public class Strobe extends Thread {
 	private String pianoname = null;
 
 	private void draw_labels(Canvas c) {
-		if ((labels == null) || (labels.length == 0) || fft_mode) {
+		if ((labels == null) || (labels.length == 0) || Parms.fft_mode) {
 			return;
 		}
 
@@ -133,7 +106,7 @@ public class Strobe extends Thread {
 
 	/* like "A49" for A-4 */
 	private void draw_pianoname(Canvas c) {
-		if (fft_mode || (pianoname == null)) {
+		if (Parms.fft_mode || (pianoname == null)) {
 			return;
 		}
 		if (pianoname_p == null) {
