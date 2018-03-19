@@ -44,17 +44,6 @@ public class Parms {
 			Parms.A_freq *= 10;
 		}
 		Parms.cents_per_octave = prefs.getInt("cents_per_octave", 0);
-		if (Parms.cents_per_octave == 0) {
-			/* use older config option if available.
-			 * see derivation in NOTES Aug 21, 2016 */
-			int octave_stretch = prefs.getInt("octave_stretch", 0);
-			if (octave_stretch != 0) {
-				double os = ((double)octave_stretch)*0.00001d;
-				double lg = Math.log(2.0d+os)/Math.log(2.0d);
-				double t = (lg-1.0d)*12000.0d;
-				Parms.cents_per_octave = (int)Math.round(t);
-			}
-		}
 		Parms.strobe_cents = prefs.getInt("strobe_cents", 4800);
 		Parms.harm1_mult = Integer.parseInt(prefs.getString("harm1", "2"));
 		Parms.harm2_mult = Integer.parseInt(prefs.getString("harm2", "4"));
@@ -83,7 +72,6 @@ public class Parms {
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putInt("A_freq", Parms.A_freq);
 		editor.putInt("cents_per_octave", Parms.cents_per_octave);
-		editor.remove("octave_stretch");	/* obsolete */
 		editor.putInt("strobe_cents", Parms.strobe_cents);
 		editor.putInt("temper0", Parms.temper[0]);
 		editor.putInt("temper1", Parms.temper[1]);
@@ -109,30 +97,45 @@ public class Parms {
 		/* a.getPreferences() returns an Activity-local store, while now
 		 * we use the PreferenceManager default, so copy them over */
 	private static void check_for_legacy(Activity a) {
-		SharedPreferences old = a.getPreferences(Context.MODE_PRIVATE);
-		if (old.contains("fft_mode") && !prefs.contains("fft_mode")) {
-			Map<String, ?> oldvals = old.getAll();
-			SharedPreferences.Editor editor = prefs.edit();
-
-			editor.clear();
-			for (Map.Entry<String, ?> entry : oldvals.entrySet()) {
-				String key = entry.getKey();
-				Object value = entry.getValue();
-				if (key.equals("harm1_mult")) {
-					editor.putString("harm1", ((Integer)value).toString());
-				} else if (key.equals("harm2_mult")) {
-					editor.putString("harm2", ((Integer)value).toString());
-				} else if (value instanceof Integer) {
-					editor.putInt(key, ((Integer)value).intValue());
-				} else if (value instanceof Boolean) {
-					editor.putBoolean(key, ((Boolean)value).booleanValue());
-				}
-			}
-			editor.commit();
-			oldvals = null;
-			editor = old.edit();
-			editor.clear();
-			editor.commit();
+		if (prefs.contains("fft_mode")) {
+			return;
 		}
+		SharedPreferences old = a.getPreferences(Context.MODE_PRIVATE);
+		if (!old.contains("fft_mode")) {
+			return;
+		}
+		Map<String, ?> oldvals = old.getAll();
+		SharedPreferences.Editor editor = prefs.edit();
+
+		editor.clear();
+		for (Map.Entry<String, ?> entry : oldvals.entrySet()) {
+			String key = entry.getKey();
+			Object value = entry.getValue();
+			if (key.equals("harm1_mult")) {
+				editor.putString("harm1", ((Integer)value).toString());
+			} else if (key.equals("harm2_mult")) {
+				editor.putString("harm2", ((Integer)value).toString());
+			} else if (key.equals("octave_stretch")) {
+				/* use older config option if available.
+				 * see derivation in NOTES Aug 21, 2016 */
+				int octave_stretch = ((Integer)value).intValue();
+				if (octave_stretch != 0) {
+					double os = ((double)octave_stretch)*0.00001d;
+					double lg = Math.log(2.0d+os)/Math.log(2.0d);
+					double t = (lg-1.0d)*12000.0d;
+					editor.putInt("cents_per_octave", (int)Math.round(t));
+				}
+			} else if (value instanceof Integer) {
+				editor.putInt(key, ((Integer)value).intValue());
+			} else if (value instanceof Boolean) {
+				editor.putBoolean(key, ((Boolean)value).booleanValue());
+			}
+		}
+		editor.commit();
+		oldvals = null;
+
+		editor = old.edit();
+		editor.clear();
+		editor.commit();
 	}
 };
