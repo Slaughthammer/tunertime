@@ -11,7 +11,6 @@ import android.app.AlertDialog;
 import java.text.DecimalFormat;
 import android.net.Uri;
 import android.os.PowerManager;
-import android.preference.PreferenceManager;
 
 public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private SurfaceView w_strobe;
@@ -58,6 +57,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		Parms.init(this);
 		setContentView(R.layout.main);
 		w_strobe = (SurfaceView)findViewById(R.id.strobe);
 		w_strobe.getHolder().addCallback(this);
@@ -159,7 +159,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	public void onResume() {
 		wakelock.acquire();
 		stop_strobe();
-		load_config();
+		Parms.load();
 		if (Parms.fft_mode) {
 			set_mode(fft_buttons, true);
 		} else {
@@ -179,82 +179,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		}
 		stop_strobe();
 		ToneGenerator.stop_tone();
-		save_config();
+		Parms.save();
 		super.onPause();
-	}
-
-	private void load_config() {
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		Parms.A_freq = prefs.getInt("A_freq", 4400);
-		if (Parms.A_freq <= 880) {
-			/* the setting must come from before we encoded A_freq
-			 * as *10 (so there is one decimal point of info) */
-			Parms.A_freq *= 10;
-		}
-		Parms.cents_per_octave = prefs.getInt("cents_per_octave", 0);
-		if (Parms.cents_per_octave == 0) {
-			/* use older config option if available.
-			 * see derivation in NOTES Aug 21, 2016 */
-			int octave_stretch = prefs.getInt("octave_stretch", 0);
-			if (octave_stretch != 0) {
-				double os = ((double)octave_stretch)*0.00001d;
-				double lg = Math.log(2.0d+os)/Math.log(2.0d);
-				double t = (lg-1.0d)*12000.0d;
-				Parms.cents_per_octave = (int)Math.round(t);
-			}
-		}
-		Parms.strobe_cents = prefs.getInt("strobe_cents", 4800);
-		Parms.harm1_mult = prefs.getInt("harm1_mult", 2);
-		Parms.harm2_mult = prefs.getInt("harm2_mult", 4);
-		Parms.strobe_color = prefs.getString("strobe_color", "redgreen");
-		Parms.temper[0] = prefs.getInt("temper0", 0);
-		Parms.temper[1] = prefs.getInt("temper1", 0);
-		Parms.temper[2] = prefs.getInt("temper2", 0);
-		Parms.temper[3] = prefs.getInt("temper3", 0);
-		Parms.temper[4] = prefs.getInt("temper4", 0);
-		Parms.temper[5] = prefs.getInt("temper5", 0);
-		Parms.temper[6] = prefs.getInt("temper6", 0);
-		Parms.temper[7] = prefs.getInt("temper7", 0);
-		Parms.temper[8] = prefs.getInt("temper8", 0);
-		Parms.temper[9] = prefs.getInt("temper9", 0);
-		Parms.temper[10] = prefs.getInt("temper10", 0);
-		Parms.temper[11] = prefs.getInt("temper11", 0);
-		Parms.temper_enabled = prefs.getBoolean("temper_enabled", false);
-		Parms.fft_mode = prefs.getBoolean("fft_mode", false);
-		Parms.fft_size = prefs.getInt("fft_size", 2048);
-		Parms.fft_width = prefs.getInt("fft_width", Strobe.FFT_RANGE_MULT/4);
-		Parms.fft_offset = prefs.getInt("fft_offset", 0);
-		Parms.fft_grid_freq = prefs.getBoolean("fft_grid_freq", false);
-	}
-
-	private void save_config() {
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		SharedPreferences.Editor editor = prefs.edit();
-		editor.putInt("A_freq", Parms.A_freq);
-		editor.putInt("cents_per_octave", Parms.cents_per_octave);
-		editor.remove("octave_stretch");	/* obsolete */
-		editor.putInt("strobe_cents", Parms.strobe_cents);
-		editor.putInt("harm1_mult", Parms.harm1_mult);
-		editor.putInt("harm2_mult", Parms.harm2_mult);
-		editor.putInt("temper0", Parms.temper[0]);
-		editor.putInt("temper1", Parms.temper[1]);
-		editor.putInt("temper2", Parms.temper[2]);
-		editor.putInt("temper3", Parms.temper[3]);
-		editor.putInt("temper4", Parms.temper[4]);
-		editor.putInt("temper5", Parms.temper[5]);
-		editor.putInt("temper6", Parms.temper[6]);
-		editor.putInt("temper7", Parms.temper[7]);
-		editor.putInt("temper8", Parms.temper[8]);
-		editor.putInt("temper9", Parms.temper[9]);
-		editor.putInt("temper10", Parms.temper[10]);
-		editor.putInt("temper11", Parms.temper[11]);
-		editor.putBoolean("temper_enabled", Parms.temper_enabled);
-		editor.putBoolean("fft_mode", Parms.fft_mode);
-		editor.putInt("fft_size", Parms.fft_size);
-		editor.putInt("fft_width", Parms.fft_width);
-		editor.putInt("fft_offset", Parms.fft_offset);
-		editor.putBoolean("fft_grid_freq", Parms.fft_grid_freq);
-		editor.commit();
 	}
 
 	private void darken_mode(Button b) {
