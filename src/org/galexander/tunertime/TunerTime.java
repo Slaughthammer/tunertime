@@ -1,16 +1,25 @@
 package org.galexander.tunertime;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.LightingColorFilter;
+import android.net.Uri;
 import android.os.Bundle;
-import android.content.*;
-import android.view.*;
-import android.graphics.*;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Button;
-import android.app.AlertDialog;
-import java.text.DecimalFormat;
-import android.net.Uri;
 import android.os.PowerManager;
+import java.text.DecimalFormat;
 
 public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private SurfaceView w_strobe;
