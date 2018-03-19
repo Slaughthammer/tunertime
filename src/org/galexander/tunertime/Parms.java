@@ -56,8 +56,8 @@ public class Parms {
 			}
 		}
 		Parms.strobe_cents = prefs.getInt("strobe_cents", 4800);
-		Parms.harm1_mult = prefs.getInt("harm1_mult", 2);
-		Parms.harm2_mult = prefs.getInt("harm2_mult", 4);
+		Parms.harm1_mult = Integer.parseInt(prefs.getString("harm1", "2"));
+		Parms.harm2_mult = Integer.parseInt(prefs.getString("harm2", "4"));
 		Parms.strobe_color = prefs.getString("strobe_color", "redgreen");
 		Parms.temper[0] = prefs.getInt("temper0", 0);
 		Parms.temper[1] = prefs.getInt("temper1", 0);
@@ -85,8 +85,6 @@ public class Parms {
 		editor.putInt("cents_per_octave", Parms.cents_per_octave);
 		editor.remove("octave_stretch");	/* obsolete */
 		editor.putInt("strobe_cents", Parms.strobe_cents);
-		editor.putInt("harm1_mult", Parms.harm1_mult);
-		editor.putInt("harm2_mult", Parms.harm2_mult);
 		editor.putInt("temper0", Parms.temper[0]);
 		editor.putInt("temper1", Parms.temper[1]);
 		editor.putInt("temper2", Parms.temper[2]);
@@ -120,7 +118,11 @@ public class Parms {
 			for (Map.Entry<String, ?> entry : oldvals.entrySet()) {
 				String key = entry.getKey();
 				Object value = entry.getValue();
-				if (value instanceof Integer) {
+				if (key.equals("harm1_mult")) {
+					editor.putString("harm1", ((Integer)value).toString());
+				} else if (key.equals("harm2_mult")) {
+					editor.putString("harm2", ((Integer)value).toString());
+				} else if (value instanceof Integer) {
 					editor.putInt(key, ((Integer)value).intValue());
 				} else if (value instanceof Boolean) {
 					editor.putBoolean(key, ((Boolean)value).booleanValue());

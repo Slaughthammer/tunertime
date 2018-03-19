@@ -41,15 +41,11 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private TextView temper_cent_display;
 	private TextView temper_save_button;
 	private TextView temper_enable_button;
-	private View harm_buttons;
-	private TextView harm1_display;
-	private TextView harm2_display;
 	private View fft_buttons;
 	private TextView N_display;
 	private Button grid_button;
 	private View strobe_buttons;
-	private Button note_button, afreq_button, stretch_button,
-			temper_button, harm_button;
+	private Button note_button, afreq_button, stretch_button, temper_button;
 	private View strobe_mode_buttons;
 	private View fft_mode_buttons;
 	private Button tone_button;
@@ -125,13 +121,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		temper_enable_button = (Button)temper_buttons.findViewById(
 				R.id.temper_enable);
 
-		harm_buttons = fl8r.inflate(
-				R.layout.harm_buttons, buttons_holder, false);
-		harm1_display = (TextView)harm_buttons.findViewById(
-				R.id.harm1_display);
-		harm2_display = (TextView)harm_buttons.findViewById(
-				R.id.harm2_display);
-
 		fft_buttons = fl8r.inflate(
 				R.layout.fft_buttons, buttons_holder, false);
 		N_display = (TextView)fft_buttons.findViewById(
@@ -149,8 +138,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				R.id.stretch_button);
 		temper_button = (Button)strobe_buttons.findViewById(
 				R.id.temper_button);
-		harm_button = (Button)strobe_buttons.findViewById(
-				R.id.harm_button);
 
 		PowerManager pm = (PowerManager)getSystemService(
 						Context.POWER_SERVICE);
@@ -205,7 +192,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			darken_mode(afreq_button);
 			darken_mode(stretch_button);
 			darken_mode(temper_button);
-			darken_mode(harm_button);
 			if (buttons == note_buttons) {
 				brighten_mode(note_button);
 			} else if (buttons == afreq_buttons) {
@@ -214,8 +200,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				brighten_mode(stretch_button);
 			} else if (buttons == temper_buttons) {
 				brighten_mode(temper_button);
-			} else if (buttons == harm_buttons) {
-				brighten_mode(harm_button);
 			}
 		}
 		buttons_holder.removeAllViews();
@@ -333,28 +317,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		update_status();
 	}
 
-	public void harm1_incr(View v) {
-		Parms.harm1_mult++;
-		update_status();
-	}
-	public void harm1_decr(View v) {
-		Parms.harm1_mult--;
-		update_status();
-	}
-	public void harm2_incr(View v) {
-		Parms.harm2_mult++;
-		update_status();
-	}
-	public void harm2_decr(View v) {
-		Parms.harm2_mult--;
-		update_status();
-	}
-	public void reset_harm(View v) {
-		Parms.harm1_mult = 2;
-		Parms.harm2_mult = 4;
-		update_status();
-	}
-
 	public void N_incr(View v) {
 		Parms.fft_size *= 2;
 		update_status();
@@ -380,9 +342,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	public void temper_clicked(View v) {
 		apply_temper();
 		set_mode(temper_buttons, false);
-	}
-	public void harm_clicked(View v) {
-		set_mode(harm_buttons, false);
 	}
 
 	private void do_help() {
@@ -481,9 +440,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				string_int10(Math.abs(Parms.cents_per_octave));
 		stretch_display.setText(stretch_str);
 		stretch_stretch_display.setText(stretch_str);
-
-		harm1_display.setText(Integer.toString(Parms.harm1_mult));
-		harm2_display.setText(Integer.toString(Parms.harm2_mult));
 
 		N_display.setText(Integer.toString(Parms.fft_size));
 		grid_button.setText(Parms.fft_grid_freq ? "Hz" : "scale");

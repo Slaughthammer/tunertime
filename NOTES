@@ -784,8 +784,6 @@ I think everyone knows a guitar is E/A/D/G/B/E over two full octaves, for
 example.
 
 
-XXX - add preferences, with just color (probably give a red/green, blue/red, blue/green, black/white options?)
-XXX - move harmonics into preferences
 XXX - implement preset data storage, and a one-off hack to import a temper as a preset
 XXX - replace temper panel with presets panel
 XXX - implement preset list
