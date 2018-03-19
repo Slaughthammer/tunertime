@@ -1,24 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="Strobe">
 	<ListPreference
 		android:key="strobe_color"
-		android:title="Strobe Colors"
+		android:title="Colors"
 		android:summary="%s"
 		android:entries="@array/color_name"
 		android:entryValues="@array/color_value"
 		android:defaultValue="redgreen" />
 	<ListPreference
 		android:key="harm1"
-		android:title="Strobe Harmonic 1"
+		android:title="Harmonic 1"
 		android:summary="%s"
 		android:entries="@array/harmonics"
 		android:entryValues="@array/harmonics"
 		android:defaultValue="2" />
 	<ListPreference
 		android:key="harm2"
-		android:title="Strobe Harmonic 2"
+		android:title="Harmonic 2"
 		android:summary="%s"
 		android:entries="@array/harmonics"
 		android:entryValues="@array/harmonics"
 		android:defaultValue="4" />
+    </PreferenceCategory>
 </PreferenceScreen>
