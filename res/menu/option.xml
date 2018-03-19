@@ -4,6 +4,9 @@
 		android:title="Strobe" />
 	<item android:id="@+id/action_fft"
 		android:title="FFT" />
+	<item android:id="@+id/action_settings"
+		android:icon="@android:drawable/ic_menu_manage"
+		android:title="Settings" />
 	<item android:id="@+id/action_help"
 		android:title="Help"
 		android:icon="@android:drawable/ic_menu_help" />

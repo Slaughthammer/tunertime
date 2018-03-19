@@ -719,6 +719,9 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		case R.id.action_fft:
 			set_mode(fft_buttons, true);
 			return true;
+		case R.id.action_settings:
+			startActivity(new Intent(this, Settings.class));
+			return true;
 		case R.id.action_help:
 			do_help();
 			return true;
