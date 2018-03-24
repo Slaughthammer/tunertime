@@ -25,6 +25,10 @@ public class parms {
 	static public int A_freq = 4400;              /* 440.0 *10 */
 	static public int cents_per_octave = 0;       /* *10 */
 
+	static public boolean preset_mode = false;
+	static public int preset_id = -1;
+	static public int preset_note = 0;
+
 	private static SharedPreferences prefs = null;
 
 
@@ -51,6 +55,9 @@ public class parms {
 		fft_width = prefs.getInt("fft_width", Strobe.FFT_RANGE_MULT/4);
 		fft_offset = prefs.getInt("fft_offset", 0);
 		fft_grid_freq = prefs.getBoolean("fft_grid_freq", false);
+		preset_mode = prefs.getBoolean("preset_mode", false);
+		preset_id = prefs.getInt("preset_id", -1);
+		preset_note = prefs.getInt("preset_note", 0);
 		preset.load(prefs);
 	}
 
@@ -64,6 +71,9 @@ public class parms {
 		editor.putInt("fft_width", fft_width);
 		editor.putInt("fft_offset", fft_offset);
 		editor.putBoolean("fft_grid_freq", fft_grid_freq);
+		editor.putBoolean("preset_mode", preset_mode);
+		editor.putInt("preset_id", preset_id);
+		editor.putInt("preset_note", preset_note);
 		preset.save(editor);
 		editor.commit();
 	}
