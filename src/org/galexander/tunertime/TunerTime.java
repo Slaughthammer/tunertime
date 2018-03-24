@@ -36,16 +36,14 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private TextView afreq_center_display;
 	private View stretch_buttons;
 	private TextView stretch_stretch_display;
-	private View temper_buttons;
-	private TextView temper_semi_display;
-	private TextView temper_cent_display;
-	private TextView temper_save_button;
-	private TextView temper_enable_button;
+	private View preset_buttons;
+	private TextView preset_semi_display;
+	private TextView preset_oct_display;
 	private View fft_buttons;
 	private TextView N_display;
 	private Button grid_button;
 	private View strobe_buttons;
-	private Button note_button, afreq_button, stretch_button, temper_button;
+	private Button note_button, afreq_button, stretch_button, preset_button;
 	private View strobe_mode_buttons;
 	private View fft_mode_buttons;
 	private Button tone_button;
@@ -87,7 +85,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			.setOnLongClickListener(new View.OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {
-				incr_cents(700, /*temper=*/true);
+				incr_cents(700);
 				return true;
 			}
 		});
@@ -95,7 +93,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			.setOnLongClickListener(new View.OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {
-				incr_cents(-700, /*temper=*/true);
+				incr_cents(-700);
 				return true;
 			}
 		});
@@ -110,16 +108,12 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		stretch_stretch_display = (TextView)stretch_buttons.
 				findViewById(R.id.stretch_display2);
 
-		temper_buttons = fl8r.inflate(
-				R.layout.temper_buttons, buttons_holder, false);
-		temper_semi_display = (TextView)temper_buttons.findViewById(
-				R.id.semi_display2);
-		temper_cent_display = (TextView)temper_buttons.findViewById(
-				R.id.cent_display2);
-		temper_save_button = (Button)temper_buttons.findViewById(
-				R.id.temper_save);
-		temper_enable_button = (Button)temper_buttons.findViewById(
-				R.id.temper_enable);
+		preset_buttons = fl8r.inflate(
+				R.layout.preset_buttons, buttons_holder, false);
+		preset_semi_display = (TextView)preset_buttons.findViewById(
+				R.id.preset_semi_display);
+		preset_oct_display = (TextView)preset_buttons.findViewById(
+				R.id.preset_oct_display);
 
 		fft_buttons = fl8r.inflate(
 				R.layout.fft_buttons, buttons_holder, false);
@@ -136,8 +130,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				R.id.afreq_button);
 		stretch_button = (Button)strobe_buttons.findViewById(
 				R.id.stretch_button);
-		temper_button = (Button)strobe_buttons.findViewById(
-				R.id.temper_button);
+		preset_button = (Button)strobe_buttons.findViewById(
+				R.id.preset_button);
 
 		PowerManager pm = (PowerManager)getSystemService(
 						Context.POWER_SERVICE);
@@ -191,15 +185,15 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			darken_mode(note_button);
 			darken_mode(afreq_button);
 			darken_mode(stretch_button);
-			darken_mode(temper_button);
+			darken_mode(preset_button);
 			if (buttons == note_buttons) {
 				brighten_mode(note_button);
 			} else if (buttons == afreq_buttons) {
 				brighten_mode(afreq_button);
 			} else if (buttons == stretch_buttons) {
 				brighten_mode(stretch_button);
-			} else if (buttons == temper_buttons) {
-				brighten_mode(temper_button);
+			} else if (buttons == preset_buttons) {
+				brighten_mode(preset_button);
 			}
 		}
 		buttons_holder.removeAllViews();
@@ -238,39 +232,18 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		update_status();
 	}
 
-	private void apply_temper() {
-		if (!parms.temper_enabled || (parms.strobe_cents < 0)) {
-			return;
-		}
-
-		int note_index = ((parms.strobe_cents+50)/100)%12;
-		int octave = (parms.strobe_cents+50)/1200;
-		int cents = parms.temper[note_index];
-		parms.strobe_cents = octave*1200 + note_index*100 + cents;
-	}
-
-	private boolean in_temper() {
-		int note_index = ((parms.strobe_cents+50)/100)%12;
-		int octave = (parms.strobe_cents+50)/1200;
-		int cents = parms.temper[note_index];
-		return (parms.strobe_cents == octave*1200 + note_index*100 + cents);
-	}
-
-	private void incr_cents(int delta, boolean temper) {
+	private void incr_cents(int delta) {
 		parms.strobe_cents += delta;
 		parms.strobe_cents = range_limit(parms.strobe_cents, 0, 9600);
-		if (temper) {
-			apply_temper();
-		}
 		update_status();
 	}
 
-	public void semi_incr(View v) { incr_cents(  100, /*temper=*/true ); }
-	public void semi_decr(View v) { incr_cents( -100, /*temper=*/true ); }
-	public void oct_incr(View v)  { incr_cents( 1200, /*temper=*/true ); }
-	public void oct_decr(View v)  { incr_cents(-1200, /*temper=*/true ); }
-	public void cent_incr(View v) { incr_cents(    1, /*temper=*/false); }
-	public void cent_decr(View v) { incr_cents(   -1, /*temper=*/false); }
+	public void semi_incr(View v) { incr_cents(  100); }
+	public void semi_decr(View v) { incr_cents( -100); }
+	public void oct_incr(View v)  { incr_cents( 1200); }
+	public void oct_decr(View v)  { incr_cents(-1200); }
+	public void cent_incr(View v) { incr_cents(    1); }
+	public void cent_decr(View v) { incr_cents(   -1); }
 
 	public void A_incrp1(View v) {
 		parms.A_freq++;
@@ -306,15 +279,11 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		update_status();
 	}
 
-	public void do_temper_save(View v) {
-		int note_index = ((parms.strobe_cents+50)/100)%12;
-		int cents = (((parms.strobe_cents%100)+50)%100)-50;
-		parms.temper[note_index] = cents;
-		update_status();
+	public void do_preset_select(View v) {
+		/* XXX - open preset select activity */
 	}
-	public void do_temper_enable(View v) {
-		parms.temper_enabled = !parms.temper_enabled;
-		update_status();
+	public void do_preset_edit(View v) {
+		/* XXX - open preset edit activity */
 	}
 
 	public void N_incr(View v) {
@@ -339,9 +308,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	public void stretch_clicked(View v) {
 		set_mode(stretch_buttons, false);
 	}
-	public void temper_clicked(View v) {
-		apply_temper();
-		set_mode(temper_buttons, false);
+	public void preset_clicked(View v) {
+		set_mode(preset_buttons, false);
 	}
 
 	private void do_help() {
@@ -410,27 +378,14 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		String note_name = NOTE_NAMES[note_index];
 		DecimalFormat cents_fmt = new DecimalFormat("+00c;-00c");
 		String cents_str = cents_fmt.format(cents);
+		String oct_str = Integer.toString(octave);
 
 		note_semi_display.setText(note_name);
-		note_oct_display.setText(Integer.toString(octave));
+		note_oct_display.setText(oct_str);
 		note_cent_display.setText(cents_str);
 
-		temper_semi_display.setText(note_name);
-		temper_cent_display.setText(cents_str);
-		if (in_temper()) {
-			temper_save_button.getBackground().setColorFilter(
-				new LightingColorFilter(0xff888888, 0));
-		} else {
-			temper_save_button.getBackground().clearColorFilter();
-		}
-		if (parms.temper_enabled) {
-			temper_enable_button.getBackground().clearColorFilter();
-			temper_enable_button.setText("disable");
-		} else {
-			temper_enable_button.getBackground().setColorFilter(
-				new LightingColorFilter(0xff888888, 0));
-			temper_enable_button.setText("enable");
-		}
+		preset_semi_display.setText(note_name+" "+cents_str);
+		preset_oct_display.setText(oct_str);
 
 		String center_str = string_int10(parms.A_freq);
 		center_display.setText("A="+center_str);

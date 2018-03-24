@@ -28,8 +28,8 @@
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:gravity="center"
-	    android:lines="1"
-	    android:singleLine="true"
+	    android:lines="2"
+	    android:singleLine="false"
 	    android:textAppearance="?android:attr/textAppearanceMedium" 
 	    android:textColor="#fc4" />
 	<Button
