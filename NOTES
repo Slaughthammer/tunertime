@@ -810,6 +810,7 @@ XXX - implement preset list
 XXX - implement note list
 XXX - implement note selection
 XXX - implement a way to see which preset we are working on in the presets tab
+XXX - try to the new Preset activities in AndroidManifest.xml <!-- XXX: try adding android:parentActivityName=".TunerTime" />
 
 
 XXX - println()s should become Toasts

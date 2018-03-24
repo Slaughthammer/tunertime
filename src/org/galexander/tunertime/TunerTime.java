@@ -153,7 +153,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		if (parms.fft_mode) {
 			set_mode(fft_buttons, true);
 		} else {
-			set_mode(note_buttons, false);
+			set_mode((parms.preset_mode ? preset_buttons
+						    : note_buttons), false);
 		}
 		update_status();
 		if (holder != null) {
@@ -279,11 +280,31 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		update_status();
 	}
 
+	public void preset_incr(View v) {
+		parms.preset_note++;
+		update_status();
+	}
+
+	public void preset_decr(View v) {
+		parms.preset_note--;
+		update_status();
+	}
+
+	public void preset_oct_incr(View v) {
+		parms.preset_oct++;
+		update_status();
+	}
+
+	public void preset_oct_decr(View v) {
+		parms.preset_oct--;
+		update_status();
+	}
+
 	public void do_preset_select(View v) {
-		/* XXX - open preset select activity */
+		startActivity(new Intent(this, PresetSelectActivity.class));
 	}
 	public void do_preset_edit(View v) {
-		/* XXX - open preset edit activity */
+		startActivity(new Intent(this, PresetEditActivity.class));
 	}
 
 	public void N_incr(View v) {
@@ -353,10 +374,39 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		return Integer.toString(n/10) + "." + Integer.toString(n%10);
 	}
 
+	private void update_preset() {
+		preset p = preset.find(parms.preset_id);
+		if (p == null) {
+			parms.preset_id = -1;
+			parms.preset_note = 0;
+			parms.preset_oct = 0;
+			parms.strobe_cents = 4800;
+		} else {
+			int n = p.notes.size();
+			while (parms.preset_note < 0) {
+				parms.preset_note += n;
+			}
+			parms.preset_note %= n;
+			parms.strobe_cents = p.notes.get(n) +
+					1200*parms.preset_oct;
+			while (parms.strobe_cents < 0) {
+				parms.strobe_cents += 1200;
+				parms.preset_oct++;
+			}
+			while (parms.strobe_cents > 9600) {
+				parms.strobe_cents -= 1200;
+				parms.preset_oct--;
+			}
+		}
+	}
+
 		/* note that ranges are checked in update_status() as well,
 		 * because status display is really the only part that will go
 		 * wonkers if the values go out-of-range anyways.  */
 	private void update_status() {
+		if (parms.preset_mode) {
+			update_preset();
+		}
 		parms.strobe_cents = range_limit(parms.strobe_cents, 0, 9600);
 		parms.A_freq = range_limit(parms.A_freq, 2200, 8800);
 		parms.harm1_mult = range_limit(parms.harm1_mult, 1, 20);

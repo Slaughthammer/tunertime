@@ -28,15 +28,14 @@ public class parms {
 	static public boolean preset_mode = false;
 	static public int preset_id = -1;
 	static public int preset_note = 0;
+	static public int preset_oct = 0;
 
 	private static SharedPreferences prefs = null;
 
 
 	public static void init(Activity a) {
-		if (prefs == null) {
-			prefs = PreferenceManager.getDefaultSharedPreferences(a);
-			check_for_legacy(a);
-		}
+		prefs = PreferenceManager.getDefaultSharedPreferences(a);
+		check_for_legacy(a);
 	}
 	public static void load() {
 		A_freq = prefs.getInt("A_freq", 4400);
@@ -58,6 +57,7 @@ public class parms {
 		preset_mode = prefs.getBoolean("preset_mode", false);
 		preset_id = prefs.getInt("preset_id", -1);
 		preset_note = prefs.getInt("preset_note", 0);
+		preset_oct = prefs.getInt("preset_oct", 0);
 		preset.load(prefs);
 	}
 
@@ -74,6 +74,7 @@ public class parms {
 		editor.putBoolean("preset_mode", preset_mode);
 		editor.putInt("preset_id", preset_id);
 		editor.putInt("preset_note", preset_note);
+		editor.putInt("preset_oct", preset_oct);
 		preset.save(editor);
 		editor.commit();
 	}

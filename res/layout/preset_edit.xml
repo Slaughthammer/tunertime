@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+    <EditText android:id="@+id/preset_name"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:textAppearance="?android:attr/textAppearanceLarge"
+	android:lines="1"
+	android:singleLine="true" />
+    <ListView android:id="@+id/note_list"
+	android:layout_width="fill_parent"
+	android:layout_height="1dp"
+	android:layout_weight="1" />
+    <Button
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:text="new"
+	android:textAppearance="?android:attr/textAppearanceLarge"
+	android:onClick="do_new" />
+</LinearLayout>

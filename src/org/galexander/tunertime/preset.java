@@ -12,6 +12,15 @@ public class preset {
 	public static ArrayList<preset> presets = new ArrayList<preset>();
 
 
+	public static preset find(int id) {
+		for (preset p : presets) {
+			if (p.id == id) {
+				return p;
+			}
+		}
+		return null;
+	}
+
 	public static void load(SharedPreferences p) {
 		String ids_str = p.getString("presets", "");
 		ArrayList<Integer> ids = csi_to_intarr(ids_str);
