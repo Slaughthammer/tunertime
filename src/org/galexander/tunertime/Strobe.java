@@ -68,7 +68,7 @@ public class Strobe extends Thread {
 	private String pianoname = null;
 
 	private void draw_labels(Canvas c) {
-		if ((labels == null) || (labels.length == 0) || Parms.fft_mode) {
+		if ((labels == null) || (labels.length == 0) || parms.fft_mode) {
 			return;
 		}
 
@@ -106,7 +106,7 @@ public class Strobe extends Thread {
 
 	/* like "A49" for A-4 */
 	private void draw_pianoname(Canvas c) {
-		if (Parms.fft_mode || (pianoname == null)) {
+		if (parms.fft_mode || (pianoname == null)) {
 			return;
 		}
 		if (pianoname_p == null) {

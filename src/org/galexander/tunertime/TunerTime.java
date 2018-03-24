@@ -62,7 +62,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		Parms.init(this);
+		parms.init(this);
 		setContentView(R.layout.main);
 		w_strobe = (SurfaceView)findViewById(R.id.strobe);
 		w_strobe.getHolder().addCallback(this);
@@ -155,8 +155,8 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	public void onResume() {
 		wakelock.acquire();
 		stop_strobe();
-		Parms.load();
-		if (Parms.fft_mode) {
+		parms.load();
+		if (parms.fft_mode) {
 			set_mode(fft_buttons, true);
 		} else {
 			set_mode(note_buttons, false);
@@ -175,7 +175,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		}
 		stop_strobe();
 		ToneGenerator.stop_tone();
-		Parms.save();
+		parms.save();
 		super.onPause();
 	}
 
@@ -204,24 +204,24 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		}
 		buttons_holder.removeAllViews();
 		buttons_holder.addView(buttons);
-		Parms.fft_mode = fft_mode_;
+		parms.fft_mode = fft_mode_;
 		surface_frame.removeView(strobe_buttons);
-		if (!Parms.fft_mode) {
+		if (!parms.fft_mode) {
 			surface_frame.addView(strobe_buttons);
 		}
 		mode_holder.removeAllViews();
-		mode_holder.addView(Parms.fft_mode ? fft_mode_buttons
+		mode_holder.addView(parms.fft_mode ? fft_mode_buttons
 						   : strobe_mode_buttons);
-		Parms.changed = true;
-		setTitle(Parms.fft_mode ? "TunerTime: FFT" : "TunerTime: strobe");
-		if (Parms.fft_mode) ToneGenerator.stop_tone();
+		parms.changed = true;
+		setTitle(parms.fft_mode ? "TunerTime: FFT" : "TunerTime: strobe");
+		if (parms.fft_mode) ToneGenerator.stop_tone();
 
 		update_status();
 	}
 
 
 	public void do_mode(View v) {
-		if (Parms.fft_mode) {
+		if (parms.fft_mode) {
 			set_mode(note_buttons, false);
 		} else {
 			set_mode(fft_buttons, true);
@@ -233,32 +233,32 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			ToneGenerator.stop_tone();
 		} else {
 			ToneGenerator.start_tone(
-				cents_to_freq(Parms.strobe_cents, 1));
+				cents_to_freq(parms.strobe_cents, 1));
 		}
 		update_status();
 	}
 
 	private void apply_temper() {
-		if (!Parms.temper_enabled || (Parms.strobe_cents < 0)) {
+		if (!parms.temper_enabled || (parms.strobe_cents < 0)) {
 			return;
 		}
 
-		int note_index = ((Parms.strobe_cents+50)/100)%12;
-		int octave = (Parms.strobe_cents+50)/1200;
-		int cents = Parms.temper[note_index];
-		Parms.strobe_cents = octave*1200 + note_index*100 + cents;
+		int note_index = ((parms.strobe_cents+50)/100)%12;
+		int octave = (parms.strobe_cents+50)/1200;
+		int cents = parms.temper[note_index];
+		parms.strobe_cents = octave*1200 + note_index*100 + cents;
 	}
 
 	private boolean in_temper() {
-		int note_index = ((Parms.strobe_cents+50)/100)%12;
-		int octave = (Parms.strobe_cents+50)/1200;
-		int cents = Parms.temper[note_index];
-		return (Parms.strobe_cents == octave*1200 + note_index*100 + cents);
+		int note_index = ((parms.strobe_cents+50)/100)%12;
+		int octave = (parms.strobe_cents+50)/1200;
+		int cents = parms.temper[note_index];
+		return (parms.strobe_cents == octave*1200 + note_index*100 + cents);
 	}
 
 	private void incr_cents(int delta, boolean temper) {
-		Parms.strobe_cents += delta;
-		Parms.strobe_cents = range_limit(Parms.strobe_cents, 0, 9600);
+		parms.strobe_cents += delta;
+		parms.strobe_cents = range_limit(parms.strobe_cents, 0, 9600);
 		if (temper) {
 			apply_temper();
 		}
@@ -273,60 +273,60 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	public void cent_decr(View v) { incr_cents(   -1, /*temper=*/false); }
 
 	public void A_incrp1(View v) {
-		Parms.A_freq++;
+		parms.A_freq++;
 		update_status();
 	}
 	public void A_incr1(View v) {
-		Parms.A_freq+=10;
+		parms.A_freq+=10;
 		update_status();
 	}
 	public void A_decrp1(View v) {
-		Parms.A_freq--;
+		parms.A_freq--;
 		update_status();
 	}
 	public void A_decr1(View v) {
-		Parms.A_freq-=10;
+		parms.A_freq-=10;
 		update_status();
 	}
 	public void reset_afreq(View v) {
-		Parms.A_freq = 4400;
+		parms.A_freq = 4400;
 		update_status();
 	}
 
 	public void stretch_incr(View v) {
-		Parms.cents_per_octave++;
+		parms.cents_per_octave++;
 		update_status();
 	}
 	public void stretch_decr(View v) {
-		Parms.cents_per_octave--;
+		parms.cents_per_octave--;
 		update_status();
 	}
 	public void reset_stretch(View v) {
-		Parms.cents_per_octave = 0;
+		parms.cents_per_octave = 0;
 		update_status();
 	}
 
 	public void do_temper_save(View v) {
-		int note_index = ((Parms.strobe_cents+50)/100)%12;
-		int cents = (((Parms.strobe_cents%100)+50)%100)-50;
-		Parms.temper[note_index] = cents;
+		int note_index = ((parms.strobe_cents+50)/100)%12;
+		int cents = (((parms.strobe_cents%100)+50)%100)-50;
+		parms.temper[note_index] = cents;
 		update_status();
 	}
 	public void do_temper_enable(View v) {
-		Parms.temper_enabled = !Parms.temper_enabled;
+		parms.temper_enabled = !parms.temper_enabled;
 		update_status();
 	}
 
 	public void N_incr(View v) {
-		Parms.fft_size *= 2;
+		parms.fft_size *= 2;
 		update_status();
 	}
 	public void N_decr(View v) {
-		Parms.fft_size /= 2;
+		parms.fft_size /= 2;
 		update_status();
 	}
 	public void grid_toggle(View v) {
-		Parms.fft_grid_freq = !Parms.fft_grid_freq;
+		parms.fft_grid_freq = !parms.fft_grid_freq;
 		update_status();
 	}
 
@@ -389,21 +389,21 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		 * because status display is really the only part that will go
 		 * wonkers if the values go out-of-range anyways.  */
 	private void update_status() {
-		Parms.strobe_cents = range_limit(Parms.strobe_cents, 0, 9600);
-		Parms.A_freq = range_limit(Parms.A_freq, 2200, 8800);
-		Parms.harm1_mult = range_limit(Parms.harm1_mult, 1, 20);
-		Parms.harm2_mult = range_limit(Parms.harm2_mult, 1, 20);
+		parms.strobe_cents = range_limit(parms.strobe_cents, 0, 9600);
+		parms.A_freq = range_limit(parms.A_freq, 2200, 8800);
+		parms.harm1_mult = range_limit(parms.harm1_mult, 1, 20);
+		parms.harm2_mult = range_limit(parms.harm2_mult, 1, 20);
 
-		Parms.fft_size = range_limit(Parms.fft_size, 512, 32768);
-		Parms.fft_width = range_limit(Parms.fft_width, 512, Strobe.FFT_RANGE_MULT);
-		Parms.fft_offset = range_limit(Parms.fft_offset, 0,
-				Strobe.FFT_RANGE_MULT-Parms.fft_width);
+		parms.fft_size = range_limit(parms.fft_size, 512, 32768);
+		parms.fft_width = range_limit(parms.fft_width, 512, Strobe.FFT_RANGE_MULT);
+		parms.fft_offset = range_limit(parms.fft_offset, 0,
+				Strobe.FFT_RANGE_MULT-parms.fft_width);
 
-		Parms.changed = true;
-		ToneGenerator.set_freq(cents_to_freq(Parms.strobe_cents, 1));
+		parms.changed = true;
+		ToneGenerator.set_freq(cents_to_freq(parms.strobe_cents, 1));
 
 				/* strobe_cents is based on A, adj_cents on C */
-		int adj_cents = Parms.strobe_cents+900;
+		int adj_cents = parms.strobe_cents+900;
 		int note_index = ((adj_cents+50)/100)%12;
 		int octave = (adj_cents+50)/1200;
 		int cents = (((adj_cents%100)+50)%100)-50;
@@ -423,7 +423,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		} else {
 			temper_save_button.getBackground().clearColorFilter();
 		}
-		if (Parms.temper_enabled) {
+		if (parms.temper_enabled) {
 			temper_enable_button.getBackground().clearColorFilter();
 			temper_enable_button.setText("disable");
 		} else {
@@ -432,17 +432,17 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			temper_enable_button.setText("enable");
 		}
 
-		String center_str = string_int10(Parms.A_freq);
+		String center_str = string_int10(parms.A_freq);
 		center_display.setText("A="+center_str);
 		afreq_center_display.setText(center_str);
 
-		String stretch_str = ((Parms.cents_per_octave >= 0) ? "+" : "-") +
-				string_int10(Math.abs(Parms.cents_per_octave));
+		String stretch_str = ((parms.cents_per_octave >= 0) ? "+" : "-") +
+				string_int10(Math.abs(parms.cents_per_octave));
 		stretch_display.setText(stretch_str);
 		stretch_stretch_display.setText(stretch_str);
 
-		N_display.setText(Integer.toString(Parms.fft_size));
-		grid_button.setText(Parms.fft_grid_freq ? "Hz" : "scale");
+		N_display.setText(Integer.toString(parms.fft_size));
+		grid_button.setText(parms.fft_grid_freq ? "Hz" : "scale");
 
 		if (ToneGenerator.playing) {
 			tone_button.getBackground().clearColorFilter();
@@ -455,17 +455,17 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	public double cents_to_freq(int cents, int harm_mult) {
 		double c = (double)(cents-4800);
 		c += 1200.0d * Math.log((double)harm_mult) / Math.log(2.0d);
-		double frac = ((double)Parms.cents_per_octave)/12000.0d;
+		double frac = ((double)parms.cents_per_octave)/12000.0d;
 		double octpow = c*(1.0d+frac) / 1200.0d;
 		double mult = Math.pow(2.0d, octpow);
-		return ((double)Parms.A_freq)*mult/10.0d;
+		return ((double)parms.A_freq)*mult/10.0d;
 	}
 
 	private void start_strobe() {
 		stop_strobe();
 		strobe = new Strobe(this);
 		strobe.setSurface(holder, width, height);
-		Parms.changed = true;
+		parms.changed = true;
 		strobe.start();
 	}
 
@@ -543,17 +543,17 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			case MotionEvent.ACTION_DOWN:
 				start_x = x1;
 				start_x_width = 0;
-				start_fft_offset = Parms.fft_offset +
-					((x1*Parms.fft_width) / wid);
+				start_fft_offset = parms.fft_offset +
+					((x1*parms.fft_width) / wid);
 				could_be_click = true;
 				return true;
 			case MotionEvent.ACTION_POINTER_2_DOWN:
 				start_x_width = Math.abs(x1-x2);
 				if (start_x_width < 10) start_x_width = 10;
-				start_fft_width = Parms.fft_width;
+				start_fft_width = parms.fft_width;
 				return true;
 			case MotionEvent.ACTION_MOVE:
-				if (could_be_click || !Parms.fft_mode) {
+				if (could_be_click || !parms.fft_mode) {
 					return true;
 				}
 				int delta_x = x1 - start_x;
@@ -562,11 +562,11 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 					if (new_width == 0) {
 						new_width = 1;
 					}
-					Parms.fft_width = (start_fft_width *
+					parms.fft_width = (start_fft_width *
 						start_x_width) / new_width;
 				}
-				Parms.fft_offset = start_fft_offset -
-					((x1*Parms.fft_width) / wid);
+				parms.fft_offset = start_fft_offset -
+					((x1*parms.fft_width) / wid);
 				update_status();
 				return true;
 			case MotionEvent.ACTION_UP:

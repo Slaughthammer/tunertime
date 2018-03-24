@@ -237,7 +237,7 @@ jni_init(JNIEnv *env_)
 	CLASS(strobe, "org/galexander/tunertime/Strobe")
 	CLASS(tunertime, "org/galexander/tunertime/TunerTime")
 	CLASS(listener, "org/galexander/tunertime/Listener")
-	CLASS(parms, "org/galexander/tunertime/Parms")
+	CLASS(parms, "org/galexander/tunertime/parms")
 
 	METHOD(println, printstream, "println", "(Ljava/lang/String;)V")
 	METHOD(st_do_draw, strobe, "do_draw", "([III)Z")
