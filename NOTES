@@ -784,6 +784,26 @@ I think everyone knows a guitar is E/A/D/G/B/E over two full octaves, for
 example.
 
 
+March 24, 2018.
+
+The unknown for presets is how to store them.  I want to stick with the
+simple native SharedPreferences model - key/value, where value is either
+int or String.  I think I will make a "magic ID" (probably just
+monotonically-incrementing integers) for each new preset, and put a list
+of those in a string with key "presets".  Then each preset will have a
+"preset_<ID>_name" for its string name, and "preset_<ID>_notes" which
+will be a comma-separated list of cents values (4800=middle A).
+
+So, i.e.
+   presets:0
+   preset_0_name:Major scale
+   preset_0_notes:3900,4100,4300,4400,4600,4800,5000
+   ...
+
+Should be easy.  Go ahead and load them all at once and save them all at
+once just like the rest of the settings.
+
+
 XXX - implement preset data storage, and a one-off hack to import a temper as a preset
 XXX - replace temper panel with presets panel
 XXX - implement preset list
