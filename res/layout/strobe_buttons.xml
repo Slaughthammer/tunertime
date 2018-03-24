@@ -31,13 +31,13 @@
 	    android:textAppearance="?android:attr/textAppearanceSmall"
 	    android:singleLine="true"
 	    android:onClick="stretch_clicked" />
-    <Button android:id="@+id/temper_button"
+    <Button android:id="@+id/preset_button"
 	    android:layout_width="1dp"
 	    android:layout_height="wrap_content"
 	    android:layout_weight="1"
-	    android:text="temper"
+	    android:text="preset"
 	    android:background="@drawable/mode_button"
 	    android:textAppearance="?android:attr/textAppearanceSmall"
 	    android:singleLine="true"
-	    android:onClick="temper_clicked" />
+	    android:onClick="preset_clicked" />
 </LinearLayout>

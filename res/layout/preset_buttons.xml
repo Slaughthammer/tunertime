@@ -6,16 +6,16 @@
     <LinearLayout
 	android:layout_width="1dp"
 	android:layout_height="fill_parent"
-	android:layout_weight="1"
+	android:layout_weight="3"
 	android:orientation="vertical">
 	<Button
 	    android:layout_width="fill_parent"
 	    android:layout_height="1dp"
 	    android:layout_weight="1"
-	    android:text="semi+"
+	    android:text="note+"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="semi_incr" />
-	<TextView android:id="@+id/semi_display2"
+	    android:onClick="preset_incr" />
+	<TextView android:id="@+id/preset_semi_display"
 	    android:layout_width="fill_parent"
 	    android:layout_height="wrap_content"
 	    android:gravity="center"
@@ -27,23 +27,23 @@
 	    android:layout_width="fill_parent"
 	    android:layout_height="1dp"
 	    android:layout_weight="1"
-	    android:text="semi-"
+	    android:text="note-"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="semi_decr" />
+	    android:onClick="preset_decr" />
     </LinearLayout>
     <LinearLayout
 	android:layout_width="1dp"
 	android:layout_height="fill_parent"
-	android:layout_weight="1"
+	android:layout_weight="2"
 	android:orientation="vertical">
 	<Button
 	    android:layout_width="fill_parent"
 	    android:layout_height="1dp"
 	    android:layout_weight="1"
-	    android:text="cent+"
+	    android:text="oct+"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="cent_incr" />
-	<TextView android:id="@+id/cent_display2"
+	    android:onClick="preset_oct_incr" />
+	<TextView android:id="@+id/preset_oct_display"
 	    android:layout_width="fill_parent"
 	    android:layout_height="wrap_content"
 	    android:gravity="center"
@@ -55,28 +55,28 @@
 	    android:layout_width="fill_parent"
 	    android:layout_height="1dp"
 	    android:layout_weight="1"
-	    android:text="cent-"
+	    android:text="oct-"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="cent_decr" />
+	    android:onClick="preset_oct_decr" />
     </LinearLayout>
     <LinearLayout
 	android:layout_width="1dp"
 	android:layout_height="fill_parent"
-	android:layout_weight="1"
+	android:layout_weight="2"
 	android:orientation="vertical">
-	<Button android:id="@+id/temper_save"
+	<Button android:id="@+id/preset_select"
 	    android:layout_width="fill_parent"
 	    android:layout_height="1dp"
 	    android:layout_weight="1"
-	    android:text="save"
+	    android:text="select"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="do_temper_save" />
-	<Button android:id="@+id/temper_enable"
+	    android:onClick="do_preset_select" />
+	<Button android:id="@+id/preset_edit"
 	    android:layout_width="fill_parent"
 	    android:layout_height="1dp"
 	    android:layout_weight="1"
-	    android:text="enable"
+	    android:text="edit"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="do_temper_enable" />
+	    android:onClick="do_presed_edit" />
     </LinearLayout>
 </LinearLayout>

@@ -809,6 +809,7 @@ XXX - replace temper panel with presets panel
 XXX - implement preset list
 XXX - implement note list
 XXX - implement note selection
+XXX - implement a way to see which preset we are working on in the presets tab
 
 
 XXX - println()s should become Toasts
