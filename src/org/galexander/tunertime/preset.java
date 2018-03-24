@@ -53,6 +53,9 @@ public class preset {
 				any_val = true;
 			}
 		}
+		if (any_val) {
+			ret.add(val);
+		}
 		return ret;
 	}
 	private static String intarr_to_csi(ArrayList<Integer> arr) {
