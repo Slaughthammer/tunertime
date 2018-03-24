@@ -5,6 +5,5 @@
     android:layout_height="wrap_content"
     android:textAppearance="?android:attr/textAppearanceLarge"
     android:gravity="center_vertical"
-    android:paddingLeft="6dip"
-    android:lines="2"
-/>
+    android:lines="1"
+    android:singleLine="true" />

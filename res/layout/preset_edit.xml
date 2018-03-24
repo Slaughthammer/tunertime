@@ -9,6 +9,14 @@
 	android:textAppearance="?android:attr/textAppearanceLarge"
 	android:lines="1"
 	android:singleLine="true" />
+    <TextView android:id="@+id/list_empty"
+	android:layout_width="fill_parent"
+	android:layout_height="1dp"
+	android:layout_weight="1"
+	android:visibility="gone"
+	android:textAppearance="?android:attr/textAppearanceLarge"
+	android:textColor="#ffa"
+	android:text="none" />
     <ListView android:id="@+id/note_list"
 	android:layout_width="fill_parent"
 	android:layout_height="1dp"

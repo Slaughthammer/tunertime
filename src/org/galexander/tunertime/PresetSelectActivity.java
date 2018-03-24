@@ -21,6 +21,7 @@ public class PresetSelectActivity extends Activity {
 		setContentView(R.layout.preset_select);
 		
 		list = (ListView)findViewById(R.id.preset_list);
+		list.setEmptyView(findViewById(R.id.list_empty));
 		list.setOnItemClickListener(
 			new AdapterView.OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent,
