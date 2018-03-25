@@ -804,8 +804,6 @@ Should be easy.  Go ahead and load them all at once and save them all at
 once just like the rest of the settings.
 
 
-XXX - see if we can get rid of for_cents
-XXX - make list_entry taller somehow
 XXX - sort the notes
 XXX - limit the dependencies on ArrayList, probably only the new should use it
 XXX - wouldn't it be great if it didn't show focus in the preset_edit or preset_note EditText unless it was actually focused
