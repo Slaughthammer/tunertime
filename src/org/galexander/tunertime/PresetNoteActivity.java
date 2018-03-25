@@ -16,6 +16,9 @@ public class PresetNoteActivity extends Activity {
 	private EditText pn_cents;
 	private ArrayList<Integer> notes;
 	private int note_idx;
+	private View[] pn_notes = new View[7];
+	private final static int[] pn_note_vals = new int[] { 0,2,4,5,7,9,11 };
+	private View[] pn_octs = new View[9];
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -36,6 +39,22 @@ public class PresetNoteActivity extends Activity {
 			public void onTextChanged(CharSequence s, int start,
 					int before, int count) {}
 			});
+		pn_notes[0] = findViewById(R.id.pn_note_0);
+		pn_notes[1] = findViewById(R.id.pn_note_1);
+		pn_notes[2] = findViewById(R.id.pn_note_2);
+		pn_notes[3] = findViewById(R.id.pn_note_3);
+		pn_notes[4] = findViewById(R.id.pn_note_4);
+		pn_notes[5] = findViewById(R.id.pn_note_5);
+		pn_notes[6] = findViewById(R.id.pn_note_6);
+		pn_octs[0] = findViewById(R.id.pn_oct_0);
+		pn_octs[1] = findViewById(R.id.pn_oct_1);
+		pn_octs[2] = findViewById(R.id.pn_oct_2);
+		pn_octs[3] = findViewById(R.id.pn_oct_3);
+		pn_octs[4] = findViewById(R.id.pn_oct_4);
+		pn_octs[5] = findViewById(R.id.pn_oct_5);
+		pn_octs[6] = findViewById(R.id.pn_oct_6);
+		pn_octs[7] = findViewById(R.id.pn_oct_7);
+		pn_octs[8] = findViewById(R.id.pn_oct_8);
 	}
 
 	public void onResume() {
@@ -80,20 +99,20 @@ public class PresetNoteActivity extends Activity {
 			{ 0,1,0,1,0,0,1,0,1,0,1,0 };
 	private static final int[] can_sharpen = new int[]
 			{ 1,0,1,0,0,1,0,1,0,1,0,0 };
-	private void set_note(int idx) {
+	public void do_note(View v) {
+		int idx = 0;
+		for (int i = 0; i < pn_notes.length; i++) {
+			if (v == pn_notes[i]) {
+				idx = pn_note_vals[i];
+				break;
+			}
+		}
 		note n = new note(notes.get(note_idx));
 		notes.set(note_idx, (n.octave*1200) +
 			((idx+can_sharpen[idx]*sharp_test[n.note_idx])*100) +
 			n.cents - 900);
 		update(/*for_cents=*/false);
 	}
-	public void do_note_C(View v) { set_note(0); }
-	public void do_note_D(View v) { set_note(2); }
-	public void do_note_E(View v) { set_note(4); }
-	public void do_note_F(View v) { set_note(5); }
-	public void do_note_G(View v) { set_note(7); }
-	public void do_note_A(View v) { set_note(9); }
-	public void do_note_B(View v) { set_note(11); }
 
 	private static final int[] sharp_swap = new int[]
 			{ 1,0,3,2,4,6,5,8,7,10,9,11 };
@@ -104,21 +123,19 @@ public class PresetNoteActivity extends Activity {
 		update(/*for_cents=*/false);
 	}
 
-	private void set_oct(int oct) {
+	public void do_oct(View v) {
+		int oct = 4;
+		for (int i = 0; i < pn_octs.length; i++) {
+			if (v == pn_octs[i]) {
+				oct = i;
+				break;
+			}
+		}
 		note n = new note(notes.get(note_idx));
 		notes.set(note_idx,
 			(oct*1200) + (n.note_idx*100) + n.cents - 900);
 		update(/*for_cents=*/false);
 	}
-	public void do_oct_0(View v) { set_oct(0); }
-	public void do_oct_1(View v) { set_oct(1); }
-	public void do_oct_2(View v) { set_oct(2); }
-	public void do_oct_3(View v) { set_oct(3); }
-	public void do_oct_4(View v) { set_oct(4); }
-	public void do_oct_5(View v) { set_oct(5); }
-	public void do_oct_6(View v) { set_oct(6); }
-	public void do_oct_7(View v) { set_oct(7); }
-	public void do_oct_8(View v) { set_oct(8); }
 
 	private void set_cents(int c) {
 		int prev = notes.get(note_idx);

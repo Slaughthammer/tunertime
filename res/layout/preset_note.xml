@@ -13,55 +13,55 @@
 	android:orientation="horizontal"
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content">
-	<Button
+	<Button android:id="@+id/pn_note_0"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="C"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    android:onClick="do_note_C" />
-	<Button
+	    android:onClick="do_note" />
+	<Button android:id="@+id/pn_note_1"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="D"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    android:onClick="do_note_D" />
-	<Button
+	    android:onClick="do_note" />
+	<Button android:id="@+id/pn_note_2"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="E"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    android:onClick="do_note_E" />
-	<Button
+	    android:onClick="do_note" />
+	<Button android:id="@+id/pn_note_3"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="F"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    android:onClick="do_note_F" />
-	<Button
+	    android:onClick="do_note" />
+	<Button android:id="@+id/pn_note_4"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="G"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    android:onClick="do_note_G" />
-	<Button
+	    android:onClick="do_note" />
+	<Button android:id="@+id/pn_note_5"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="A"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    android:onClick="do_note_A" />
-	<Button
+	    android:onClick="do_note" />
+	<Button android:id="@+id/pn_note_6"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="B"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    android:onClick="do_note_B" />
+	    android:onClick="do_note" />
     </LinearLayout>
     <LinearLayout
 	android:orientation="horizontal"
@@ -88,69 +88,69 @@
 	android:orientation="horizontal"
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content">
-	<Button
+	<Button android:id="@+id/pn_oct_0"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="0"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    android:onClick="do_oct_0" />
-	<Button
+	    android:onClick="do_oct" />
+	<Button android:id="@+id/pn_oct_1"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="1"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    android:onClick="do_oct_1" />
-	<Button
+	    android:onClick="do_oct" />
+	<Button android:id="@+id/pn_oct_2"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="2"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    android:onClick="do_oct_2" />
-	<Button
+	    android:onClick="do_oct" />
+	<Button android:id="@+id/pn_oct_3"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="3"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    android:onClick="do_oct_3" />
-	<Button
+	    android:onClick="do_oct" />
+	<Button android:id="@+id/pn_oct_4"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="4"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    android:onClick="do_oct_4" />
-	<Button
+	    android:onClick="do_oct" />
+	<Button android:id="@+id/pn_oct_5"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="5"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    android:onClick="do_oct_5" />
-	<Button
+	    android:onClick="do_oct" />
+	<Button android:id="@+id/pn_oct_6"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="6"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    android:onClick="do_oct_6" />
-	<Button
+	    android:onClick="do_oct" />
+	<Button android:id="@+id/pn_oct_7"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="7"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    android:onClick="do_oct_7" />
-	<Button
+	    android:onClick="do_oct" />
+	<Button android:id="@+id/pn_oct_8"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="8"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    android:onClick="do_oct_8" />
+	    android:onClick="do_oct" />
     </LinearLayout>
     <LinearLayout
 	android:orientation="horizontal"
