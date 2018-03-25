@@ -90,7 +90,7 @@ public class PresetEditActivity extends Activity {
 		return ret;
 	}
 
-	private void do_new(View v) {
+	public void do_new(View v) {
 		ArrayList<Integer> notes = get_preset().notes;
 		int n = notes.size();
 		notes.add((n >= 1) ? notes.get(n-1) : 4800);
@@ -99,7 +99,7 @@ public class PresetEditActivity extends Activity {
 				PresetNoteActivity.class));
 	}
 
-	private void do_delete(View v) {
+	public void do_delete(View v) {
 		DialogInterface.OnClickListener listener =
 			new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface d, int which) {
@@ -110,7 +110,7 @@ public class PresetEditActivity extends Activity {
 				}
 			} };
 		new AlertDialog.Builder(this)
-			.setMessage("Really delete?")
+			.setMessage("Really delete \""+get_preset().name+"\"?")
 			.setPositiveButton("Delete", listener)
 			.setNegativeButton("Cancel", listener)
 			.show();

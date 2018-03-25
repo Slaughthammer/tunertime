@@ -375,8 +375,20 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 	private void update_preset() {
 		preset p = preset.find(parms.preset_id);
-		if ((p == null) || (p.notes.size() == 0)) {
-			parms.preset_id = -1;
+		if (p == null) {
+			parms.preset_note = 0;
+			parms.preset_oct = 0;
+			if (preset.presets.size() >= 1) {
+				p = preset.presets.get(0);
+				parms.preset_id = p.id;
+			} else {
+				parms.preset_id = -1;
+				parms.strobe_cents = 4800;
+				return;
+			}
+		}
+
+		if (p.notes.size() == 0) {
 			parms.preset_note = 0;
 			parms.preset_oct = 0;
 			parms.strobe_cents = 4800;

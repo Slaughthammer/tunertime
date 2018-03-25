@@ -811,6 +811,7 @@ XXX - implement note list
 XXX - implement note selection
 XXX - implement a way to see which preset we are working on in the presets tab
 XXX - try to the new Preset activities in AndroidManifest.xml <!-- XXX: try adding android:parentActivityName=".TunerTime" />
+XXX - make the back button not go back from things that have startActivity-ed TunerTime
 
 
 XXX - println()s should become Toasts

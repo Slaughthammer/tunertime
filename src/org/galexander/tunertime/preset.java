@@ -38,6 +38,7 @@ public class preset {
 	public static void load(SharedPreferences p) {
 		String ids_str = p.getString("presets", "");
 		ArrayList<Integer> ids = csi_to_intarr(ids_str);
+		presets.clear();
 		for (int id : ids) {
 			String name = p.getString("preset_"+id+"_name", null);
 			String notes = p.getString("preset_"+id+"_notes", null);
