@@ -1,6 +1,8 @@
 package org.galexander.tunertime;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -133,6 +135,22 @@ public class PresetNoteActivity extends Activity {
 	}
 
 	public void do_delete(View v) {
-		/* XXX */
+		DialogInterface.OnClickListener listener =
+			new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface d, int which) {
+				if (which == DialogInterface.BUTTON_POSITIVE) {
+					notes.remove(note_idx);
+					notes = null;
+					parms.preset_note = 0;
+					finish();
+				}
+			} };
+		new AlertDialog.Builder(this)
+			.setTitle("Confirm")
+			.setMessage("Really delete \"" +
+				new note(notes.get(note_idx)).full_str + "\"?")
+			.setPositiveButton("Delete", listener)
+			.setNegativeButton("Cancel", listener)
+			.show();
 	}
 }
