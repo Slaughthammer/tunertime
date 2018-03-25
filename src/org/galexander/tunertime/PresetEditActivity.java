@@ -83,8 +83,7 @@ public class PresetEditActivity extends Activity {
 			note n = new note(i);
 			HashMap<String, String> t =
 				new HashMap<String, String>();
-			t.put("text", n.note_str + "-" + n.octave + " " +
-				      n.cents_str);
+			t.put("text", n.full_str);
 			ret.add(t);
 		}
 		return ret;
@@ -110,6 +109,7 @@ public class PresetEditActivity extends Activity {
 				}
 			} };
 		new AlertDialog.Builder(this)
+			.setTitle("Confirm")
 			.setMessage("Really delete \""+get_preset().name+"\"?")
 			.setPositiveButton("Delete", listener)
 			.setNegativeButton("Cancel", listener)

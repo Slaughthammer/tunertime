@@ -398,7 +398,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				parms.preset_note += n;
 			}
 			parms.preset_note %= n;
-			parms.strobe_cents = p.notes.get(n) +
+			parms.strobe_cents = p.notes.get(parms.preset_note) +
 					1200*parms.preset_oct;
 			while (parms.strobe_cents < 0) {
 				parms.strobe_cents += 1200;

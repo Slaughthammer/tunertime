@@ -8,11 +8,12 @@ public class note {
 	public int cents;
 	public String cents_str;
 	public int octave;
+	public String full_str;
 
 	private static final String NOTE_NAMES[] = new String[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
 
-	public note(int cents) {
-		int adj_cents = cents+900;	/* based on C instead of A */
+	public note(int cents_) {
+		int adj_cents = cents_+900;	/* based on C instead of A */
 
 		note_idx = ((adj_cents+50)/100)%12;
 		note_str = NOTE_NAMES[note_idx];
@@ -22,5 +23,7 @@ public class note {
 		cents_str = cents_fmt.format(cents);
 
 		octave = (adj_cents+50)/1200;
+
+		full_str = note_str + "-" + octave + " " + cents_str;
 	}
 }
