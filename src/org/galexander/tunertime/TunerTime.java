@@ -194,6 +194,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 			} else if (buttons == preset_buttons) {
 				brighten_mode(preset_button);
 			}
+			parms.preset_mode = (buttons == preset_buttons);
 		}
 		buttons_holder.removeAllViews();
 		buttons_holder.addView(buttons);
@@ -374,7 +375,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 	private void update_preset() {
 		preset p = preset.find(parms.preset_id);
-		if (p == null) {
+		if ((p == null) || (p.notes.size() == 0)) {
 			parms.preset_id = -1;
 			parms.preset_note = 0;
 			parms.preset_oct = 0;

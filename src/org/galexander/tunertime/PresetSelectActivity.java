@@ -63,6 +63,6 @@ public class PresetSelectActivity extends Activity {
 
 	public void do_new(View v) {
 		parms.preset_id = -1;
-		startActivity(new Intent(this, TunerTime.class));
+		startActivity(new Intent(this, PresetEditActivity.class));
 	}
 }

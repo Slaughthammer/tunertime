@@ -28,12 +28,14 @@
 	<Button
 	    android:layout_width="1dp"
 	    android:layout_height="wrap_content"
+	    android:layout_weight="1"
 	    android:text="delete"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_delete" />
 	<Button
 	    android:layout_width="1dp"
 	    android:layout_height="wrap_content"
+	    android:layout_weight="1"
 	    android:text="new"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_new" />
