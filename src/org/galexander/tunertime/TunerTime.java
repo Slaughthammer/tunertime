@@ -55,8 +55,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 	private int width = 0;
 	private int height = 0;
 
-	private static final String NOTE_NAMES[] = new String[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
-
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
@@ -421,20 +419,14 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		ToneGenerator.set_freq(cents_to_freq(parms.strobe_cents, 1));
 
 				/* strobe_cents is based on A, adj_cents on C */
-		int adj_cents = parms.strobe_cents+900;
-		int note_index = ((adj_cents+50)/100)%12;
-		int octave = (adj_cents+50)/1200;
-		int cents = (((adj_cents%100)+50)%100)-50;
-		String note_name = NOTE_NAMES[note_index];
-		DecimalFormat cents_fmt = new DecimalFormat("+00c;-00c");
-		String cents_str = cents_fmt.format(cents);
-		String oct_str = Integer.toString(octave);
+		note n = new note(parms.strobe_cents);
+		String oct_str = Integer.toString(n.octave);
 
-		note_semi_display.setText(note_name);
+		note_semi_display.setText(n.note_str);
 		note_oct_display.setText(oct_str);
-		note_cent_display.setText(cents_str);
+		note_cent_display.setText(n.cents_str);
 
-		preset_semi_display.setText(note_name+" "+cents_str);
+		preset_semi_display.setText(n.note_str+" "+n.cents_str);
 		preset_oct_display.setText(oct_str);
 
 		String center_str = string_int10(parms.A_freq);

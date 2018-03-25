@@ -3,9 +3,12 @@ package org.galexander.tunertime;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -76,20 +79,21 @@ public class PresetEditActivity extends Activity {
 		ArrayList<HashMap<String, String> > ret =
 			new ArrayList<HashMap<String, String> >();
 		preset p = get_preset();
-		for (Integer note : p.notes) {
-			int n = note.intValue();
+		for (Integer i : p.notes) {
+			note n = new note(i);
 			HashMap<String, String> t =
 				new HashMap<String, String>();
-XXX - convert p.note
-			t.put("text", p.name);
+			t.put("text", n.note_str + "-" + n.octave + " " +
+				      n.cents_str);
 			ret.add(t);
 		}
 		return ret;
 	}
 
 	private void do_new(View v) {
-		int n = preset.notes.size();
-		preset.notes.add((n >= 1) ? parms.notes.get(n-1) : 4800);
+		ArrayList<Integer> notes = get_preset().notes;
+		int n = notes.size();
+		notes.add((n >= 1) ? notes.get(n-1) : 4800);
 		parms.preset_note = n;
 		startActivity(new Intent(v.getContext(),
 				PresetNoteActivity.class));
