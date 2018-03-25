@@ -21,10 +21,21 @@
 	android:layout_width="fill_parent"
 	android:layout_height="1dp"
 	android:layout_weight="1" />
-    <Button
+    <LinearLayout
+	android:orientation="horizontal"
 	android:layout_width="fill_parent"
-	android:layout_height="wrap_content"
-	android:text="new"
-	android:textAppearance="?android:attr/textAppearanceLarge"
-	android:onClick="do_new" />
+	android:layout_height="wrap_content">
+	<Button
+	    android:layout_width="1dp"
+	    android:layout_height="wrap_content"
+	    android:text="delete"
+	    android:textAppearance="?android:attr/textAppearanceLarge"
+	    android:onClick="do_delete" />
+	<Button
+	    android:layout_width="1dp"
+	    android:layout_height="wrap_content"
+	    android:text="new"
+	    android:textAppearance="?android:attr/textAppearanceLarge"
+	    android:onClick="do_new" />
+    </LinearLayout>
 </LinearLayout>

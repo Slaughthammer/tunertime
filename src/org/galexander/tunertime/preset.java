@@ -8,9 +8,23 @@ public class preset {
 	public String name;
 	public ArrayList<Integer> notes;
 
-
 	public static ArrayList<preset> presets = new ArrayList<preset>();
 
+
+	public static preset make() {
+		preset ret = new preset();
+		int highest_id = 0;
+		for (preset p : presets) {
+			if (p.id > highest_id) {
+				highest_id = p.id;
+			}
+		}
+		ret.id = highest_id+1;
+		ret.name = "unnamed";
+		ret.notes = new ArrayList<Integer>();
+		presets.add(ret);
+		return ret;
+	}
 
 	public static preset find(int id) {
 		for (preset p : presets) {

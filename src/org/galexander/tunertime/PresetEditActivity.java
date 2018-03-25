@@ -1,7 +1,11 @@
 package org.galexander.tunertime;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -9,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class PresetEditActivity extends Activity {
+	private EditText name_view = null;
 	private ListView list = null;
 
 	public void onCreate(Bundle savedInstanceState) {
@@ -17,13 +22,39 @@ public class PresetEditActivity extends Activity {
 		parms.init(this);
 		setContentView(R.layout.preset_edit);
 
+		name_view = (EditText)findViewById(R.id.preset_name);
+		name_view.addTextChangedListener(new TextWatcher() {
+			public void afterTextChanged(Editable s) {
+				get_preset().name = s.toString();
+			}
+			public void beforeTextChanged(CharSequence s,
+					int start, int count, int after) {}
+			public void onTextChanged(CharSequence s, int start,
+					int before, int count) {}
+			});
+
 		list = (ListView)findViewById(R.id.note_list);
 		list.setEmptyView(findViewById(R.id.list_empty));
-		/* XXX - (fooView)findViewById(R.id.xxx); */
+		list.setOnItemClickListener(
+			new AdapterView.OnItemClickListener() {
+			public void onItemClick(AdapterView<?> parent,
+						View v, int pos, long id) {
+				preset p = get_preset();
+				if ((pos < 0) || (pos >= p.notes.size())) {
+					return;
+				}
+				parms.preset_note = pos;
+				startActivity(new Intent(v.getContext(),
+						PresetNoteActivity.class));
+			} });
 	}
 
 	public void onResume() {
 		parms.load();
+		list.setAdapter(new SimpleAdapter(this, notes_list(),
+			R.layout.list_entry, new String[] { "text" },
+			new int[] { R.id.list_entry_text }));
+		name_view.setText(get_preset().name);
 		super.onResume();
 	}
 
@@ -32,5 +63,52 @@ public class PresetEditActivity extends Activity {
 		super.onPause();
 	}
 
-	
+	private preset get_preset() {
+		preset p = preset.find(parms.preset_id);
+		if (p == null) {
+			p = preset.make();
+			parms.preset_id = p.id;
+		}
+		return p;
+	}
+
+	private ArrayList<HashMap<String, String> > notes_list() {
+		ArrayList<HashMap<String, String> > ret =
+			new ArrayList<HashMap<String, String> >();
+		preset p = get_preset();
+		for (Integer note : p.notes) {
+			int n = note.intValue();
+			HashMap<String, String> t =
+				new HashMap<String, String>();
+XXX - convert p.note
+			t.put("text", p.name);
+			ret.add(t);
+		}
+		return ret;
+	}
+
+	private void do_new(View v) {
+		int n = preset.notes.size();
+		preset.notes.add((n >= 1) ? parms.notes.get(n-1) : 4800);
+		parms.preset_note = n;
+		startActivity(new Intent(v.getContext(),
+				PresetNoteActivity.class));
+	}
+
+	private void do_delete(View v) {
+		DialogInterface.OnClickListener listener =
+			new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface d, int which) {
+				if (which == DialogInterface.BUTTON_POSITIVE) {
+					preset.presets.remove(get_preset());
+					parms.preset_id = -1;
+					finish();
+				}
+			} };
+		new AlertDialog.Builder(this)
+			.setMessage("Really delete?")
+			.setPositiveButton("Delete", listener)
+			.setNegativeButton("Cancel", listener)
+			.show();
+	}
 }
