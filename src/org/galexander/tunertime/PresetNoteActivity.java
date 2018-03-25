@@ -3,6 +3,7 @@ package org.galexander.tunertime;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.LightingColorFilter;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -14,11 +15,23 @@ import java.util.ArrayList;
 public class PresetNoteActivity extends Activity {
 	private TextView pn_text;
 	private EditText pn_cents;
-	private ArrayList<Integer> notes;
-	private int note_idx;
 	private View[] pn_notes = new View[7];
 	private final static int[] pn_note_vals = new int[] { 0,2,4,5,7,9,11 };
+	private View pn_sharp;
 	private View[] pn_octs = new View[9];
+
+	private ArrayList<Integer> notes;
+	private int note_idx;
+
+	/*        C  C# D  D# E  F  F# G  G# A  A# B */
+	private static final int[] is_sharp = new int[]
+		{ 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0 };
+	private static final int[] can_sharpen = new int[]
+		{ 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0 };
+	private static final int[] sharp_swap = new int[]
+		{ 1, 0, 3, 2, 4, 6, 5, 8, 7, 10,9, 11};
+	private static final int[] no_sharps = new int[]
+		{ 0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6 };
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -46,6 +59,7 @@ public class PresetNoteActivity extends Activity {
 		pn_notes[4] = findViewById(R.id.pn_note_4);
 		pn_notes[5] = findViewById(R.id.pn_note_5);
 		pn_notes[6] = findViewById(R.id.pn_note_6);
+		pn_sharp = findViewById(R.id.pn_sharp);
 		pn_octs[0] = findViewById(R.id.pn_oct_0);
 		pn_octs[1] = findViewById(R.id.pn_oct_1);
 		pn_octs[2] = findViewById(R.id.pn_oct_2);
@@ -78,6 +92,14 @@ public class PresetNoteActivity extends Activity {
 		notes = null;
 	}
 
+	private final static LightingColorFilter brightf =
+			new LightingColorFilter(0xbbbbbb, 0x004444);
+	private final static LightingColorFilter darkf =
+			new LightingColorFilter(0x888888, 0x330000);
+	private void set_brightness(View v, boolean bright) {
+		v.getBackground().setColorFilter(bright ? brightf : darkf);
+	}
+
 	private void update(boolean for_cents) {
 		int cents = notes.get(note_idx);
 		if (cents < 0) {
@@ -87,18 +109,23 @@ public class PresetNoteActivity extends Activity {
 			cents = 9600;
 			notes.set(note_idx, cents);
 		}
+
 		note n = new note(cents);
 		pn_text.setText(n.full_str);
 		if (!for_cents) {
 			pn_cents.setText(Integer.toString(n.cents));
 		}
-		/* XXX - lighten/darken the buttons? */
+
+		int t = no_sharps[n.note_idx];
+		for (int i = 0; i < pn_notes.length; i++) {
+			set_brightness(pn_notes[i], (t == i));
+		}
+		set_brightness(pn_sharp, (is_sharp[n.note_idx] != 0));
+		for (int i = 0; i < pn_octs.length; i++) {
+			set_brightness(pn_octs[i], (n.octave == i));
+		}
 	}
 
-	private static final int[] sharp_test = new int[]
-			{ 0,1,0,1,0,0,1,0,1,0,1,0 };
-	private static final int[] can_sharpen = new int[]
-			{ 1,0,1,0,0,1,0,1,0,1,0,0 };
 	public void do_note(View v) {
 		int idx = 0;
 		for (int i = 0; i < pn_notes.length; i++) {
@@ -109,13 +136,11 @@ public class PresetNoteActivity extends Activity {
 		}
 		note n = new note(notes.get(note_idx));
 		notes.set(note_idx, (n.octave*1200) +
-			((idx+can_sharpen[idx]*sharp_test[n.note_idx])*100) +
+			((idx+can_sharpen[idx]*is_sharp[n.note_idx])*100) +
 			n.cents - 900);
 		update(/*for_cents=*/false);
 	}
 
-	private static final int[] sharp_swap = new int[]
-			{ 1,0,3,2,4,6,5,8,7,10,9,11 };
 	public void do_sharp(View v) {
 		note n = new note(notes.get(note_idx));
 		notes.set(note_idx, (n.octave*1200) +
