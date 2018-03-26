@@ -180,6 +180,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		b.getBackground().clearColorFilter();
 	}
 	private void set_mode(View buttons, boolean fft_mode_) {
+		String title = null;
 		if (fft_mode_ == false) {
 			darken_mode(note_button);
 			darken_mode(afreq_button);
@@ -195,6 +196,23 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 				brighten_mode(preset_button);
 			}
 			parms.preset_mode = (buttons == preset_buttons);
+			if (parms.preset_mode) {
+				preset p = preset.find(parms.preset_id);
+				if (p == null) {
+					parms.preset_note = 0;
+					parms.preset_oct = 0;
+					if (preset.presets.size() >= 1) {
+						p = preset.presets.get(0);
+						parms.preset_id = p.id;
+					}
+				}
+				title = "TunerTime: strobe (" +
+					((p != null) ? p.name : "...") + ")";
+			} else {
+				title = "TunerTime: strobe";
+			}
+		} else {
+			title = "TunerTime: FFT";
 		}
 		buttons_holder.removeAllViews();
 		buttons_holder.addView(buttons);
@@ -207,7 +225,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 		mode_holder.addView(parms.fft_mode ? fft_mode_buttons
 						   : strobe_mode_buttons);
 		parms.changed = true;
-		setTitle(parms.fft_mode ? "TunerTime: FFT" : "TunerTime: strobe");
+		setTitle(title);
 		if (parms.fft_mode) ToneGenerator.stop_tone();
 
 		update_status();
@@ -375,20 +393,7 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 	private void update_preset() {
 		preset p = preset.find(parms.preset_id);
-		if (p == null) {
-			parms.preset_note = 0;
-			parms.preset_oct = 0;
-			if (preset.presets.size() >= 1) {
-				p = preset.presets.get(0);
-				parms.preset_id = p.id;
-			} else {
-				parms.preset_id = -1;
-				parms.strobe_cents = 4800;
-				return;
-			}
-		}
-
-		if (p.notes.size() == 0) {
+		if ((p == null) || (p.notes.size() == 0)) {
 			parms.preset_note = 0;
 			parms.preset_oct = 0;
 			parms.strobe_cents = 4800;
