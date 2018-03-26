@@ -51,7 +51,9 @@ public class PresetEditActivity extends Activity {
 	}
 
 	public void onPause() {
-		get_preset().name = name_view.getText().toString();
+		if (parms.preset_id != -1) {
+			get_preset().name = name_view.getText().toString();
+		}
 		parms.save();
 		super.onPause();
 	}
