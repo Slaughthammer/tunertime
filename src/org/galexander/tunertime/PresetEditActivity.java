@@ -5,8 +5,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -27,16 +25,6 @@ public class PresetEditActivity extends Activity {
 		setContentView(R.layout.preset_edit);
 
 		name_view = (EditText)findViewById(R.id.preset_name);
-		name_view.addTextChangedListener(new TextWatcher() {
-			public void afterTextChanged(Editable s) {
-				get_preset().name = s.toString();
-			}
-			public void beforeTextChanged(CharSequence s,
-					int start, int count, int after) {}
-			public void onTextChanged(CharSequence s, int start,
-					int before, int count) {}
-			});
-
 		list = (ListView)findViewById(R.id.note_list);
 		list.setEmptyView(findViewById(R.id.list_empty));
 		list.setOnItemClickListener(
@@ -63,6 +51,7 @@ public class PresetEditActivity extends Activity {
 	}
 
 	public void onPause() {
+		get_preset().name = name_view.getText().toString();
 		parms.save();
 		super.onPause();
 	}
