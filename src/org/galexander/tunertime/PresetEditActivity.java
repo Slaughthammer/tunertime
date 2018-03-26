@@ -80,6 +80,7 @@ public class PresetEditActivity extends Activity {
 		List<HashMap<String, String> > ret =
 			new ArrayList<HashMap<String, String> >();
 		preset p = get_preset();
+		p.sort_notes();
 		for (Integer i : p.notes) {
 			note n = new note(i);
 			HashMap<String, String> t =

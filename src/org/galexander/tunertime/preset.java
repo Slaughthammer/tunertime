@@ -2,6 +2,7 @@ package org.galexander.tunertime;
 
 import android.content.SharedPreferences;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class preset {
@@ -11,6 +12,10 @@ public class preset {
 
 	public static List<preset> presets = new ArrayList<preset>();
 
+
+	public void sort_notes() {
+		Collections.sort(notes);
+	}
 
 	public static preset make() {
 		preset ret = new preset();
