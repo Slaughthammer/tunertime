@@ -54,7 +54,7 @@ public class PresetNoteActivity extends Activity {
 						       v.getText().toString()));
 					} catch (Exception x) { }
 				}
-				return true;
+				return (actionId != EditorInfo.IME_ACTION_DONE);
 			} });
 		pn_notes[0] = findViewById(R.id.pn_note_0);
 		pn_notes[1] = findViewById(R.id.pn_note_1);
