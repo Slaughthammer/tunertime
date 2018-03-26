@@ -87,7 +87,7 @@ public class PresetNoteActivity extends Activity {
 		if ((note_idx < 0) || (note_idx >= notes.size())) {
 			finish();
 		}
-		update(/*for_cents=*/false);
+		update();
 	}
 
 	public void onPause() {
@@ -104,7 +104,7 @@ public class PresetNoteActivity extends Activity {
 		v.getBackground().setColorFilter(bright ? brightf : darkf);
 	}
 
-	private void update(boolean for_cents) {
+	private void update() {
 		int cents = notes.get(note_idx);
 		if (cents < 0) {
 			cents = 0;
@@ -116,9 +116,7 @@ public class PresetNoteActivity extends Activity {
 
 		note n = new note(cents);
 		pn_text.setText(n.full_str);
-		if (!for_cents) {
-			pn_cents.setText(Integer.toString(n.cents));
-		}
+		pn_cents.setText(Integer.toString(n.cents));
 
 		int t = no_sharps[n.note_idx];
 		for (int i = 0; i < pn_notes.length; i++) {
@@ -142,14 +140,14 @@ public class PresetNoteActivity extends Activity {
 		notes.set(note_idx, (n.octave*1200) +
 			((idx+can_sharpen[idx]*is_sharp[n.note_idx])*100) +
 			n.cents - 900);
-		update(/*for_cents=*/false);
+		update();
 	}
 
 	public void do_sharp(View v) {
 		note n = new note(notes.get(note_idx));
 		notes.set(note_idx, (n.octave*1200) +
 			(sharp_swap[n.note_idx]*100) + n.cents - 900);
-		update(/*for_cents=*/false);
+		update();
 	}
 
 	public void do_oct(View v) {
@@ -163,7 +161,7 @@ public class PresetNoteActivity extends Activity {
 		note n = new note(notes.get(note_idx));
 		notes.set(note_idx,
 			(oct*1200) + (n.note_idx*100) + n.cents - 900);
-		update(/*for_cents=*/false);
+		update();
 	}
 
 	private void set_cents(int c) {
@@ -172,7 +170,7 @@ public class PresetNoteActivity extends Activity {
 		int next = (n.octave*1200) + (n.note_idx*100) + c - 900;
 		if (prev != next) {
 			notes.set(note_idx, next);
-			update(/*for_cents=*/true);
+			update();
 		}
 	}
 
