@@ -106,7 +106,7 @@ frequency visible on the new strobe.  This is clearest when using
 cent+/cent- to change the tone.</p>
 
 
-<h2>Strobe settings</h2>
+<h2>Strobe controls</h2>
 
 <p>There is a bar of panel selection buttons along the bottom of the
 strobe display.  In each panel, you can configure a different aspect of
@@ -150,36 +150,35 @@ couple other notes to get a feel for the instrument.</p>
 <p>In the past, the stretch factor was specified in decimal, but now it
 uses the standard units of cents per octave.</p>
 
-<h3>temper</h3>
+<h3>preset</h3>
 
-<p>For each note in the scale
-(semi-tone), TunerTime can store an offset in cents from the default
-(+00c) which
-defines the tempering of the scale.  When tempering is enabled, this
-offset is applied automatically each time you use the semi-tone
-adjustment in the note panel.  "save" locks in the current cents as being
-the tempering for the current semi-tone.  "enable"/"disable" turns
-tempering on/off.</p>
+<p>A "preset" is a selection of notes that are useful together.  An
+example might be E-2, A-2, D-3, G-3, B-3, E-4 for the six strings of a
+guitar.  A preset which contains all twelve semi-tones may be used as a
+tempered scale.</p>
 
-<p>So the procedure is: for the first semi-tone, select the temper you
-want (in cents) and then hit save.  Then select the next semi-tone and
-repeat the process until you have filled in the temper you desire for all
-twelve semitones in the scale.  Make sure you enable tempering.</p>
+<p>In the preset panel, you can cycle through the notes in the preset or
+apply an octave bias to the whole preset.  You can select one of the
+stored presets or edit the notes in the current one.</p>
 
-<h3>harmonics</h3>
+<h2>Settings</h2>
 
-<p>By default, the 1st (fundamental), 2nd, and 4th harmonics are
+<p>Under the options menu, there is a Settings activity which allows some
+configuration.</p>
+
+<p>Alternatives to red/green for the strobe display can be selected, for
+example to aid color-blind people.</p>
+
+<p>The harmonics which are displayed in the extra strobes can be configured.
+By default, the 1st (fundamental), 2nd, and 4th harmonics are
 displayed because it is often convenient to see what is happening in
-other octaves.  But if you would find it convenient to view other
-harmonics instead, you can select them on this panel.</p>
-
-<p>Note that the stretch factor is in effect here, so if the stretch
-factor is non-zero then the distance between the fundamental and 2nd
-harmonic will not be exactly a multiple of 2.0.</p>
+other octaves.  Note that the stretch factor is in effect here, so if the
+stretch factor is non-zero then the distance between the fundamental and
+2nd harmonic will not be exactly a multiple of 2.0.</p>
 
 <h2>FFT Spectrum Analyzer</h2>
 
-<p>Tapping the "mode" button in the lower-right corner switches between
+<p>Tapping the "FFT" button in the lower-right corner switches between
 the strobe view and the FFT (spectrum) view.</p>
 
 <p>FFT stands for Fast Fourier Transform,
@@ -205,6 +204,8 @@ time.</p>
 <h2>Change log</h2>
 
 <ul>
+<li><b>2018/03/26 Version 15:</b> Move harmonic display selection into "Settings", add color setting, replace "temper" with presets.
+
 <li><b>2018/03/11 Version 14:</b> Fix buffer overflow on some phones that would cause erratic phase behavior.
 
 <li><b>2018/03/04 Version 13:</b> Allow cent adjustment even if tempering is enabled.  Fix crashes.
