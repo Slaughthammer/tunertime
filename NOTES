@@ -804,7 +804,6 @@ Should be easy.  Go ahead and load them all at once and save them all at
 once just like the rest of the settings.
 
 
-XXX - make the back button not go back from things that have startActivity-ed TunerTime
 XXX - test import from temper
 
 

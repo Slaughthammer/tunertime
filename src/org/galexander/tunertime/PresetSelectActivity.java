@@ -32,8 +32,7 @@ public class PresetSelectActivity extends Activity {
 					return;
 				}
 				parms.preset_id = preset.presets.get(pos).id;
-				startActivity(new Intent(v.getContext(),
-						TunerTime.class));
+				finish();
 			} });
 	}
 
