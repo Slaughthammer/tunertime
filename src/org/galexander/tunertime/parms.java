@@ -118,9 +118,9 @@ public class parms {
 				editor.putBoolean(key, ((Boolean)value).booleanValue());
 			}
 		}
+		oldvals = null;
 		convert_temper(old, editor);
 		editor.commit();
-		oldvals = null;
 
 		editor = old.edit();
 		editor.clear();
@@ -132,7 +132,7 @@ public class parms {
 		int[] temper = new int[12];
 		boolean any_temper = false;
 		for (int i = 0; i < 12; i++) {
-			int v = prefs.getInt("temper"+i, 0);
+			int v = in.getInt("temper"+i, 0);
 			if (v != 0) {
 				any_temper = true;
 			}
