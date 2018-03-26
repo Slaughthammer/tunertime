@@ -600,12 +600,6 @@ public class TunerTime extends Activity implements SurfaceHolder.Callback {
 
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.action_strobe:
-			set_mode(note_buttons, false);
-			return true;
-		case R.id.action_fft:
-			set_mode(fft_buttons, true);
-			return true;
 		case R.id.action_settings:
 			startActivity(new Intent(this, Settings.class));
 			return true;
