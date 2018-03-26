@@ -168,7 +168,8 @@
 	    android:minEms="3"
 	    android:lines="1"
 	    android:singleLine="true"
-	    android:numeric="signed" />
+	    android:numeric="signed"
+	    android:imeOptions="actionDone" />
     </LinearLayout>
     <LinearLayout
 	android:orientation="horizontal"
