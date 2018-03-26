@@ -10,7 +10,7 @@
 	android:visibility="gone"
 	android:textAppearance="?android:attr/textAppearanceLarge"
 	android:textColor="#ffa"
-	android:text="none" />
+	android:text="no presets" />
     <ListView android:id="@+id/preset_list"
 	android:layout_width="fill_parent"
 	android:layout_height="1dp"
