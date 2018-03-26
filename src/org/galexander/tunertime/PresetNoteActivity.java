@@ -10,7 +10,7 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
-import java.util.ArrayList;
+import java.util.List;
 
 public class PresetNoteActivity extends Activity {
 	private TextView pn_text;
@@ -20,7 +20,7 @@ public class PresetNoteActivity extends Activity {
 	private View pn_sharp;
 	private View[] pn_octs = new View[9];
 
-	private ArrayList<Integer> notes;
+	private List<Integer> notes;
 	private int note_idx;
 
 	/*        C  C# D  D# E  F  F# G  G# A  A# B */

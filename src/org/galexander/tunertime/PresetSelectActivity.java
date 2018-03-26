@@ -10,6 +10,7 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class PresetSelectActivity extends Activity {
 	private ListView list = null;
@@ -49,8 +50,8 @@ public class PresetSelectActivity extends Activity {
 		super.onPause();
 	}
 
-	private ArrayList<HashMap<String, String> > presets_list() {
-		ArrayList<HashMap<String, String> > ret =
+	private List<HashMap<String, String> > presets_list() {
+		List<HashMap<String, String> > ret =
 			new ArrayList<HashMap<String, String> >();
 		for (preset p : preset.presets) {
 			HashMap<String, String> t =

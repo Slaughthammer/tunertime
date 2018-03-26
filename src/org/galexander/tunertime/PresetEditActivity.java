@@ -14,6 +14,7 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class PresetEditActivity extends Activity {
 	private EditText name_view = null;
@@ -75,8 +76,8 @@ public class PresetEditActivity extends Activity {
 		return p;
 	}
 
-	private ArrayList<HashMap<String, String> > notes_list() {
-		ArrayList<HashMap<String, String> > ret =
+	private List<HashMap<String, String> > notes_list() {
+		List<HashMap<String, String> > ret =
 			new ArrayList<HashMap<String, String> >();
 		preset p = get_preset();
 		for (Integer i : p.notes) {
@@ -90,7 +91,7 @@ public class PresetEditActivity extends Activity {
 	}
 
 	public void do_new(View v) {
-		ArrayList<Integer> notes = get_preset().notes;
+		List<Integer> notes = get_preset().notes;
 		int n = notes.size();
 		notes.add((n >= 1) ? notes.get(n-1) : 4800);
 		parms.preset_note = n;

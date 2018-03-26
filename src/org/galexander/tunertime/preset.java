@@ -2,13 +2,14 @@ package org.galexander.tunertime;
 
 import android.content.SharedPreferences;
 import java.util.ArrayList;
+import java.util.List;
 
 public class preset {
 	public int id;
 	public String name;
-	public ArrayList<Integer> notes;
+	public List<Integer> notes;
 
-	public static ArrayList<preset> presets = new ArrayList<preset>();
+	public static List<preset> presets = new ArrayList<preset>();
 
 
 	public static preset make() {
@@ -37,7 +38,7 @@ public class preset {
 
 	public static void load(SharedPreferences p) {
 		String ids_str = p.getString("presets", "");
-		ArrayList<Integer> ids = csi_to_intarr(ids_str);
+		List<Integer> ids = csi_to_intarr(ids_str);
 		presets.clear();
 		for (int id : ids) {
 			String name = p.getString("preset_"+id+"_name", null);
@@ -61,11 +62,11 @@ public class preset {
 		}
 	}
 
-	private static ArrayList<Integer> csi_to_intarr(String s) {
+	private static List<Integer> csi_to_intarr(String s) {
 		byte[] b = s.getBytes();
 		int val = 0;
 		boolean any_val = false;
-		ArrayList<Integer> ret = new ArrayList<Integer>();
+		List<Integer> ret = new ArrayList<Integer>();
 		for (int i = 0; i < b.length; i++) {
 			byte c = b[i];
 			if ((c == ',') && any_val) {
@@ -82,7 +83,7 @@ public class preset {
 		}
 		return ret;
 	}
-	private static String intarr_to_csi(ArrayList<Integer> arr) {
+	private static String intarr_to_csi(List<Integer> arr) {
 		String ret = "";
 		String comma = "";
 		for (int i : arr) {
@@ -91,7 +92,7 @@ public class preset {
 		}
 		return ret;
 	}
-	private static String presetarr_to_csi(ArrayList<preset> arr) {
+	private static String presetarr_to_csi(List<preset> arr) {
 		String ret = "";
 		String comma = "";
 		for (preset p : arr) {
