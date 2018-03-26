@@ -5,8 +5,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.LightingColorFilter;
 import android.os.Bundle;
-import android.view.inputmethod.EditorInfo;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -40,21 +38,11 @@ public class PresetNoteActivity extends Activity {
 		setContentView(R.layout.preset_note);
 		pn_text = (TextView)findViewById(R.id.pn_text);
 		pn_cents = (EditText)findViewById(R.id.pn_cents);
-		pn_cents.setOnEditorActionListener(
-			new TextView.OnEditorActionListener() {
-			public boolean onEditorAction(TextView v, int actionId,
-							KeyEvent e) {
-				if ((actionId == EditorInfo.IME_ACTION_DONE) ||
-				    ((e != null) &&
-				     (e.getKeyCode() ==
-				      KeyEvent.KEYCODE_ENTER) &&
-				     (e.getAction() == KeyEvent.ACTION_UP))) {
-					try {
-						set_cents(Integer.parseInt(
-						       v.getText().toString()));
-					} catch (Exception x) { }
-				}
-				return (actionId != EditorInfo.IME_ACTION_DONE);
+		pn_cents.setOnEditorActionListener(new SubmitListener() {
+			public void onSubmit(String s) {
+				try {
+					set_cents(Integer.parseInt(s));
+				} catch (Exception x) { }
 			} });
 		pn_notes[0] = findViewById(R.id.pn_note_0);
 		pn_notes[1] = findViewById(R.id.pn_note_1);
