@@ -804,8 +804,6 @@ Should be easy.  Go ahead and load them all at once and save them all at
 once just like the rest of the settings.
 
 
-XXX - wouldn't it be great if it didn't show focus in the preset_edit or preset_note EditText unless it was actually focused
-XXX - try add to the new Preset activities in AndroidManifest.xml <!-- XXX: try adding android:parentActivityName=".TunerTime" />
 XXX - make the back button not go back from things that have startActivity-ed TunerTime
 XXX - test import from temper
 
