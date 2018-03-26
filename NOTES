@@ -805,6 +805,8 @@ once just like the rest of the settings.
 
 
 
+XXX - pressing mode button while paused munges up the bottom of the surface
+
 XXX - println()s should become Toasts
 
 XXX - experiment with constant horizontal speed in strobes
