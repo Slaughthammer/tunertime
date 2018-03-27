@@ -805,6 +805,11 @@ once just like the rest of the settings.
 
 
 
+XXX - add flat button beside sharp button
+XXX - consider resetting cents when going to 'note' mode
+XXX - how to enter cents in a preset? maybe up/down buttons after all? i don't know
+XXX - 'tone' button in PresetNoteActivity?
+
 XXX - pressing mode button while paused munges up the bottom of the surface
 
 XXX - println()s should become Toasts
