@@ -804,7 +804,25 @@ Should be easy.  Go ahead and load them all at once and save them all at
 once just like the rest of the settings.
 
 
+September 1, 2018.
 
+Dan McClung reported: "I keep getting notices that the microphone is
+running in the background and lowering the battery".
+
+It seems to me like TunerTime.onPause() kills Strobe kills Listener calls
+AudioRecord.release() so I don't really understand what could be failing.
+I instrumented it (System.out.println) and it is definitely calling into
+AudioRecord.release() when it's supposed to.  It also sets recorder=null
+so memory allocation should be able to clean up the reference as well.
+
+So I think the user is experiencing something unusual, and I'm not overly
+concerned about it.  The only change I can think of to do is to ensure
+AudioRecord.release() is called even if AudioRecord.stop() threw an
+exception, but really I don't think that's a big concern...
+
+
+
+XXX - preset shouldn't loop?
 XXX - add flat button beside sharp button
 XXX - consider resetting cents when going to 'note' mode
 XXX - how to enter cents in a preset? maybe up/down buttons after all? i don't know

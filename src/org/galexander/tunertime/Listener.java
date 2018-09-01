@@ -101,8 +101,8 @@ public class Listener extends Thread {
 		}
 		try {
 			recorder.stop();
-			recorder.release();
 		} catch (IllegalStateException e) { /* whatever */ }
+		recorder.release();
 		recorder = null;
 	}
 
