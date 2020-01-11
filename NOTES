@@ -823,7 +823,7 @@ exception, but really I don't think that's a big concern...
 
 January 11, 2020.
 
-Gallo Kristof requested tenth-of-a-cent precision in the presets.  I
+Kristof Gallo requested tenth-of-a-cent precision in the presets.  I
 think that should be easy, so I think I'll do it.  It'll require updating
 to the new SDK...  The other feature I've been putting off is logarithmic
 frequency in the FFT.  I'd really like to do it, since it's such a common
@@ -831,20 +831,19 @@ sense thing.
 
 
 
-XXX - tenth-of-a-cent precision in presets
-XXX - preset shouldn't loop?
+XXX - tenth-of-a-cent precision in presets, and in regular mode??
 XXX - add flat button beside sharp button
-XXX - consider resetting cents when going to 'note' mode
-XXX - how to enter cents in a preset? maybe up/down buttons after all? i don't know
 XXX - 'tone' button in PresetNoteActivity?
-
 XXX - pressing mode button while paused munges up the bottom of the surface
+XXX - someday bring in log_fft branch
+
+
+XXX - preset shouldn't loop?
+XXX - consider resetting cents when going to 'note' mode
 
 XXX - println()s should become Toasts
 
 XXX - experiment with constant horizontal speed in strobes
-
-XXX - someday bring in log_fft branch
 
 XXX - tone generator in FFT - is there a simple UI for this?
 
