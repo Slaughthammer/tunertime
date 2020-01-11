@@ -821,7 +821,17 @@ AudioRecord.release() is called even if AudioRecord.stop() threw an
 exception, but really I don't think that's a big concern...
 
 
+January 11, 2020.
 
+Gallo Kristof requested tenth-of-a-cent precision in the presets.  I
+think that should be easy, so I think I'll do it.  It'll require updating
+to the new SDK...  The other feature I've been putting off is logarithmic
+frequency in the FFT.  I'd really like to do it, since it's such a common
+sense thing.
+
+
+
+XXX - tenth-of-a-cent precision in presets
 XXX - preset shouldn't loop?
 XXX - add flat button beside sharp button
 XXX - consider resetting cents when going to 'note' mode
