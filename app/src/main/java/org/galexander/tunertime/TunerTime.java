@@ -1,6 +1,6 @@
 package org.galexander.tunertime;
 
-import android.app.Activity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -21,7 +21,7 @@ import android.widget.Button;
 import android.os.PowerManager;
 import java.text.DecimalFormat;
 
-public class TunerTime extends Activity implements SurfaceHolder.Callback {
+public class TunerTime extends AppCompatActivity implements SurfaceHolder.Callback {
 	private SurfaceView w_strobe;
 	private ViewGroup buttons_holder;
 	private ViewGroup surface_frame;
