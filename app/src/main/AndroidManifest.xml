@@ -3,7 +3,8 @@
       package="org.galexander.tunertime">
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <application android:label="TunerTime" android:icon="@drawable/icon">
+    <application android:label="TunerTime" android:icon="@drawable/icon"
+		android:theme="@android:style/Theme.Holo">
         <activity android:name="TunerTime" android:label="TunerTime">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
