@@ -32,7 +32,7 @@ struct strobe_rec {
 
 
 int base_cents;
-int harm1_mult, harm2_mult;
+int harm0_mult, harm1_mult, harm2_mult;
 
 static struct strobe_rec strobes[NUM_STROBES];
 
@@ -335,7 +335,8 @@ update_labels(jobject this)
 	int note = ((base_cents+50)/100)%12;
 
 	for (i = 0; i < NUM_STROBES; i++) {
-		int mult = ((i==0) ? 1 : ((i==1) ? harm1_mult : harm2_mult));
+		int mult = ((i==0) ? harm0_mult
+				   : ((i==1) ? harm1_mult : harm2_mult));
 		char *ext = ((mult==1) ? "st" : ((mult==2) ? "nd" :
 				((mult==3) ? "rd" : "th")));
 		sprintf(labels[i], "%2d%s %7.1f", mult, ext, strobes[i].freq);
@@ -360,7 +361,8 @@ strobe_recalculate(jobject this)
 	int y = 0;
 
 	for (i = 0; i < NUM_STROBES; i++) {
-		int mult = ((i==0) ? 1 : ((i==1) ? harm1_mult : harm2_mult));
+		int mult = ((i==0) ? harm0_mult
+				   : ((i==1) ? harm1_mult : harm2_mult));
 		strobes[i].prev_pos = 0;
 		strobes[i].y = y;
 		strobes[i].height = sheight;

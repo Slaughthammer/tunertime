@@ -37,6 +37,7 @@ static jfieldID fid_st_pianoname;
 static jfieldID fid_st_ui;
 static jfieldID fid_st_paused;
 static jfieldID fid_p_strobe_cents;
+static jfieldID fid_p_harm0_mult;
 static jfieldID fid_p_harm1_mult;
 static jfieldID fid_p_harm2_mult;
 static jfieldID fid_p_strobe_color;
@@ -254,6 +255,7 @@ jni_init(JNIEnv *env_)
 	FIELD(st_paused, strobe, "paused", "Z");
 
 	STFIELD(p_strobe_cents, parms, "strobe_cents", "I")
+	STFIELD(p_harm0_mult, parms, "harm0_mult", "I")
 	STFIELD(p_harm1_mult, parms, "harm1_mult", "I")
 	STFIELD(p_harm2_mult, parms, "harm2_mult", "I")
 	STFIELD(p_strobe_color, parms, "strobe_color", "Ljava/lang/String;")
@@ -358,6 +360,7 @@ check_parms(jobject this)
 	(*env)->SetStaticBooleanField(env, cl_parms, fid_p_changed, JNI_FALSE);
 
 	base_cents = (*env)->GetStaticIntField(env, cl_parms, fid_p_strobe_cents);
+	harm0_mult = (*env)->GetStaticIntField(env, cl_parms, fid_p_harm0_mult);
 	harm1_mult = (*env)->GetStaticIntField(env, cl_parms, fid_p_harm1_mult);
 	harm2_mult = (*env)->GetStaticIntField(env, cl_parms, fid_p_harm2_mult);
 

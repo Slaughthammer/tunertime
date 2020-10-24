@@ -41,7 +41,7 @@ void set_pianoname(jobject this, char *pianoname);
 
 /* strobe.c: */
 extern int base_cents;
-extern int harm1_mult, harm2_mult;
+extern int harm0_mult, harm1_mult, harm2_mult;
 
 void strobe_init(void);
 void strobe_color(const char *s);

@@ -8,7 +8,8 @@ import java.util.Map;
 
 public class parms {
 	static public volatile int strobe_cents = 4800;
-	static public volatile int harm1_mult = 2, harm2_mult = 4;
+	static public volatile int harm0_mult = 1, harm1_mult = 2,
+				harm2_mult = 4;
 	static public volatile String strobe_color = "redgreen";
 
 	static public volatile boolean fft_mode = false;
@@ -46,6 +47,7 @@ public class parms {
 		}
 		cents_per_octave = prefs.getInt("cents_per_octave", 0);
 		strobe_cents = prefs.getInt("strobe_cents", 4800);
+		harm0_mult = Integer.parseInt(prefs.getString("harm0", "1"));
 		harm1_mult = Integer.parseInt(prefs.getString("harm1", "2"));
 		harm2_mult = Integer.parseInt(prefs.getString("harm2", "4"));
 		strobe_color = prefs.getString("strobe_color", "redgreen");

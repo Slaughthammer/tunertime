@@ -9,6 +9,13 @@
 		android:entryValues="@array/color_value"
 		android:defaultValue="redgreen" />
 	<ListPreference
+		android:key="harm0"
+		android:title="Harmonic 0"
+		android:summary="%s"
+		android:entries="@array/harmonics"
+		android:entryValues="@array/harmonics"
+		android:defaultValue="1" />
+	<ListPreference
 		android:key="harm1"
 		android:title="Harmonic 1"
 		android:summary="%s"
