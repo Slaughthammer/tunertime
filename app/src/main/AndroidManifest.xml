@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="org.galexander.tunertime"
-      android:versionCode="15"
-      android:versionName="15">
-    <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="30" />
+      package="org.galexander.tunertime">
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <application android:label="TunerTime" android:icon="@drawable/icon">

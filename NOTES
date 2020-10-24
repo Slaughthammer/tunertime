@@ -830,8 +830,6 @@ frequency in the FFT.  I'd really like to do it, since it's such a common
 sense thing.
 
 
-XXX - can i remove sdk version and app version from AndroidManifest.xml??
-
 XXX - select fractional harmonics (like 1.5x) for Haldor
 
 XXX - tenth-of-a-cent precision in presets, and in regular mode??
