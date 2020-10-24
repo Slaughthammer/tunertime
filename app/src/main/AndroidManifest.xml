@@ -3,7 +3,7 @@
       package="org.galexander.tunertime"
       android:versionCode="15"
       android:versionName="15">
-    <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="13" />
+    <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="30" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <application android:label="TunerTime" android:icon="@drawable/icon">
