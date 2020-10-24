@@ -9,6 +9,12 @@ android {
     compileSdkVersion 30
     buildToolsVersion "30.0.2"
 
+    sourceSets {
+        main {
+            jniLibs.srcDirs 'src/main/lib'
+        }
+    }
+
     signingConfigs {
         release {
             keyAlias keyprops['keyAlias']
