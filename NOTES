@@ -830,6 +830,20 @@ frequency in the FFT.  I'd really like to do it, since it's such a common
 sense thing.
 
 
+October 24, 2020.
+
+Haldor Hartwig asked for 1.5x as a multiplier for the second strobe
+(1, 1.5, 2), and instead I gave him a base multiplier for the first
+strobe so he could get the same effect with (2, 3, 4).  Anyways, I
+emailed him to let him know of that solution and he said he figured out
+he actually needs (1, 2, 3; the 3 is an "octave and a half"), so
+whatever.  The feature's done and it's simple and it might be useful for
+someone so I'm leaving it in.
+
+And I finally went through the dance to update the SDK.  From SDK 7
+(2010) to SDK 30 (2020) in one step.
+
+
 XXX - invert brightness sense of 'tone' button?
 
 XXX - tenth-of-a-cent precision in presets, and in regular mode??
