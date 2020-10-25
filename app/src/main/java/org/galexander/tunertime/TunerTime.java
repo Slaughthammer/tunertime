@@ -464,7 +464,7 @@ public class TunerTime extends AppCompatActivity implements SurfaceHolder.Callba
 			tone_button.getBackground().clearColorFilter();
 		} else {
 			tone_button.getBackground().setColorFilter(
-				new LightingColorFilter(0xff888888, 0));
+				new LightingColorFilter(0x404040, 0));
 		}
 	}
 
