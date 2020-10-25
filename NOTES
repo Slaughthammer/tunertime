@@ -844,6 +844,10 @@ And I finally went through the dance to update the SDK.  From SDK 7
 (2010) to SDK 30 (2020) in one step.
 
 
+XXX - should probably do something to make icon satisfy new android
+styleguide?  on android 10, it adds a white circle around the
+icon...should cut it down to a square with rounded corners?
+
 XXX - tenth-of-a-cent precision in presets, and in regular mode??
 XXX - add flat button beside sharp button
 XXX - 'tone' button in PresetNoteActivity?
