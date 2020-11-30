@@ -844,6 +844,9 @@ And I finally went through the dance to update the SDK.  From SDK 7
 (2010) to SDK 30 (2020) in one step.
 
 
+XXX - John K wants auto sense which note to tune, and i think i'm gonna give it to him
+XXX - Daniel G wants to know if it can tune to an external mic
+
 XXX - should probably do something to make icon satisfy new android
 styleguide?  on android 10, it adds a white circle around the
 icon...should cut it down to a square with rounded corners?
