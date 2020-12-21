@@ -844,6 +844,7 @@ And I finally went through the dance to update the SDK.  From SDK 7
 (2010) to SDK 30 (2020) in one step.
 
 
+XXX - Carl R notes that new android SDK means it has to specifically request the microphone permission
 XXX - John K wants auto sense which note to tune, and i think i'm gonna give it to him
 XXX - Daniel G wants to know if it can tune to an external mic
 
