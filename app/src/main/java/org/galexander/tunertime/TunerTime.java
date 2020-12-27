@@ -1,10 +1,11 @@
 package org.galexander.tunertime;
 
-import androidx.appcompat.app.AppCompatActivity;
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.LightingColorFilter;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,9 +20,15 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Button;
 import android.os.PowerManager;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.app.ActivityCompat;
 import java.text.DecimalFormat;
 
-public class TunerTime extends AppCompatActivity implements SurfaceHolder.Callback {
+
+public class TunerTime extends AppCompatActivity
+		implements SurfaceHolder.Callback,
+			   ActivityCompat.OnRequestPermissionsResultCallback {
 	private SurfaceView w_strobe;
 	private ViewGroup buttons_holder;
 	private ViewGroup surface_frame;
@@ -144,6 +151,10 @@ public class TunerTime extends AppCompatActivity implements SurfaceHolder.Callba
 				R.layout.fft_mode, mode_holder, false);
 	}
 
+	public void onStart() {
+		super.onStart();
+		request_permission();
+	}
 	public void onResume() {
 		wakelock.acquire();
 		stop_strobe();
@@ -479,6 +490,9 @@ public class TunerTime extends AppCompatActivity implements SurfaceHolder.Callba
 
 	private void start_strobe() {
 		stop_strobe();
+		if (!check_permission()) {
+			return;
+		}
 		strobe = new Strobe(this);
 		strobe.setSurface(holder, width, height);
 		parms.changed = true;
@@ -491,6 +505,38 @@ public class TunerTime extends AppCompatActivity implements SurfaceHolder.Callba
 		}
 		strobe.interrupt();
 		strobe = null;
+	}
+
+	public void onRequestPermissionsResult(int code, String[] perms,
+			int[] results) {
+		if ((results.length < 1) ||
+		    (results[0] != PackageManager.PERMISSION_GRANTED)) {
+			new AlertDialog.Builder(this)
+			.setCancelable(false)
+			.setPositiveButton("OK",
+				new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface di,
+						int which) { finish(); } })
+			.setIcon(android.R.drawable.ic_dialog_alert)
+			.setTitle("Oh no!")
+			.setMessage("TunerTime requires access to the microphone for all of its features.  You can override the permission in system settings -> apps & notifications -> advanced -> permission manager.")
+			.show();
+		} else {
+			if (holder != null) {
+				start_strobe();
+			}
+		}
+	}
+	private boolean check_permission() {
+		return (ContextCompat.checkSelfPermission(this,
+					Manifest.permission.RECORD_AUDIO) ==
+				PackageManager.PERMISSION_GRANTED);
+	}
+	private void request_permission() {
+		if (!check_permission()) {
+			ActivityCompat.requestPermissions(this, new String[] {
+					Manifest.permission.RECORD_AUDIO }, 0);
+		}
 	}
 
 		/* interface SurfaceHolder.Callback */

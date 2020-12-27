@@ -844,7 +844,60 @@ And I finally went through the dance to update the SDK.  From SDK 7
 (2010) to SDK 30 (2020) in one step.
 
 
-XXX - Carl R notes that new android SDK means it has to specifically request the microphone permission
+December 27, 2020.
+
+A couple users have reported that it doesn't let them access the
+microphone, but they can go into settings -> apps & notifications ->
+advanced -> permission manager and manually enable it, then it works.
+I think upgrading the SDK caused Android to stop grand-fathering in the
+permission from the manifest, and now it has to be requested explicitly.
+It "works" for old users because the fact that grand-fathering happened
+already is treated as implicit consent to the permission.  So only users
+who installed it new since October have this problem.
+
+Apparently it's been since SDK 23 (MARSHMALLOW), "dangerous permissions"
+need runtime interactive authorization.  In the Manifest.permission
+reference, it says:
+
+   public static final String RECORD_AUDIO
+   Allows an application to record audio.
+   Protection level: dangerous
+
+So that settles that.  The other permission is WAKE_LOCK:
+
+   public static final String WAKE_LOCK
+   Allows using PowerManager WakeLocks to keep processor from sleeping or
+   screen from dimming.
+   Protection level: normal
+
+So I guess I don't need to worry about that one.  Normal ones are
+"install-time permissions", they are authorized at install-time, I guess.
+
+Just gonna follow the directions from Google's "request app permissions"
+document.
+
+...
+
+ugh, another example of Android being stupid.  They make you request the
+permission and then it onPause()s your app, then when the dialog is done
+(or it is short-circuited by always-deny), it onResume()s your app, then
+it sends an onRequestPermissionsResult().  The problem is, the permission
+check is in onResume(), because they told me to put the permission check
+where it is used, and onResume() is what calls start_strobe().
+
+A lot of people on stackoverflow recommend putting the permission check
+in onCreate() instead, which seems wrong to me.  I was about to make a
+state machine to avoid checking the permission if we haven't heard back
+from the last permission request yet, but I found someone recommending
+onStart(), which seems more appropriate.
+
+From reading the lifecycle document again, I think my take is correct
+that onCreate() is called before the activity has display focus, so it
+seems a poor place to do a check that will have UI consequences.
+onStart() is called when the activity first gains display focus, but not
+again if it is paused/resumed.  Sounds good to me.
+
+
 XXX - John K wants auto sense which note to tune, and i think i'm gonna give it to him
 XXX - Daniel G wants to know if it can tune to an external mic
 
