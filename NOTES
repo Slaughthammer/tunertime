@@ -900,6 +900,7 @@ again if it is paused/resumed.  Sounds good to me.
 
 XXX - John K wants auto sense which note to tune, and i think i'm gonna give it to him
 XXX - Daniel G wants to know if it can tune to an external mic
+XXX - Diego C wants to rearrange the notes in the preset window
 
 XXX - should probably do something to make icon satisfy new android
 styleguide?  on android 10, it adds a white circle around the
