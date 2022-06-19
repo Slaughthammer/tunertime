@@ -898,7 +898,33 @@ onStart() is called when the activity first gains display focus, but not
 again if it is paused/resumed.  Sounds good to me.
 
 
-XXX - John K wants auto sense which note to tune, and i think i'm gonna give it to him
+August 28, 2021.
+
+Onno K, an organ builder, wants some features.
+
+He is a sophisticated user of presets and wants them in a .csv file.
+That's just a "file browser" question from my perspective.  Potentially a
+bottomless hole but I think you just pick a strategy and find out who
+complains..
+
+He wants octave advance when you roll over at the end of a preset.  I
+struggled with this decision before because one use of presets is the 6
+strings of a guitar, and there you don't want octave advance.  But I
+think maybe just make it an option for the preset?
+
+He's also interested in auto note detection (like John K).  Sigh.
+
+He wants to be able to view 5 harmonics!  I think this would actually be
+really easy to do, just to make the number of harmonics configurable
+within some range.  It seems like it would make an awkward display on a
+phone screen but coming up with the appropriate large tablet is an
+exercise for the user I guess.
+
+
+XXX - Onno K wants preset import/export to .csv
+XXX - Onno K wants octave advance when rolling over a preset
+XXX - Onno K wants up to 5 harmonics
+XXX - John K and Onno K want auto sense which note to tune, and i think i'm gonna give it to him
 XXX - Daniel G wants to know if it can tune to an external mic
 XXX - Diego C wants to rearrange the notes in the preset window
 
