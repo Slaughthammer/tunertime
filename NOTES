@@ -921,6 +921,32 @@ phone screen but coming up with the appropriate large tablet is an
 exercise for the user I guess.
 
 
+December 27, 2025.
+
+I decided to pick this up again, mostly because I want to support the
+display of central peaks in the FFT that I've come to enjoy from ggi.
+First order of business is getting it to compile with a modern SDK.
+My is that unpleasant!
+
+The key insight this time through is:
+  $ export JAVA_HOME=/home/greg/android-studio-20240607/jbr
+Then gradlew will use the JetBrains runtime that came with Android,
+instead of relying on whatever openjdk I have.
+
+After a lot of farting around, I decided to start over with a new android
+36 project, and copy its config files over.  To make a new android 36
+project, it was not enough to install the 36 SDK.  I also had to
+re-install Android Studio because Google broke its self-update process
+between 2024/06/07 and today.  They now recommend using JetBrains Toolbox
+(~/Android/jetbrains...) to install Android Studio.  Anyways, I
+eventually built a new empty 36 project, and copied its files over.  It's
+using build.gradle.kts instead of build.gradle now.  Which meant looking
+up the new idiom for loading keyprops from keystore.properties.
+
+
+XXX - central peaks display from ggi
+
+
 XXX - Henrik N wants presets - separate copies of the settings for various instruments.  would like the set of notes to be selected in that too
 XXX - Onno K wants preset import/export to .csv
 XXX - Onno K wants octave advance when rolling over a preset

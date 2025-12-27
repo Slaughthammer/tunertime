@@ -1,3 +1,4 @@
+export JAVA_HOME=/home/greg/android-studio-20240607/jbr
 ~/Android/Sdk/ndk-bundle/ndk-build &&
 ./gradlew assembleRelease &&
 andinst app/build/outputs/apk/release/app-release.apk
