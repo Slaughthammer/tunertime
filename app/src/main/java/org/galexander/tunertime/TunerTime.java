@@ -20,13 +20,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Button;
 import android.os.PowerManager;
-import androidx.appcompat.app.AppCompatActivity;
+import android.app.Activity;
 import androidx.core.content.ContextCompat;
 import androidx.core.app.ActivityCompat;
 import java.text.DecimalFormat;
 
 
-public class TunerTime extends AppCompatActivity
+public class TunerTime extends Activity
 		implements SurfaceHolder.Callback,
 			   ActivityCompat.OnRequestPermissionsResultCallback {
 	private SurfaceView w_strobe;
@@ -646,14 +646,14 @@ public class TunerTime extends AppCompatActivity
 	}
 
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.action_settings:
+		int id = item.getItemId();
+		if (id == R.id.action_settings) {
 			startActivity(new Intent(this, Settings.class));
 			return true;
-		case R.id.action_help:
+		} else if (id == R.id.action_help) {
 			do_help();
 			return true;
-		case R.id.action_about:
+		} else if (id == R.id.action_about) {
 			do_about();
 			return true;
 		}
