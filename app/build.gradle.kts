@@ -11,12 +11,12 @@ plugins {
 }
 
 android {
-    namespace = "com.example.myapplication20251227_2"
+    namespace = "org.galexander.tunertime"
     compileSdk {
         version = release(36)
     }
     sourceSets {
-        main {
+        getByName("main") {
             jniLibs.srcDirs("src/main/lib")
         }
     }
@@ -30,8 +30,8 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.myapplication20251227_2"
-        minSdk = 16
+        applicationId = "org.galexander.tunertime"
+        minSdk = 21
         targetSdk = 36
         versionCode = 17
         versionName = "17.0"
