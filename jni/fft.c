@@ -394,23 +394,13 @@ color_for_value(double x)
 //XXX - then honor the time offset back here, which should be the super easy part
 
 static void
-fft_display_row(jint *bitmap_ptr, int y)
+fft_display_row(jint *bitmap_ptr, int y1, int y2, double *fft_data)
 {
 	int tot_bins, first_bin, num_bins;
 	int i;
 	int xn;
 	int incr;
 	double dincr;
-	int disp_height = height-fft_legend_height;
-	double *fft_data = fft_hist_get(disp_height-y);
-
-	int rows = ((disp_height*fft_size) / (2*FFT_SECONDS*sample_rate));
-	if (rows < 1) {
-		rows = 1;
-	}
-	int y1 = y;
-	int y2 = y1 + rows;
-	if (y2 > disp_height) y2 = disp_height;
 
 	COMPUTE_BINS
 
@@ -440,16 +430,12 @@ fft_display_row(jint *bitmap_ptr, int y)
 		x1 = (i*width)/num_bins;
 		filled_rect(bitmap_ptr, x1, y1, x1+xn, y2, color);
 	}
-	hline(bitmap_ptr, 0, (y2+0)%disp_height, width, 0xFF000000);
-	hline(bitmap_ptr, 0, (y2+1)%disp_height, width, 0xFF000000);
-	hline(bitmap_ptr, 0, (y2+2)%disp_height, width, 0xFF000000);
-	hline(bitmap_ptr, 0, (y2+3)%disp_height, width, 0xFF000000);
-	hline(bitmap_ptr, 0, (y2+4)%disp_height, width, 0xFF000000);
 
 		/* draw grid */
 	for (i = 0; i < num_grid_x; i++) {
 		xor_vline(bitmap_ptr, grid_x[i], y1, y2);
 	}
+	int disp_height = height-fft_legend_height;
 	for (i = (disp_height/FFT_SECONDS); i < (disp_height-(FFT_SECONDS*2));
 	     i += (disp_height/FFT_SECONDS)) {
 		if ((y1 <= i) && (y2 > i)) {
@@ -462,9 +448,18 @@ static void
 fft_display(jint *bitmap_ptr)
 {
 	int disp_height = height-fft_legend_height;
-	int y;
-	for (y = 0; y < disp_height; y++) {
-		fft_display_row(bitmap_ptr, y);
+	int rows = ((disp_height*fft_size) / (2*FFT_SECONDS*sample_rate));
+	if (rows < 1) {
+		rows = 1;
+	}
+	int y2 = disp_height;
+	int y1 = y2-rows;
+	int i;
+	for (i = 0; ; i++) {
+		fft_display_row(bitmap_ptr, y1, y2, fft_hist_get(i));
+		if (!y1) break;		/* done with top row */
+		y2 = y1;
+		y1 = ((y1 > rows) ? (y1 - rows) : 0);
 	}
 }
 
@@ -473,6 +468,7 @@ void
 fft_newdata(jint *bitmap_ptr)
 {
 	int i;
+	int did_any = 0;
 
 	for (i = 0; i < snd_buflen; i++) {
 		fft_buf[fft_buf_i++] = ((double)snd_buf[i]) / 32768.0;
@@ -486,8 +482,11 @@ fft_newdata(jint *bitmap_ptr)
 			memmove(fft_buf, &fft_buf[fft_size/2],
 				(sizeof fft_buf[0])*fft_size/2);
 			fft_buf_i = fft_size/2;
+			did_any++;
 		}
 	}
+
+	if (did_any) fft_display(bitmap_ptr);
 }
 
 
