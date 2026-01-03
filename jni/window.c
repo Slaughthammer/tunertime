@@ -60,7 +60,7 @@ window_init(enum window_kind kind, int nsamps)
 }
 
 void
-window_apply(struct window_rec *w, double *samps)
+window_apply(struct window_rec *w, double *in, double *out)
 {
 	double *d;
 	int i, n;
@@ -70,7 +70,7 @@ window_apply(struct window_rec *w, double *samps)
 	d = w->samps;
 	n = w->nsamps;
 	for (i = 0; i < n; i++) {
-		samps[i] *= d[i];
+		out[i] = in[i] * d[i];
 	}
 }
 

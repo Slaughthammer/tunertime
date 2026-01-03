@@ -943,8 +943,16 @@ eventually built a new empty 36 project, and copied its files over.  It's
 using build.gradle.kts instead of build.gradle now.  Which meant looking
 up the new idiom for loading keyprops from keystore.properties.
 
+...  And it works!  USB Debugging had disabled itself on my phone, and
+the phone's USB identifier keeps changing depending on its personality,
+but I managed to get it to connect to my new laptop and it was all golden
+woo.
 
+
+XXX - make FFT have time horizontal to match strobe
 XXX - central peaks display from ggi
+XXX - make fft samples all the same height, so more seconds are on the
+screen for bigger bins ???  or make it zoomable?
 
 
 XXX - Henrik N wants presets - separate copies of the settings for various instruments.  would like the set of notes to be selected in that too
@@ -975,6 +983,3 @@ XXX - experiment with constant horizontal speed in strobes
 
 XXX - tone generator in FFT - is there a simple UI for this?
 
-XXX - make FFT have time horizontal to match strobe
-XXX - make fft samples all the same height, so more seconds are on the
-screen for bigger bins ???

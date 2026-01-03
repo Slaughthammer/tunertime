@@ -13,15 +13,47 @@ int fft_offset = 0;			/* offset, out of FFT_RANGE_MULT */
 int fft_grid_freq = 0;
 
 static double fft_buf[MAX_FFT_SIZE];
-static double fft_r[MAX_FFT_SIZE];
-static double fft_i[MAX_FFT_SIZE];
 static int fft_buf_i = 0;			/* output */
 static double fft_sr[32];
 static double fft_si[32];
 static struct window_rec *curr_window = NULL;
 
-static int fft_y = 0;
 static int fft_legend_height = 0;
+
+
+/* allocate enough space for about 60 seconds */
+/* note that head/tail are in units of fft_size/2 (the spectrum is half the size
+ * of fft_size, because we discard the phase information) */
+#define FFT_HIST_BUFSZ (44100*60)
+static double *fft_hist_buf;
+static int fft_hist_head = 0, fft_hist_tail = 0;
+static int fft_hist_count = 0;		/* BUFSZ / (fft_size/2) */
+
+static double *
+fft_hist_next(void)
+{
+	fft_hist_tail = (fft_hist_tail+1) % fft_hist_count;
+
+	if (fft_hist_tail == fft_hist_head) {
+		/* running into back of head */
+		fft_hist_head = ((fft_hist_head + 1) % fft_hist_count);
+	}
+	return &fft_hist_buf[fft_hist_tail*fft_size/2];
+}
+
+/* ofs is negative frames counting backwards from tail */
+static double *
+fft_hist_get(int ofs)
+{
+	int avail = ((fft_hist_tail > fft_hist_head)
+			? (fft_hist_tail - fft_hist_head)
+			: (fft_hist_tail + fft_hist_count - fft_hist_head));
+	if (avail < ofs) {
+		return NULL;
+	}
+	return &fft_hist_buf[((fft_hist_tail + fft_hist_count - ofs) %
+			      fft_hist_count) * fft_size/2];
+}
 
 
 /* just precompute the needed cos/sin values for FFT */
@@ -34,6 +66,9 @@ fft_init(void)
 		le2 = le>>1;
 		fft_sr[l] = cos(M_PI/((double)le2));
 		fft_si[l] = -sin(M_PI/((double)le2));
+	}
+	if (!fft_hist_buf) {
+		fft_hist_buf = malloc(FFT_HIST_BUFSZ*sizeof *fft_hist_buf);
 	}
 }
 
@@ -51,30 +86,24 @@ lg2(int x)
 	return ret;
 }
 
-/* applies the window to input in fft_buf, producing output in fft_r */
-static void
-do_fft_window(void)
-{
-	memcpy(fft_r, fft_buf, fft_size*(sizeof fft_buf[0]));
-	window_apply(curr_window, fft_r);
-}
 
 /* this is Fast Fourier Transform, cribbed from The Scientist and Engineer's
  * Guide to Digital Signal Processing by Steven W. Smith.
  * O(n*lg(n))
- * in: fft_r[0..n-1]
- * out: fft_r/i[0..n/2] */
+ * in: fft_in[0..n-1]
+ * computes: fft_r/i[0..n/2]  (imaginary half provides phase information)
+ * out: fft_out[0..n/2]
+ * NOTE: overwrites fft_in, which it uses internally as fft_r. */
 static void
-do_fft(void)
+do_fft(double *fft_in, double *fft_out)
 {
-	int i,j,k,l,m;
-	int le,le2,ip;
-	double ur,ui,sr,si,tr,ti;
-
-	m = lg2(fft_size);
-	j = fft_size/2;
+	static double fft_i[MAX_FFT_SIZE];
+	double *fft_r = fft_in;
+	int i,j,k,l;
+	int m = lg2(fft_size);
 
 	memset(fft_i, 0, sizeof fft_i);
+	j = fft_size/2;
 	for (i = 1; i <= fft_size-2; i++) {
 		if (i < j) {
 			double t;
@@ -91,26 +120,29 @@ do_fft(void)
 	}
 
 	for (l = 1; l <= m; l++) {
-		le = 1<<l;
-		le2 = le>>1;
-		ur = 1;
-		ui = 0;
-		sr = fft_sr[l];
-		si = fft_si[l];
+		int le = 1<<l, le2 = le>>1;
+		double ur = 1, ui = 0;
+		double sr = fft_sr[l], si = fft_si[l];
 		for (j = 1; j <= le2; j++) {
 			for (i = j-1; i <= fft_size-1; i += le) {
-				ip = i+le2;
-				tr = fft_r[ip]*ur - fft_i[ip]*ui;
-				ti = fft_r[ip]*ui + fft_i[ip]*ur;
+				int ip = i+le2;
+				double tr = fft_r[ip]*ur - fft_i[ip]*ui;
+				double ti = fft_r[ip]*ui + fft_i[ip]*ur;
 				fft_r[ip] = fft_r[i]-tr;
 				fft_i[ip] = fft_i[i]-ti;
 				fft_r[i] += tr;
 				fft_i[i] += ti;
 			}
-			tr = ur;
-			ur = tr*sr - ui*si;
-			ui = tr*si + ui*sr;
+			double t = ur;
+			ur = t*sr - ui*si;
+			ui = t*si + ui*sr;
 		}
+	}
+
+		/* convert back to real-value (discard phase information) */
+	for (i = 0; i < fft_size/2; i++) {
+		double re = fft_r[i], im = fft_i[i];
+		fft_out[i] = sqrt(re*re+im*im);
 	}
 }
 
@@ -153,6 +185,7 @@ fft_recalculate(jobject this)
 	for (i = 0; i < 88; i++) {
 		piano_freqs[i] = cents_to_freq(this, i*100, 1);
 	}
+	fft_hist_count = FFT_HIST_BUFSZ / (fft_size/2);
 }
 
 static int grid_x[SEVEN_CHARS];
@@ -356,28 +389,33 @@ color_for_value(double x)
 }
 
 
+//XXX - first, rotate it
+//XXX - then, decide book-keeping for describing time offset and scale and paused in the java ui (if it's scrolled back, tapping will unpause it and bring it to real time)
+//XXX - then honor the time offset back here, which should be the super easy part
+
 static void
-do_fft_display(jint *bitmap_ptr)
+fft_display_row(jint *bitmap_ptr, int y)
 {
 	int tot_bins, first_bin, num_bins;
 	int i;
-	int y1, y2, xn;
+	int xn;
 	int incr;
 	double dincr;
 	int disp_height = height-fft_legend_height;
-	int rows;
+	double *fft_data = fft_hist_get(disp_height-y);
 
-	y1 = fft_y;
-	rows = ((disp_height*fft_size) / (2*FFT_SECONDS*sample_rate));
+	int rows = ((disp_height*fft_size) / (2*FFT_SECONDS*sample_rate));
 	if (rows < 1) {
 		rows = 1;
 	}
-	y2 = y1 + rows;
+	int y1 = y;
+	int y2 = y1 + rows;
 	if (y2 > disp_height) y2 = disp_height;
 
 	COMPUTE_BINS
 
-	if (!width || !num_bins) {		/* prevent divide by zero */
+	if (!width || !num_bins || !fft_data) {	/* prevent divide by zero */
+		filled_rect(bitmap_ptr, 0, y1, width, y2, 0xFF222222);
 		return;
 	}
 
@@ -387,15 +425,6 @@ do_fft_display(jint *bitmap_ptr)
 	xn = (width+(num_bins-1))/num_bins;
 	if (xn < 1) xn = 1;
 
-		/* normalize the data, and compute the average */
-	for (i = 0; i < num_bins; i++) {
-		int n = i+first_bin;
-		double r = fft_r[n];
-		double i = fft_i[n];
-		double t = sqrt(r*r+i*i);
-		fft_r[n] = t;
-	}
-
 	dincr = incr;
 		/* draw fft data */
 	for (i = 0; i < num_bins; i+=incr) {
@@ -404,7 +433,7 @@ do_fft_display(jint *bitmap_ptr)
 		unsigned color;
 		int j;
 		for (j = 0; j < incr; j++) {
-			val += fft_r[i+j+first_bin];
+			val += fft_data[i+j+first_bin];
 		}
 		val /= dincr;
 		color = color_for_value(val);
@@ -427,12 +456,18 @@ do_fft_display(jint *bitmap_ptr)
 			xor_hline(bitmap_ptr, 0, width, i);
 		}
 	}
+}
 
-	fft_y = y2;
-	if (fft_y >= disp_height) {
-		fft_y = 0;
+static void
+fft_display(jint *bitmap_ptr)
+{
+	int disp_height = height-fft_legend_height;
+	int y;
+	for (y = 0; y < disp_height; y++) {
+		fft_display_row(bitmap_ptr, y);
 	}
 }
+
 
 void
 fft_newdata(jint *bitmap_ptr)
@@ -442,12 +477,12 @@ fft_newdata(jint *bitmap_ptr)
 	for (i = 0; i < snd_buflen; i++) {
 		fft_buf[fft_buf_i++] = ((double)snd_buf[i]) / 32768.0;
 		if (fft_buf_i >= fft_size) {
-			do_fft_window();
-			do_fft();
-			do_fft_display(bitmap_ptr);
+			double fft_in[MAX_FFT_SIZE];
+			window_apply(curr_window, fft_buf, fft_in);
+			do_fft(fft_in, fft_hist_next());
 
 				/* only advance half a buffer so window
-				 * doesn't lose detail */
+				 * doesn't lose detail ("overlap-add") */
 			memmove(fft_buf, &fft_buf[fft_size/2],
 				(sizeof fft_buf[0])*fft_size/2);
 			fft_buf_i = fft_size/2;
@@ -459,8 +494,8 @@ fft_newdata(jint *bitmap_ptr)
 void
 fft_redraw(jint *bitmap_ptr)
 {
-	fft_y = 0;
 	fft_legend_height = height/10;
+	fft_display(bitmap_ptr);		/* display spectrum */
 	fft_draw_slider(bitmap_ptr);
 	if (fft_grid_freq) {
 		fft_draw_freqs(bitmap_ptr);
@@ -468,7 +503,7 @@ fft_redraw(jint *bitmap_ptr)
 		fft_draw_piano(bitmap_ptr);
 	}
 	fft_draw_seconds(bitmap_ptr);
-	memset(fft_r, 0, sizeof fft_r);
 	window_free(curr_window);
 	curr_window = window_init(wk_blackman, fft_size);
 }
+//XXX - fft_hist needs to reset when turning on fft mode, or does it really?
