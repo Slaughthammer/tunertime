@@ -16,7 +16,7 @@ public class parms {
 			/* number of samples in FFT window */
 	static public volatile int fft_size = 8192;
 			/* zoom level */
-	static public volatile int fft_width = Strobe.FFT_RANGE_MULT/4;
+	static public volatile int fft_height = Strobe.FFT_RANGE_MULT/4;
 			/* offset in FFT_RANGE_MULTs of screen */
 	static public volatile int fft_offset = 0;
 	static public volatile boolean fft_grid_freq = false;
@@ -53,7 +53,7 @@ public class parms {
 		strobe_color = prefs.getString("strobe_color", "redgreen");
 		fft_mode = prefs.getBoolean("fft_mode", false);
 		fft_size = prefs.getInt("fft_size", 2048);
-		fft_width = prefs.getInt("fft_width", Strobe.FFT_RANGE_MULT/4);
+		fft_height = prefs.getInt("fft_height", Strobe.FFT_RANGE_MULT/4);
 		fft_offset = prefs.getInt("fft_offset", 0);
 		fft_grid_freq = prefs.getBoolean("fft_grid_freq", false);
 		preset_mode = prefs.getBoolean("preset_mode", false);
@@ -70,7 +70,7 @@ public class parms {
 		editor.putInt("strobe_cents", strobe_cents);
 		editor.putBoolean("fft_mode", fft_mode);
 		editor.putInt("fft_size", fft_size);
-		editor.putInt("fft_width", fft_width);
+		editor.putInt("fft_height", fft_height);
 		editor.putInt("fft_offset", fft_offset);
 		editor.putBoolean("fft_grid_freq", fft_grid_freq);
 		editor.putBoolean("preset_mode", preset_mode);

@@ -53,7 +53,7 @@ void strobe_recalculate(jobject this);
 /* fft.c: */
 extern int fft_mode;
 extern int fft_size;
-extern int fft_width;			/* size of freq window we are viewing */
+extern int fft_height;			/* size of freq window we are viewing */
 extern int fft_offset;			/* offset, out of FFT_RANGE_MULT */
 extern int fft_grid_freq;
 

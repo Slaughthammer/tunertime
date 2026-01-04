@@ -441,9 +441,9 @@ public class TunerTime extends Activity
 		parms.harm2_mult = range_limit(parms.harm2_mult, 1, 20);
 
 		parms.fft_size = range_limit(parms.fft_size, 512, 32768);
-		parms.fft_width = range_limit(parms.fft_width, 512, Strobe.FFT_RANGE_MULT);
+		parms.fft_height = range_limit(parms.fft_height, 512, Strobe.FFT_RANGE_MULT);
 		parms.fft_offset = range_limit(parms.fft_offset, 0,
-				Strobe.FFT_RANGE_MULT-parms.fft_width);
+				Strobe.FFT_RANGE_MULT-parms.fft_height);
 
 		parms.changed = true;
 		ToneGenerator.set_freq(cents_to_freq(parms.strobe_cents, 1));
@@ -573,7 +573,7 @@ public class TunerTime extends Activity
 		private int start_x = -1;
 		private int start_fft_offset = 0;
 		private int start_x_width = 0;
-		private int start_fft_width = 0;
+		private int start_fft_height = 0;
 		private boolean could_be_click = false;
 		public boolean onTouch(View v, MotionEvent event) {
 			int i;
@@ -606,13 +606,13 @@ public class TunerTime extends Activity
 				start_x = x1;
 				start_x_width = 0;
 				start_fft_offset = parms.fft_offset +
-					((x1*parms.fft_width) / wid);
+					((x1*parms.fft_height) / wid);
 				could_be_click = true;
 				return true;
 			case MotionEvent.ACTION_POINTER_2_DOWN:
 				start_x_width = Math.abs(x1-x2);
 				if (start_x_width < 10) start_x_width = 10;
-				start_fft_width = parms.fft_width;
+				start_fft_height = parms.fft_height;
 				return true;
 			case MotionEvent.ACTION_MOVE:
 				if (could_be_click || !parms.fft_mode) {
@@ -624,11 +624,11 @@ public class TunerTime extends Activity
 					if (new_width == 0) {
 						new_width = 1;
 					}
-					parms.fft_width = (start_fft_width *
+					parms.fft_height = (start_fft_height *
 						start_x_width) / new_width;
 				}
 				parms.fft_offset = start_fft_offset -
-					((x1*parms.fft_width) / wid);
+					((x1*parms.fft_height) / wid);
 				update_status();
 				return true;
 			case MotionEvent.ACTION_UP:
