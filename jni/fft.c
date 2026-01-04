@@ -236,9 +236,9 @@ fft_draw_piano(jint *bitmap_ptr)
 		if (name) {			/* white keys */
 			filled_rect(bitmap_ptr, x2, y1, x3, y2, 0xFFFFFFFF);
 			if (y0 >= last_y) {
-				seven_seg(bitmap_ptr, y0, x1,
+				seven_seg(bitmap_ptr, x1, y0,
 					name[0], 0xFFAAAAFF);
-				seven_seg(bitmap_ptr, y0+SEVEN_WID, x1,
+				seven_seg(bitmap_ptr, x1+SEVEN_WID, y0,
 					((i+9)/12)+'0', 0xFFAAAAFF);
 				last_y = y0 + (SEVEN_WID*2);
 				xor_hline(bitmap_ptr, 0, x1, y);
@@ -316,7 +316,7 @@ fft_draw_freqs(jint *bitmap_ptr)
 		if ((y0 >= 0) && (y3 < height)) {
 			for (i = 0; label[i]; i++) {
 				seven_seg(bitmap_ptr,
-					y0 + (SEVEN_WID*i), x1, label[i],
+					x1 + (SEVEN_WID*i), y0, label[i],
 					0xFFAAAAFF);
 			}
 		}
