@@ -22,6 +22,8 @@ static struct window_rec *curr_window = NULL;
 
 static int fft_legend_width = 0;
 static int fft_legend_height = 0;
+static int disp_w = 0, disp_h = 0;		/* size of FFT display, the full
+						 * bitmap minus the legends */
 
 
 static void find_peaks(double *spect, double *peaks);
@@ -181,42 +183,40 @@ fft_freq2ind(double freq)
 static void
 fft_draw_xslider(jint *bitmap_ptr)
 {
-	int dw = width-fft_legend_width;
-	int x1 = (dw * fft_xoffset) / FFT_RANGE_MULT;
-	int x2 = (dw * (fft_xoffset+fft_width)) / FFT_RANGE_MULT;
+	int x1 = (disp_w * fft_xoffset) / FFT_RANGE_MULT;
+	int x2 = (disp_w * (fft_xoffset+fft_width)) / FFT_RANGE_MULT;
 	int y1 = height-fft_legend_height;
 
 	if (x1 < 0) x1 = 0;
-	if (x1 >= dw) x1 = dw-1;
+	if (x1 >= disp_w) x1 = disp_w-1;
 	if (x2 <= x1) x2 = x1+1;
-	if (x2 > dw) x2 = dw;
+	if (x2 > disp_w) x2 = disp_w;
 	if (x1 > 0) {
 		filled_rect(bitmap_ptr, 0,y1,x1,height, 0xFFFF0000);
 	}
 	filled_rect(bitmap_ptr, x1,y1,x2,height, 0xFF00FF00);
-	if (x2 < dw) {
-		filled_rect(bitmap_ptr, x2,y1,dw,height, 0xFFFF0000);
+	if (x2 < disp_w) {
+		filled_rect(bitmap_ptr, x2,y1,disp_w,height, 0xFFFF0000);
 	}
 }
 
 static void
 fft_draw_yslider(jint *bitmap_ptr)
 {
-	int dh = height-fft_legend_height;
-	int y1 = (fft_yoffset*dh) / FFT_RANGE_MULT;
-	int y2 = ((fft_yoffset+fft_height)*dh)/FFT_RANGE_MULT;
+	int y1 = (fft_yoffset*disp_h) / FFT_RANGE_MULT;
+	int y2 = ((fft_yoffset+fft_height)*disp_h)/FFT_RANGE_MULT;
 	int x1 = width-(fft_legend_width/3);
 
 	if (y1 < 0) y1 = 0;
-	if (y1 >= dh) y1 = dh-1;
+	if (y1 >= disp_h) y1 = disp_h-1;
 	if (y2 < 0) y2 = 0;
-	if (y2 > dh) y2 = dh;
+	if (y2 > disp_h) y2 = disp_h;
 	if (y1 > 0) {
 		filled_rect(bitmap_ptr, x1,0,width,y1, 0xFFFF0000);
 	}
 	filled_rect(bitmap_ptr, x1,y1,width,y2, 0xFF00FF00);
-	if (y2 < dh) {
-		filled_rect(bitmap_ptr, x1,y2,width,dh, 0xFFFF0000);
+	if (y2 < disp_h) {
+		filled_rect(bitmap_ptr, x1,y2,width,disp_h, 0xFFFF0000);
 	}
 }
 
@@ -314,7 +314,6 @@ round_up(int i)
 static void
 fft_draw_freqs(jint *bitmap_ptr)
 {
-	int dh = height-fft_legend_height;
 	int tot_bins, first_bin, num_bins;
 	int x1,x2,x3;
 	int freq_lo, freq_range;
@@ -345,7 +344,7 @@ fft_draw_freqs(jint *bitmap_ptr)
 		bin = ((double)fft_size)*((double)f/((double)sample_rate));
 		if ((int)bin < first_bin) continue;
 		if ((int)bin >= first_bin+num_bins) break;
-		y = (int)(((bin-(double)first_bin)*(double)dh) / (double)num_bins);
+		y = (int)(((bin-(double)first_bin)*(double)disp_h) / (double)num_bins);
 
 		w = SEVEN_WID*strlen(label);
 		y0 = y - (w / 2);
@@ -353,12 +352,12 @@ fft_draw_freqs(jint *bitmap_ptr)
 		y2 = y + 2;
 		y3 = y0 + w;
 		if (y1 < 0) y1 = 0;
-		if (y2 > dh) y2 = dh;
+		if (y2 > disp_h) y2 = disp_h;
 
 		filled_rect(bitmap_ptr, x2, y1, x3, y2, 0xFFFFFFFF);
 		xor_hline(bitmap_ptr, 0, x1, y);
 		grid_y[num_grid_y++] = y;
-		if ((y0 >= 0) && (y3 < dh)) {
+		if ((y0 >= 0) && (y3 < disp_h)) {
 			for (i = 0; label[i]; i++) {
 				seven_seg(bitmap_ptr,
 					x1 + (SEVEN_WID*i), y0, label[i],
@@ -371,11 +370,9 @@ fft_draw_freqs(jint *bitmap_ptr)
 static void
 fft_draw_grids(jint *bitmap_ptr)
 {
-	int disp_width = width-fft_legend_width;
-	int disp_height = height-fft_legend_height;
 	int i;
 	for (i = 0; i < num_grid_y; i++) {
-		xor_hline(bitmap_ptr, 0, disp_width, grid_y[i]);
+		xor_hline(bitmap_ptr, 0, disp_w, grid_y[i]);
 	}
 
 	double frac_ofs = (fft_xoffset+fft_width) / (double)FFT_RANGE_MULT;
@@ -384,9 +381,9 @@ fft_draw_grids(jint *bitmap_ptr)
 		if (frac > frac_ofs) continue;
 		frac = frac_ofs - frac;
 		frac /= fft_width / (double)FFT_RANGE_MULT;
-		int x = disp_width - (frac * disp_width);
+		int x = disp_w - (frac * disp_w);
 		if (x <= 0) break;
-		xor_vline(bitmap_ptr, x, 0, disp_height);
+		xor_vline(bitmap_ptr, x, 0, disp_h);
 	}
 }
 
@@ -447,9 +444,8 @@ static void
 fft_display_peaks(jint *bitmap_ptr, int x1, int x2, double *peaks)
 {
 	int tot_bins, first_bin, num_bins;
-	int dh = height-fft_legend_height;
 	int i;
-	int thick = (dh+250)/500;
+	int thick = (disp_h+250)/500;
 
 	if (thick < 1) thick = 1;
 
@@ -462,9 +458,9 @@ fft_display_peaks(jint *bitmap_ptr, int x1, int x2, double *peaks)
 		double bin = peaks[i];
 		if ((int)bin < first_bin) continue;
 		if ((int)bin >= first_bin+num_bins) break;
-		int y1 = (int)(((bin-(double)first_bin)*(double)dh) / (double)num_bins);
+		int y1 = (int)(((bin-(double)first_bin)*(double)disp_h) / (double)num_bins);
 		int y2 = y1+thick;
-		if (y2 > dh) y2 = dh;
+		if (y2 > disp_h) y2 = disp_h;
 		filled_rect(bitmap_ptr, x1,y1,x2,y2, 0xFF22FFFF);
 		
 	}
@@ -473,7 +469,6 @@ fft_display_peaks(jint *bitmap_ptr, int x1, int x2, double *peaks)
 static void
 fft_display_col(jint *bitmap_ptr, int x1, int x2, double *fft_data)
 {
-	int dh = height - fft_legend_height;
 	int tot_bins, first_bin, num_bins;
 	int i;
 	int yn;
@@ -482,15 +477,15 @@ fft_display_col(jint *bitmap_ptr, int x1, int x2, double *fft_data)
 
 	COMPUTE_BINS
 
-	if ((dh <= 0) || !num_bins || !fft_data) {
-		filled_rect(bitmap_ptr, x1, 0, x2, dh, 0xFF222222);
+	if ((disp_h <= 0) || !num_bins || !fft_data) {
+		filled_rect(bitmap_ptr, x1, 0, x2, disp_h, 0xFF222222);
 		return;
 	}
 
-	incr = num_bins / dh;
+	incr = num_bins / disp_h;
 	if (incr < 1) incr = 1;
 
-	yn = (dh+(num_bins-1))/num_bins;
+	yn = (disp_h+(num_bins-1))/num_bins;
 	if (yn < 1) yn = 1;
 
 	dincr = incr;
@@ -505,7 +500,7 @@ fft_display_col(jint *bitmap_ptr, int x1, int x2, double *fft_data)
 		}
 		val /= dincr;
 		color = color_for_value(val);
-		y1 = (i*dh)/num_bins;
+		y1 = (i*disp_h)/num_bins;
 		filled_rect(bitmap_ptr, x1, y1, x2, y1+yn, color);
 	}
 }
@@ -513,8 +508,7 @@ fft_display_col(jint *bitmap_ptr, int x1, int x2, double *fft_data)
 static void
 fft_display(jint *bitmap_ptr)
 {
-	int disp_width = width-fft_legend_width;
-	double cols = (FFT_RANGE_MULT*disp_width) /
+	double cols = (FFT_RANGE_MULT*disp_w) /
 			(double)(fft_width*fft_hist_count);
 	double hist_ofs = ((FFT_RANGE_MULT-(fft_xoffset+fft_width))*
 			   fft_hist_count) / (double)FFT_RANGE_MULT;
@@ -522,10 +516,10 @@ fft_display(jint *bitmap_ptr)
 	for (i = 0; ; i++) {
 		double *spect, *peaks;
 		int i_prime = i+hist_ofs;
-		int x1 = disp_width - (cols * (1.0+(double)i_prime-hist_ofs));
-		int x2 = disp_width - (cols * ((double)i_prime-hist_ofs));
+		int x1 = disp_w - (cols * (1.0+(double)i_prime-hist_ofs));
+		int x2 = disp_w - (cols * ((double)i_prime-hist_ofs));
 		if (x2 < 1) break;
-		if (x1 >= disp_width) continue;
+		if (x1 >= disp_w) continue;
 		if (x1 < 0) x1 = 0;
 		if (x2 <= x1) x2 = x1+1;
 		fft_hist_get(i_prime, &spect, &peaks);
@@ -571,6 +565,8 @@ fft_redraw(jint *bitmap_ptr)
 {
 	fft_legend_width = width/10;		/* space for freq legend */
 	fft_legend_height = height/30;		/* space for time legend */
+	disp_w = width - fft_legend_width;
+	disp_h = height - fft_legend_height;
 	fft_draw_xslider(bitmap_ptr);
 	fft_draw_yslider(bitmap_ptr);
 	if (fft_grid_freq) {
