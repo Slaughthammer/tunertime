@@ -9,6 +9,7 @@
 
 #define MAX_FFT_SIZE 32768
 #define FFT_RANGE_MULT 65536	/* for normalized values in fft_x/yoffset etc */
+#define MAX_PEAKS 100
 
 #define NUM_STROBES 3
 

@@ -961,10 +961,6 @@ Which I guess works fine for time too.  Just 1.0 would be the full size
 of fft_hist_count.  Default should be like 0.1 (6 seconds).
 
 
-XXX - central peaks display from ggi
-XXX - make fft samples all the same height, so more seconds are on the
-screen for bigger bins ???  or make it zoomable?
-
 
 XXX - Henrik N wants presets - separate copies of the settings for various instruments.  would like the set of notes to be selected in that too
 XXX - Onno K wants preset import/export to .csv

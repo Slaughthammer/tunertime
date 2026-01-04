@@ -24,6 +24,9 @@ static int fft_legend_width = 0;
 static int fft_legend_height = 0;
 
 
+static void find_peaks(double *spect, double *peaks);
+
+
 /* allocate enough space for about 60 seconds */
 /* note that head/tail are in units of fft_size/2 (the spectrum is half the size
  * of fft_size, because we discard the phase information) */
@@ -31,9 +34,25 @@ static int fft_legend_height = 0;
 static double *fft_hist_buf;
 static int fft_hist_head = 0, fft_hist_tail = 0;
 static int fft_hist_count = 0;		/* BUFSZ / (fft_size/2) */
+static double (*fft_hist_peaks)[MAX_PEAKS] = NULL;
 
-static double *
-fft_hist_next(void)
+static void
+fft_hist_init(void)
+{
+	int old_count = fft_hist_count;
+	if (!fft_hist_buf) {
+		fft_hist_buf = malloc(FFT_HIST_BUFSZ*sizeof *fft_hist_buf);
+	}
+	fft_hist_count = FFT_HIST_BUFSZ / (fft_size/2);
+	if (old_count == fft_hist_count) return;
+
+	free(fft_hist_peaks);
+	fft_hist_peaks = malloc(fft_hist_count * sizeof fft_hist_peaks[0]);
+	fft_hist_head = 0; fft_hist_tail = 0;
+}
+
+static void
+fft_hist_next(double **spect_p, double **peaks_p)
 {
 	fft_hist_tail = (fft_hist_tail+1) % fft_hist_count;
 
@@ -41,21 +60,25 @@ fft_hist_next(void)
 		/* running into back of head */
 		fft_hist_head = ((fft_hist_head + 1) % fft_hist_count);
 	}
-	return &fft_hist_buf[fft_hist_tail*fft_size/2];
+	*spect_p = &fft_hist_buf[fft_hist_tail*fft_size/2];
+	*peaks_p = &fft_hist_peaks[fft_hist_tail][0];
 }
 
 /* ofs is negative frames counting backwards from tail */
-static double *
-fft_hist_get(int ofs)
+static void
+fft_hist_get(int ofs, double **spect_p, double **peaks_p)
 {
 	int avail = ((fft_hist_tail > fft_hist_head)
 			? (fft_hist_tail - fft_hist_head)
 			: (fft_hist_tail + fft_hist_count - fft_hist_head));
 	if (avail < ofs) {
-		return NULL;
+		*spect_p = NULL;
+		*peaks_p = NULL;
+		return;
 	}
-	return &fft_hist_buf[((fft_hist_tail + fft_hist_count - ofs) %
-			      fft_hist_count) * fft_size/2];
+	int n = ((fft_hist_tail + fft_hist_count - ofs) % fft_hist_count);
+	*spect_p = &fft_hist_buf[n * fft_size/2];
+	*peaks_p = &fft_hist_peaks[n][0];
 }
 
 
@@ -69,9 +92,6 @@ fft_init(void)
 		le2 = le>>1;
 		fft_sr[l] = cos(M_PI/((double)le2));
 		fft_si[l] = -sin(M_PI/((double)le2));
-	}
-	if (!fft_hist_buf) {
-		fft_hist_buf = malloc(FFT_HIST_BUFSZ*sizeof *fft_hist_buf);
 	}
 }
 
@@ -210,7 +230,7 @@ fft_recalculate(jobject this)
 	for (i = 0; i < 88; i++) {
 		piano_freqs[i] = cents_to_freq(this, i*100, 1);
 	}
-	fft_hist_count = FFT_HIST_BUFSZ / (fft_size/2);
+	fft_hist_init();
 }
 
 static int grid_y[SEVEN_CHARS];
@@ -424,6 +444,29 @@ color_for_value(double x)
 
 
 static void
+fft_display_peaks(jint *bitmap_ptr, int x1, int x2, double *peaks)
+{
+	int tot_bins, first_bin, num_bins;
+	int dh = height-fft_legend_height;
+	int i;
+
+	if (!peaks) return;
+
+	COMPUTE_BINS
+
+	for (i = 0; i < MAX_PEAKS; i++) {
+		if (peaks[i] == 0.0) break;
+		double bin = peaks[i];
+		if ((int)bin < first_bin) continue;
+		if ((int)bin >= first_bin+num_bins) break;
+		int y = (int)(((bin-(double)first_bin)*(double)dh) / (double)num_bins);
+		filled_rect(bitmap_ptr, x1,y,x2,y+1, 0xFFCCCCFF);
+
+		
+	}
+}
+
+static void
 fft_display_col(jint *bitmap_ptr, int x1, int x2, double *fft_data)
 {
 	int dh = height - fft_legend_height;
@@ -461,8 +504,6 @@ fft_display_col(jint *bitmap_ptr, int x1, int x2, double *fft_data)
 		y1 = (i*dh)/num_bins;
 		filled_rect(bitmap_ptr, x1, y1, x2, y1+yn, color);
 	}
-
-//XXX - display stashed peaks
 }
 
 static void
@@ -475,6 +516,7 @@ fft_display(jint *bitmap_ptr)
 			   fft_hist_count) / (double)FFT_RANGE_MULT;
 	int i;
 	for (i = 0; ; i++) {
+		double *spect, *peaks;
 		int i_prime = i+hist_ofs;
 		int x1 = disp_width - (cols * (1.0+(double)i_prime-hist_ofs));
 		int x2 = disp_width - (cols * ((double)i_prime-hist_ofs));
@@ -482,8 +524,9 @@ fft_display(jint *bitmap_ptr)
 		if (x1 >= disp_width) continue;
 		if (x1 < 0) x1 = 0;
 		if (x2 <= x1) x2 = x1+1;
-//XXX - pass peaks in, too
-		fft_display_col(bitmap_ptr, x1, x2, fft_hist_get(i_prime));
+		fft_hist_get(i_prime, &spect, &peaks);
+		fft_display_col(bitmap_ptr, x1, x2, spect);
+		fft_display_peaks(bitmap_ptr, x1, x2, peaks);
 	}
 
 	fft_draw_grids(bitmap_ptr);
@@ -500,10 +543,11 @@ fft_newdata(jint *bitmap_ptr)
 		fft_buf[fft_buf_i++] = ((double)snd_buf[i]) / 32768.0;
 		if (fft_buf_i >= fft_size) {
 			double fft_in[MAX_FFT_SIZE];
+			double *spect, *peaks;
+			fft_hist_next(&spect, &peaks);
 			window_apply(curr_window, fft_buf, fft_in);
-			do_fft(fft_in, fft_hist_next());
-
-//XXX - find peaks, stash them
+			do_fft(fft_in, spect);
+			find_peaks(spect, peaks);
 
 				/* only advance half a buffer so window
 				 * doesn't lose detail ("overlap-add") */
@@ -534,3 +578,125 @@ fft_redraw(jint *bitmap_ptr)
 	window_free(curr_window);
 	curr_window = window_init(wk_blackman, fft_size);
 }
+
+
+/* peak detection: */
+
+#define MOVAVG_CENTS 900	/* moving average window */
+static double movavg[MAX_FFT_SIZE];
+#define PEAK_BOT 0.5		/* coeff for movavg[y] for bottom of peak */
+#define PEAK_TOP 2.0		/* coeff for movang[y] for top of lowest peak */
+
+
+static void
+accum_movavg(int bin, double val)
+{
+	static int last_filled = 0;
+	if (bin == -1) {
+		movavg[0] = val;
+		last_filled = 0;
+	} else {
+		if (bin < 0) bin = 0;
+		if (bin > fft_size/2-1) bin = fft_size/2-1;
+		if (bin <= last_filled) {
+			/* repeating an old bin */
+		} else {
+			for (; last_filled < bin-1; last_filled++) {
+				movavg[last_filled+1] = movavg[last_filled];
+			}
+			movavg[bin] = val;
+			last_filled = bin;
+		}
+	}
+}
+
+static void
+compute_movavg(double *spect, int spect_bins)
+{
+	double range_frac = exp2(((double)MOVAVG_CENTS)/1200.0);
+	double sum = 0.0;
+	int sum_y1 = 1, sum_y2 = 1;		/* range covered by sum */
+			/* range is ideally from freq .. range_frac*freq */
+	int y;
+
+	/* skip the 0 bin, which represents DC (freq==0) and would throw off the
+	 * math here */
+	accum_movavg(-1, 0.0);
+	for (y = 1; y < spect_bins; y++) {
+		sum += spect[y];
+		sum_y2 = y;
+		int new_y1 = (((double)sum_y2)/range_frac)+0.5;
+		if (sum_y1 < new_y1) {
+			/* subtract elements that window has passed */
+			int i;
+			for (i = sum_y1; i < new_y1; i++) {
+				sum -= spect[i];
+			}
+			sum_y1 = new_y1;
+		}
+/* bin = sum_y1*exp2(log2(sum_y2/sum_y1)/2) = sum_y1*sqrt(sum_y2/sum_y1) */
+		accum_movavg(/*bin=*/sqrt(sum_y1*sum_y2)+0.5,
+			     /*val=*/sum/(double)((sum_y2-sum_y1)+1));
+	}
+	while (sum_y1 < sum_y2) {
+		sum -= spect[sum_y1++];
+		accum_movavg(/*bin=*/sqrt(sum_y1*sum_y2)+0.5,
+			     /*val=*/sum/(double)((sum_y2-sum_y1)+1));
+	}
+	accum_movavg(spect_bins-1, 0);
+}
+
+/* finds a peak and returns its center (in bins) */
+/* *sb_y_p indicates which bin to start the search at, and it is incremented to
+ * avoid re-discovering previous peaks. */
+static double
+find_peak_prime(double *spect, int spect_bins, int *sb_y_p)
+{
+	int peak_seen = 0;
+	int y = *sb_y_p;
+	int start_y = y;
+	for (; y < spect_bins; y++) {
+		double v = spect[y] / movavg[y];
+		if (v < PEAK_BOT) {
+			if (peak_seen) {
+				int stop_y = y-1;
+				double sum = 0.0;
+				double out_of = 0.0;
+				int i;
+				for (i = start_y; i <= stop_y; i++) {
+					v = spect[i];
+					sum += i*v;
+					out_of += v;
+				}
+				*sb_y_p = y;
+				return sum / out_of;
+			} else {
+				start_y = y+1;	/* next one might be it */
+			}
+		} else if (v >= PEAK_TOP) {
+			peak_seen = 1;
+		}
+	}
+	*sb_y_p = y;
+	return 0.0;
+}
+
+/* Fills in up to MAX_PEAKS members of peaks (0.0-terminated) with an ordered
+ * list of frequencies where peaks were detected */
+static void
+find_peaks(double *spect, double *peaks)
+{
+	int num_peaks = 0;
+	int spect_bins = fft_size/2;
+
+	compute_movavg(spect, spect_bins);
+	int sb_y = 1;
+	while (num_peaks < MAX_PEAKS-1) {
+		double val = find_peak_prime(spect, spect_bins, &sb_y);
+		if (!val) break;
+		peaks[num_peaks++] = val;
+	}
+
+	peaks[num_peaks] = 0.0;
+}
+//XXX - turn the display upside down, higher frequencies should be visually higher
