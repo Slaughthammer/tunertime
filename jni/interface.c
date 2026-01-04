@@ -403,10 +403,9 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 
 	bitmap = NULL;
 
-	fft_init();
-	strobe_init();
-
 	sound_init(this);
+	strobe_init();
+	fft_init();
 
 	while (1) {
 		check_surface(this);

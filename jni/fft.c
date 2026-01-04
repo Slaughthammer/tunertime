@@ -26,7 +26,7 @@ static int fft_legend_width = 0;
 /* allocate enough space for about 60 seconds */
 /* note that head/tail are in units of fft_size/2 (the spectrum is half the size
  * of fft_size, because we discard the phase information) */
-#define FFT_HIST_BUFSZ (44100*60)
+#define FFT_HIST_BUFSZ (sample_rate*60)
 static double *fft_hist_buf;
 static int fft_hist_head = 0, fft_hist_tail = 0;
 static int fft_hist_count = 0;		/* BUFSZ / (fft_size/2) */
