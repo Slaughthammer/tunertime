@@ -239,24 +239,24 @@ fft_recalculate(jobject this)
 static int grid_y[SEVEN_CHARS];
 static int num_grid_y = 0;
 
-//XXX - it's wrong because it inverses the meaning of fft_yoffset.
 static int
 y_for_bin(double bin)
 {
 		/* scaled to FFT_RANGE_MULT */
-	double frac = bin * FFT_RANGE_MULT / (double)(fft_size/2);
-	if (frac < fft_yoffset) return disp_h;
+	double frac = FFT_RANGE_MULT * ((fft_size/2)-bin)/(double)(fft_size/2);
+	if (frac < fft_yoffset) return -1;
 	frac -= fft_yoffset;
-	if (frac > fft_height) return -1;
-	return disp_h - (int)(frac * disp_h / (double)fft_height);
+	if (frac > fft_height) return disp_h;
+	return frac * disp_h / (double)fft_height;
 }
 
 static double
 bin_for_y(int y)
 {
-	double frac = ((disp_h-y) * fft_height) / (double)disp_h;
+	double frac = (y * fft_height) / (double)disp_h;
 	frac += fft_yoffset;
-	return frac * (fft_size/2) / (double)FFT_RANGE_MULT;
+	frac *= (fft_size/2) / (double)FFT_RANGE_MULT;
+	return (fft_size/2) - (int)(frac+0.5);
 }
 
 static void
