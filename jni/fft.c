@@ -8,8 +8,10 @@
 
 int fft_mode = 0;
 int fft_size = 8192;
-int fft_height = FFT_RANGE_MULT;		/* size of freq window we are viewing */
-int fft_offset = 0;			/* offset, out of FFT_RANGE_MULT */
+int fft_width = FFT_RANGE_MULT;		/* size of freq window we are viewing */
+int fft_height = FFT_RANGE_MULT;	/* size of freq window we are viewing */
+int fft_xoffset = 0;			/* offset, out of FFT_RANGE_MULT */
+int fft_yoffset = 0;			/* offset, out of FFT_RANGE_MULT */
 int fft_grid_freq = 0;
 
 static double fft_buf[MAX_FFT_SIZE];
@@ -158,8 +160,8 @@ fft_freq2ind(double freq)
 static void
 fft_draw_slider(jint *bitmap_ptr)
 {
-	int y1 = (fft_offset*height) / FFT_RANGE_MULT;
-	int y2 = ((fft_offset+fft_height)*height)/FFT_RANGE_MULT;
+	int y1 = (fft_yoffset*height) / FFT_RANGE_MULT;
+	int y2 = ((fft_yoffset+fft_height)*height)/FFT_RANGE_MULT;
 	int x1 = width-(fft_legend_width/3);
 
 	if (y1 < 0) y1 = 0;
@@ -193,7 +195,7 @@ static int num_grid_y = 0;
 
 #define COMPUTE_BINS \
 	tot_bins = fft_size/2; \
-	first_bin = ((fft_offset*tot_bins)/FFT_RANGE_MULT); \
+	first_bin = ((fft_yoffset*tot_bins)/FFT_RANGE_MULT); \
 	num_bins = ((fft_height*tot_bins)/FFT_RANGE_MULT); \
 	if (first_bin < 0) first_bin = 0; \
 	if (num_bins > tot_bins) num_bins = tot_bins; \
@@ -389,8 +391,6 @@ color_for_value(double x)
 }
 
 
-//XXX - first, rotate it
-//XXX - then, decide book-keeping for describing time offset and scale and paused in the java ui (if it's scrolled back, tapping will unpause it and bring it to real time)
 //XXX - then honor the time offset back here, which should be the super easy part
 
 static void

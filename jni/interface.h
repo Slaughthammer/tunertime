@@ -8,7 +8,7 @@
 #define SND_BUFSAMPS 32768
 
 #define MAX_FFT_SIZE 32768
-#define FFT_RANGE_MULT 65536	/* for normalized values in fft_offset et al */
+#define FFT_RANGE_MULT 65536	/* for normalized values in fft_yoffset et al */
 #define FFT_SECONDS 5		/* 5 seconds on the screen at once */
 
 #define NUM_STROBES 3
@@ -53,8 +53,9 @@ void strobe_recalculate(jobject this);
 /* fft.c: */
 extern int fft_mode;
 extern int fft_size;
+extern int fft_width;			/* size of time window we are viewing */
 extern int fft_height;			/* size of freq window we are viewing */
-extern int fft_offset;			/* offset, out of FFT_RANGE_MULT */
+extern int fft_xoffset, fft_yoffset;	/* offset, out of FFT_RANGE_MULT */
 extern int fft_grid_freq;
 
 void fft_init(void);

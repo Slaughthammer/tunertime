@@ -43,8 +43,10 @@ static jfieldID fid_p_harm2_mult;
 static jfieldID fid_p_strobe_color;
 static jfieldID fid_p_fft_mode;
 static jfieldID fid_p_fft_size;
+static jfieldID fid_p_fft_width;
 static jfieldID fid_p_fft_height;
-static jfieldID fid_p_fft_offset;
+static jfieldID fid_p_fft_xoffset;
+static jfieldID fid_p_fft_yoffset;
 static jfieldID fid_p_fft_grid_freq;
 static jfieldID fid_p_changed;
 
@@ -261,8 +263,10 @@ jni_init(JNIEnv *env_)
 	STFIELD(p_strobe_color, parms, "strobe_color", "Ljava/lang/String;")
 	STFIELD(p_fft_mode, parms, "fft_mode", "Z")
 	STFIELD(p_fft_size, parms, "fft_size", "I")
+	STFIELD(p_fft_width, parms, "fft_width", "I")
 	STFIELD(p_fft_height, parms, "fft_height", "I")
-	STFIELD(p_fft_offset, parms, "fft_offset", "I")
+	STFIELD(p_fft_xoffset, parms, "fft_xoffset", "I")
+	STFIELD(p_fft_yoffset, parms, "fft_yoffset", "I")
 	STFIELD(p_fft_grid_freq, parms, "fft_grid_freq", "Z")
 	STFIELD(p_changed, parms, "changed", "Z")
 
@@ -374,8 +378,10 @@ check_parms(jobject this)
 
 	fft_mode = (*env)->GetStaticBooleanField(env, cl_parms, fid_p_fft_mode);
 	fft_size = (*env)->GetStaticIntField(env, cl_parms, fid_p_fft_size);
+	fft_width = (*env)->GetStaticIntField(env, cl_parms, fid_p_fft_width);
 	fft_height = (*env)->GetStaticIntField(env, cl_parms, fid_p_fft_height);
-	fft_offset = (*env)->GetStaticIntField(env, cl_parms, fid_p_fft_offset);
+	fft_xoffset = (*env)->GetStaticIntField(env, cl_parms, fid_p_fft_xoffset);
+	fft_yoffset = (*env)->GetStaticIntField(env, cl_parms, fid_p_fft_yoffset);
 	fft_grid_freq = (*env)->GetStaticBooleanField(env, cl_parms, fid_p_fft_grid_freq);
 
 	if (fft_mode) {

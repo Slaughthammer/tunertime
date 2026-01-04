@@ -442,7 +442,10 @@ public class TunerTime extends Activity
 
 		parms.fft_size = range_limit(parms.fft_size, 512, 32768);
 		parms.fft_height = range_limit(parms.fft_height, 512, Strobe.FFT_RANGE_MULT);
-		parms.fft_offset = range_limit(parms.fft_offset, 0,
+//XXX - does this x range make sense?  Should FFT_RANGE_MULT be different horiz from vert?
+		parms.fft_xoffset = range_limit(parms.fft_xoffset, 0,
+				Strobe.FFT_RANGE_MULT-parms.fft_width);
+		parms.fft_yoffset = range_limit(parms.fft_yoffset, 0,
 				Strobe.FFT_RANGE_MULT-parms.fft_height);
 
 		parms.changed = true;
@@ -570,46 +573,60 @@ public class TunerTime extends Activity
 	}
 
 	private class strobe_listener implements View.OnTouchListener {
-		private int start_y = -1;
-		private int start_fft_offset = 0;
-		private int start_y_height = 0;
-		private int start_fft_height = 0;
+		private int start_x = -1, start_y = -1;
+		private int start_fft_xoffset = 0, start_fft_yoffset = 0;
+		private int start_x_width = 0, start_y_height = 0;
+		private int start_fft_width = 0, start_fft_height = 0;
 		private boolean could_be_click = false;
 		public boolean onTouch(View v, MotionEvent event) {
 			int i;
+			int x1 = -1, x2 = -1;
 			int y1 = -1, y2 = -1;
+			int width = v.getWidth();
 			int height = v.getHeight();
 
-			if (height == 0) {
+			if ((width == 0) || (height == 0)) {
 				/* unlikely, but don't divide by zero */
 				return false;
 			}
 
 			if ((i = event.findPointerIndex(0)) != -1) {
+				x1 = (int)event.getX(i);
 				y1 = (int)event.getY(i);
 			} else {
+				start_x_width = 0;
 				start_y_height = 0;
 				return false;
 			}
 			if ((i = event.findPointerIndex(1)) != -1) {
+				x2 = (int)event.getX(i);
 				y2 = (int)event.getY(i);
 				could_be_click = false;
 			} else {
+				start_x_width = 0;
 				start_y_height = 0;
 			}
 			if (could_be_click &&
-			    (Math.abs(y1 - start_y) > (height/40))) {
+			    ((Math.abs(x1 - start_x) > (width/40)) ||
+			     (Math.abs(y1 - start_y) > (height/40)))) {
 				could_be_click = false;
 			}
 			switch (event.getAction()) {
 			case MotionEvent.ACTION_DOWN:
+				start_x = x1;
+				start_x_width = 0;
 				start_y = y1;
 				start_y_height = 0;
-				start_fft_offset = parms.fft_offset +
+				start_fft_xoffset = parms.fft_xoffset +
+					((x1*parms.fft_width) / width);
+				start_fft_yoffset = parms.fft_yoffset +
 					((y1*parms.fft_height) / height);
 				could_be_click = true;
 				return true;
 			case MotionEvent.ACTION_POINTER_2_DOWN:
+				start_x_width = Math.abs(x1-x2);
+				if (start_x_width < 10) start_x_width = 10;
+				start_fft_width = parms.fft_width;
 				start_y_height = Math.abs(y1-y2);
 				if (start_y_height < 10) start_y_height = 10;
 				start_fft_height = parms.fft_height;
@@ -618,7 +635,16 @@ public class TunerTime extends Activity
 				if (could_be_click || !parms.fft_mode) {
 					return true;
 				}
-				int delta_y = y1 - start_y;
+				if (start_x_width != 0) {
+					int new_width = Math.abs(y1-y2);
+					if (new_width == 0) {
+						new_width = 1;
+					}
+					parms.fft_width = (start_fft_width *
+						start_x_width) / new_width;
+				}
+				parms.fft_xoffset = start_fft_xoffset -
+					((x1*parms.fft_width) / width);
 				if (start_y_height != 0) {
 					int new_height = Math.abs(y1-y2);
 					if (new_height == 0) {
@@ -627,7 +653,7 @@ public class TunerTime extends Activity
 					parms.fft_height = (start_fft_height *
 						start_y_height) / new_height;
 				}
-				parms.fft_offset = start_fft_offset -
+				parms.fft_yoffset = start_fft_yoffset -
 					((y1*parms.fft_height) / height);
 				update_status();
 				return true;
