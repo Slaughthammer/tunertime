@@ -239,21 +239,22 @@ fft_recalculate(jobject this)
 static int grid_y[SEVEN_CHARS];
 static int num_grid_y = 0;
 
+//XXX - it's wrong because it inverses the meaning of fft_yoffset.
 static int
 y_for_bin(double bin)
 {
 		/* scaled to FFT_RANGE_MULT */
 	double frac = bin * FFT_RANGE_MULT / (double)(fft_size/2);
-	if (frac < fft_yoffset) return -1;
+	if (frac < fft_yoffset) return disp_h;
 	frac -= fft_yoffset;
-	if (frac > fft_height) return disp_h;
-	return frac * disp_h / (double)fft_height;
+	if (frac > fft_height) return -1;
+	return disp_h - (int)(frac * disp_h / (double)fft_height);
 }
 
 static double
 bin_for_y(int y)
 {
-	double frac = (y * fft_height) / (double)disp_h;
+	double frac = ((disp_h-y) * fft_height) / (double)disp_h;
 	frac += fft_yoffset;
 	return frac * (fft_size/2) / (double)FFT_RANGE_MULT;
 }
@@ -264,7 +265,7 @@ fft_draw_piano(jint *bitmap_ptr)
 	int x1 = width - fft_legend_width;
 	int x3 = width - (fft_legend_width/3);
 	int x2 = x3 - (fft_legend_width/4);
-	int last_y = 0;
+	int last_y = disp_h;
 	int i;
 
 	num_grid_y = 0;
@@ -273,8 +274,8 @@ fft_draw_piano(jint *bitmap_ptr)
 		const char *name = names[(i+9) % 12];
 
 		int y = y_for_bin(piano_freqs[i] * bins_per_hz);
-		if (y < 0) continue;
-		if (y >= disp_h) break;
+		if (y >= disp_h) continue;
+		if (y < 0) break;
 
 		int y0 = y - (SEVEN_WID-1);
 		int y1 = y - 1;
@@ -284,12 +285,12 @@ fft_draw_piano(jint *bitmap_ptr)
 
 		if (name) {			/* white keys */
 			filled_rect(bitmap_ptr, x2, y1, x3, y2, 0xFFFFFFFF);
-			if (y0 >= last_y) {
+			if (y0 + (SEVEN_WID*2) <= last_y) {
 				seven_seg(bitmap_ptr, x1, y0,
 					name[0], 0xFFAAAAFF);
 				seven_seg(bitmap_ptr, x1+SEVEN_WID, y0,
 					((i+9)/12)+'0', 0xFFAAAAFF);
-				last_y = y0 + (SEVEN_WID*2);
+				last_y = y0;
 				grid_y[num_grid_y++] = y;
 			}
 		} else {
@@ -319,22 +320,20 @@ fft_draw_freqs(jint *bitmap_ptr)
 	int x1 = width - fft_legend_width;
 	int x3 = width - (fft_legend_width/3);
 	int x2 = x3 - (fft_legend_width/4);
-	int freq_lo = (bin_for_y(0) / bins_per_hz);
-	int freq_hi = (bin_for_y(disp_h) / bins_per_hz);
+	int freq_lo = (bin_for_y(disp_h) / bins_per_hz);
+	int freq_hi = (bin_for_y(0) / bins_per_hz);
 	int freq_range = freq_hi - freq_lo;
 	int step = round_up(freq_range / 15);
 	int f;
 
 	num_grid_y = 0;
 	for (f = (freq_lo/step)*step; ; f += step) {
-		int i;
-		char label[20];
-
-		sprintf(label, "%d", f);
-
 		int y = y_for_bin(f*bins_per_hz);
-		if (y < 0) continue;
-		if (y >= disp_h) break;
+		if (y >= disp_h) continue;
+		if (y < 0) break;
+
+		char label[20];
+		sprintf(label, "%d", f);
 
 		int w = SEVEN_WID*strlen(label);
 		int y0 = y - (w / 2);
@@ -348,6 +347,7 @@ fft_draw_freqs(jint *bitmap_ptr)
 		xor_hline(bitmap_ptr, 0, x1, y);
 		grid_y[num_grid_y++] = y;
 		if ((y0 >= 0) && (y3 < disp_h)) {
+			int i;
 			for (i = 0; label[i]; i++) {
 				seven_seg(bitmap_ptr,
 					x1 + (SEVEN_WID*i), y0, label[i],
@@ -443,8 +443,8 @@ fft_display_peaks(jint *bitmap_ptr, int x1, int x2, double *peaks)
 	for (i = 0; i < MAX_PEAKS; i++) {
 		if (peaks[i] == 0.0) break;
 		int y1 = y_for_bin(peaks[i]);
-		if (y1 < 0) continue;
-		if (y1 >= disp_h) break;
+		if (y1 >= disp_h) continue;
+		if (y1 < 0) break;
 		int y2 = y1+thick;
 		if (y2 > disp_h) y2 = disp_h;
 		filled_rect(bitmap_ptr, x1,y1,x2,y2, 0xFF22FFFF);
@@ -462,14 +462,14 @@ fft_display_col(jint *bitmap_ptr, int x1, int x2, double *spect)
 		return;
 	}
 
-	int bin_lo = bin_for_y(0)+0.5;
-	int bin_hi = bin_for_y(disp_h)+0.5;
+	int bin_lo = bin_for_y(disp_h);
+	int bin_hi = bin_for_y(0);
 	int bin_range = bin_hi-bin_lo;
 	int sum = ((bin_range > disp_h) ? ceil(bin_range / disp_h)+0.5 : 0);
 
-	int prev_y = 0;		/* center of current tone */
-	int prev_y2 = 0;	/* bottom of previous tone */
-	for (i = bin_for_y(0); i < fft_size/2; ) {
+	int prev_y = disp_h;	/* center of current tone */
+	int prev_y2 = disp_h;	/* top of previous tone */
+	for (i = bin_lo; i < fft_size/2; ) {
 		double val = 0;
 		if (sum) {
 			int j;
@@ -482,14 +482,14 @@ fft_display_col(jint *bitmap_ptr, int x1, int x2, double *spect)
 		}
 		unsigned color = color_for_value(val);
 		int y1 = prev_y2;
-		if (y1 >= disp_h) break;
+		if (y1 < 0) break;
 		int next_y = y_for_bin(i);
 		int y2 = (prev_y+next_y)/2;
-		if (y2 <= y1) y2 = y1+1;
-		if (y2 >= disp_h) y2 = disp_h;
+		if (y2 >= y1) y2 = y1-1;
+		if (y2 < 0) y2 = 0;
 		prev_y = next_y;
 		prev_y2 = y2;
-		filled_rect(bitmap_ptr, x1, y1, x2, y2, color);
+		filled_rect(bitmap_ptr, x1, y2, x2, y1, color);
 	}
 }
 
@@ -687,4 +687,3 @@ find_peaks(double *spect, double *peaks)
 
 	peaks[num_peaks] = 0.0;
 }
-//XXX - turn the display upside down, higher frequencies should be visually higher
