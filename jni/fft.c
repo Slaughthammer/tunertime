@@ -449,6 +449,9 @@ fft_display_peaks(jint *bitmap_ptr, int x1, int x2, double *peaks)
 	int tot_bins, first_bin, num_bins;
 	int dh = height-fft_legend_height;
 	int i;
+	int thick = (dh+250)/500;
+
+	if (thick < 1) thick = 1;
 
 	if (!peaks) return;
 
@@ -459,9 +462,10 @@ fft_display_peaks(jint *bitmap_ptr, int x1, int x2, double *peaks)
 		double bin = peaks[i];
 		if ((int)bin < first_bin) continue;
 		if ((int)bin >= first_bin+num_bins) break;
-		int y = (int)(((bin-(double)first_bin)*(double)dh) / (double)num_bins);
-		filled_rect(bitmap_ptr, x1,y,x2,y+1, 0xFFCCCCFF);
-
+		int y1 = (int)(((bin-(double)first_bin)*(double)dh) / (double)num_bins);
+		int y2 = y1+thick;
+		if (y2 > dh) y2 = dh;
+		filled_rect(bitmap_ptr, x1,y1,x2,y2, 0xFF22FFFF);
 		
 	}
 }
