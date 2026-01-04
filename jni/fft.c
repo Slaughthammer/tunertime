@@ -306,13 +306,11 @@ round_up(int i)
 		mult *= 10;
 		i /= 10;
 	}
-	if (i >= 50) {
-		return 100*mult;
-	}
-	if ( i >= 25) {
-		return 50*mult;
-	}
-	return 25*mult;
+	if (i >= 50) return 100*mult;
+	if (i >= 25) return 50*mult;
+	if (i >= 10) return 25*mult;
+	if (i >= 5) return 10*mult;
+	return 5*mult;
 }
 
 static void
@@ -324,7 +322,7 @@ fft_draw_freqs(jint *bitmap_ptr)
 	int freq_lo = (bin_for_y(0) / bins_per_hz);
 	int freq_hi = (bin_for_y(disp_h) / bins_per_hz);
 	int freq_range = freq_hi - freq_lo;
-	int step = round_up(freq_range / 7);
+	int step = round_up(freq_range / 15);
 	int f;
 
 	num_grid_y = 0;

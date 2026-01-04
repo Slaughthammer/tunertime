@@ -442,8 +442,8 @@ public class TunerTime extends Activity
 		parms.harm2_mult = range_limit(parms.harm2_mult, 1, 20);
 
 		parms.fft_size = range_limit(parms.fft_size, 512, 32768);
-		parms.fft_width = range_limit(parms.fft_width, 512, Strobe.FFT_RANGE_MULT);
-		parms.fft_height = range_limit(parms.fft_height, 512, Strobe.FFT_RANGE_MULT);
+		parms.fft_width = range_limit(parms.fft_width, 128, Strobe.FFT_RANGE_MULT);
+		parms.fft_height = range_limit(parms.fft_height, 128, Strobe.FFT_RANGE_MULT);
 		if ((strobe != null) && !strobe.paused) {
 			parms.fft_xoffset = Strobe.FFT_RANGE_MULT;
 		}
