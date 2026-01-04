@@ -20,6 +20,8 @@ static double fft_sr[32];
 static double fft_si[32];
 static struct window_rec *curr_window = NULL;
 
+static double bins_per_hz = 0;			/* fft_size / sample_rate */
+
 static int fft_legend_width = 0;
 static int fft_legend_height = 0;
 static int disp_w = 0, disp_h = 0;		/* size of FFT display, the full
@@ -231,50 +233,52 @@ fft_recalculate(jobject this)
 		piano_freqs[i] = cents_to_freq(this, i*100, 1);
 	}
 	fft_hist_init();
+	bins_per_hz = fft_size / (double)sample_rate;
 }
 
 static int grid_y[SEVEN_CHARS];
 static int num_grid_y = 0;
 
-#define COMPUTE_BINS \
-	tot_bins = fft_size/2; \
-	first_bin = ((fft_yoffset*tot_bins)/FFT_RANGE_MULT); \
-	num_bins = ((fft_height*tot_bins)/FFT_RANGE_MULT); \
-	if (first_bin < 0) first_bin = 0; \
-	if (num_bins > tot_bins) num_bins = tot_bins; \
-	if (first_bin + num_bins > tot_bins) first_bin = tot_bins - num_bins;
+static int
+y_for_bin(double bin)
+{
+		/* scaled to FFT_RANGE_MULT */
+	double frac = bin * FFT_RANGE_MULT / (double)(fft_size/2);
+	if (frac < fft_yoffset) return -1;
+	frac -= fft_yoffset;
+	if (frac > fft_height) return disp_h;
+	return frac * disp_h / (double)fft_height;
+}
+
+static double
+bin_for_y(int y)
+{
+	double frac = (y * fft_height) / (double)disp_h;
+	frac += fft_yoffset;
+	return frac * (fft_size/2) / (double)FFT_RANGE_MULT;
+}
 
 static void
 fft_draw_piano(jint *bitmap_ptr)
 {
-	int x1,x2,x3;
-	int tot_bins, first_bin, num_bins;
+	int x1 = width - fft_legend_width;
+	int x3 = width - (fft_legend_width/3);
+	int x2 = x3 - (fft_legend_width/4);
 	int last_y = 0;
 	int i;
 
-	x1 = width - fft_legend_width;
-	x3 = width - (fft_legend_width/3);
-	x2 = x3 - (fft_legend_width/4);
-
-	COMPUTE_BINS
-
 	num_grid_y = 0;
 	for (i = 0; i < 88; i++) {
-		double freq, bin;
-		int y, y0, y1, y2;
 		static const char *(names[12]) = { "C", NULL, "D", NULL, "E", "F", NULL, "G", NULL, "A", NULL, "B" };
 		const char *name = names[(i+9) % 12];
 
-		freq = piano_freqs[i];
+		int y = y_for_bin(piano_freqs[i] * bins_per_hz);
+		if (y < 0) continue;
+		if (y >= disp_h) break;
 
-		bin = ((double)fft_size)*(freq/((double)sample_rate));
-		if ((int)bin < first_bin) continue;
-		if ((int)bin >= first_bin+num_bins) break;
-
-		y = (int)(((bin-(double)first_bin)*(double)height) / (double)num_bins);
-		y0 = y - (SEVEN_WID-1);
-		y1 = y - 1;
-		y2 = y + 2;
+		int y0 = y - (SEVEN_WID-1);
+		int y1 = y - 1;
+		int y2 = y + 2;
 		if (y1 < 0) y1 = 0;
 		if (y2 > height) y2 = height;
 
@@ -314,43 +318,31 @@ round_up(int i)
 static void
 fft_draw_freqs(jint *bitmap_ptr)
 {
-	int tot_bins, first_bin, num_bins;
-	int x1,x2,x3;
-	int freq_lo, freq_range;
-	int f, step;
-
-	x1 = width - fft_legend_width;
-	x3 = width - (fft_legend_width/3);
-	x2 = x3 - (fft_legend_width/4);
-
-	COMPUTE_BINS
-
-	freq_lo = (first_bin * sample_rate) / fft_size;
-	freq_range = (num_bins * sample_rate) / fft_size;
-
-	step = freq_range / 7;
-	step = round_up(step);
+	int x1 = width - fft_legend_width;
+	int x3 = width - (fft_legend_width/3);
+	int x2 = x3 - (fft_legend_width/4);
+	int freq_lo = (bin_for_y(0) / bins_per_hz);
+	int freq_hi = (bin_for_y(disp_h) / bins_per_hz);
+	int freq_range = freq_hi - freq_lo;
+	int step = round_up(freq_range / 7);
+	int f;
 
 	num_grid_y = 0;
 	for (f = (freq_lo/step)*step; ; f += step) {
-		double bin;
-		int y, y0, y1, y2, y3;
-		int w;
 		int i;
 		char label[20];
 
 		sprintf(label, "%d", f);
 
-		bin = ((double)fft_size)*((double)f/((double)sample_rate));
-		if ((int)bin < first_bin) continue;
-		if ((int)bin >= first_bin+num_bins) break;
-		y = (int)(((bin-(double)first_bin)*(double)disp_h) / (double)num_bins);
+		int y = y_for_bin(f*bins_per_hz);
+		if (y < 0) continue;
+		if (y >= disp_h) break;
 
-		w = SEVEN_WID*strlen(label);
-		y0 = y - (w / 2);
-		y1 = y - 1;
-		y2 = y + 2;
-		y3 = y0 + w;
+		int w = SEVEN_WID*strlen(label);
+		int y0 = y - (w / 2);
+		int y1 = y - 1;
+		int y2 = y + 2;
+		int y3 = y0 + w;
 		if (y1 < 0) y1 = 0;
 		if (y2 > disp_h) y2 = disp_h;
 
@@ -443,7 +435,6 @@ color_for_value(double x)
 static void
 fft_display_peaks(jint *bitmap_ptr, int x1, int x2, double *peaks)
 {
-	int tot_bins, first_bin, num_bins;
 	int i;
 	int thick = (disp_h+250)/500;
 
@@ -451,57 +442,56 @@ fft_display_peaks(jint *bitmap_ptr, int x1, int x2, double *peaks)
 
 	if (!peaks) return;
 
-	COMPUTE_BINS
-
 	for (i = 0; i < MAX_PEAKS; i++) {
 		if (peaks[i] == 0.0) break;
-		double bin = peaks[i];
-		if ((int)bin < first_bin) continue;
-		if ((int)bin >= first_bin+num_bins) break;
-		int y1 = (int)(((bin-(double)first_bin)*(double)disp_h) / (double)num_bins);
+		int y1 = y_for_bin(peaks[i]);
+		if (y1 < 0) continue;
+		if (y1 >= disp_h) break;
 		int y2 = y1+thick;
 		if (y2 > disp_h) y2 = disp_h;
 		filled_rect(bitmap_ptr, x1,y1,x2,y2, 0xFF22FFFF);
-		
 	}
 }
 
 static void
-fft_display_col(jint *bitmap_ptr, int x1, int x2, double *fft_data)
+fft_display_col(jint *bitmap_ptr, int x1, int x2, double *spect)
 {
-	int tot_bins, first_bin, num_bins;
 	int i;
-	int yn;
-	int incr;
-	double dincr;
 
-	COMPUTE_BINS
-
-	if ((disp_h <= 0) || !num_bins || !fft_data) {
+	if (disp_h <= 0) return;
+	if (!spect) {
 		filled_rect(bitmap_ptr, x1, 0, x2, disp_h, 0xFF222222);
 		return;
 	}
 
-	incr = num_bins / disp_h;
-	if (incr < 1) incr = 1;
+	int bin_lo = bin_for_y(0)+0.5;
+	int bin_hi = bin_for_y(disp_h)+0.5;
+	int bin_range = bin_hi-bin_lo;
+	int sum = ((bin_range > disp_h) ? ceil(bin_range / disp_h)+0.5 : 0);
 
-	yn = (disp_h+(num_bins-1))/num_bins;
-	if (yn < 1) yn = 1;
-
-	dincr = incr;
-		/* draw fft data */
-	for (i = 0; i < num_bins; i+=incr) {
-		int y1;
+	int prev_y = 0;		/* center of current tone */
+	int prev_y2 = 0;	/* bottom of previous tone */
+	for (i = bin_for_y(0); i < fft_size/2; ) {
 		double val = 0;
-		unsigned color;
-		int j;
-		for (j = 0; j < incr; j++) {
-			val += fft_data[i+j+first_bin];
+		if (sum) {
+			int j;
+			for (j = 0; j < sum; j++) {
+				val += spect[i++];
+			}
+			val /= (double)sum;
+		} else {
+			val = spect[i++];
 		}
-		val /= dincr;
-		color = color_for_value(val);
-		y1 = (i*disp_h)/num_bins;
-		filled_rect(bitmap_ptr, x1, y1, x2, y1+yn, color);
+		unsigned color = color_for_value(val);
+		int y1 = prev_y2;
+		if (y1 >= disp_h) break;
+		int next_y = y_for_bin(i);
+		int y2 = (prev_y+next_y)/2;
+		if (y2 <= y1) y2 = y1+1;
+		if (y2 >= disp_h) y2 = disp_h;
+		prev_y = next_y;
+		prev_y2 = y2;
+		filled_rect(bitmap_ptr, x1, y1, x2, y2, color);
 	}
 }
 
