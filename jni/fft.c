@@ -338,6 +338,21 @@ fft_draw_seconds(jint *bitmap_ptr)
 	}
 }
 
+static void
+fft_draw_grids(jint *bitmap_ptr)
+{
+	int disp_width = width-fft_legend_width;
+	int i;
+		/* draw grid */
+	for (i = 0; i < num_grid_y; i++) {
+		xor_hline(bitmap_ptr, 0, disp_width, grid_y[i]);
+	}
+	for (i = (disp_width/FFT_SECONDS); i < (disp_width-(FFT_SECONDS*2));
+	     i += (disp_width/FFT_SECONDS)) {
+		xor_vline(bitmap_ptr, i, 0, height);
+	}
+}
+
 /* x should be [0, 1.0] */
 static unsigned
 color_for_value(double x)
@@ -391,8 +406,6 @@ color_for_value(double x)
 }
 
 
-//XXX - then honor the time offset back here, which should be the super easy part
-
 static void
 fft_display_col(jint *bitmap_ptr, int x1, int x2, double *fft_data)
 {
@@ -431,18 +444,6 @@ fft_display_col(jint *bitmap_ptr, int x1, int x2, double *fft_data)
 		filled_rect(bitmap_ptr, x1, y1, x2, y1+yn, color);
 	}
 
-//XXX this can be factored out now and done uniformly after the cols
-		/* draw grid */
-	for (i = 0; i < num_grid_y; i++) {
-		xor_hline(bitmap_ptr, x1, x2, grid_y[i]);
-	}
-	int disp_width = width-fft_legend_width;
-	for (i = (disp_width/FFT_SECONDS); i < (disp_width-(FFT_SECONDS*2));
-	     i += (disp_width/FFT_SECONDS)) {
-		if ((x1 <= i) && (x2 > i)) {
-			xor_vline(bitmap_ptr, i, 0, height);
-		}
-	}
 }
 
 static void
@@ -457,11 +458,14 @@ fft_display(jint *bitmap_ptr)
 	int x1 = x2-cols;
 	int i;
 	for (i = 0; ; i++) {
+//XXX - honor fft_xoffset and fft_width to view a different window on time.  don't worry about pausing or not, that is java's problem
 		fft_display_col(bitmap_ptr, x1, x2, fft_hist_get(i));
 		if (!x1) break;		/* done with leftmost column */
 		x2 = x1;
 		x1 = ((x1 > cols) ? (x1 - cols) : 0);
 	}
+
+	fft_draw_grids(bitmap_ptr);
 }
 
 
@@ -506,4 +510,3 @@ fft_redraw(jint *bitmap_ptr)
 	window_free(curr_window);
 	curr_window = window_init(wk_blackman, fft_size);
 }
-//XXX - fft_hist needs to reset when turning on fft mode, or does it really?
