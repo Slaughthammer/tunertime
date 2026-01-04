@@ -469,8 +469,8 @@ static void
 fft_display(jint *bitmap_ptr)
 {
 	int disp_width = width-fft_legend_width;
-	double cols = (FFT_RANGE_MULT*fft_hist_count) /
-			(double)(fft_width * disp_width);
+	double cols = (FFT_RANGE_MULT*disp_width) /
+			(double)(fft_width*fft_hist_count);
 	double hist_ofs = ((FFT_RANGE_MULT-(fft_xoffset+fft_width))*
 			   fft_hist_count) / (double)FFT_RANGE_MULT;
 	int i;
