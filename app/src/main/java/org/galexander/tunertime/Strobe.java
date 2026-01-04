@@ -17,7 +17,7 @@ public class Strobe extends Thread {
 	private SurfaceHolder holder = null;
 	private volatile boolean surface_changed = false;
 
-	private volatile boolean paused = false;
+	public volatile boolean paused = false;
 
 	private TunerTime ui = null;
 
@@ -57,6 +57,9 @@ public class Strobe extends Thread {
 
 	public void toggle_pause() {
 		paused = !paused;
+		if (!paused) {
+			parms.fft_xoffset = FFT_RANGE_MULT;
+		}
 	}
 
 	private native void runner();		/* efficient C loop */

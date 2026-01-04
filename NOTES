@@ -949,7 +949,18 @@ but I managed to get it to connect to my new laptop and it was all golden
 woo.
 
 
-XXX - make FFT have time horizontal to match strobe
+January 3, 2026.
+
+The transformation of FFT display has gone well so far.  I'm a little bit
+uncertain how to implement fft_xoffset / fft_height (time domain zoom and
+pan).  It looks like the way the y-axis version (frequency) works is that it
+has a scale of [0.0 .. 1.0] * FFT_RANGE_MULT (i.e., fixed point
+representation of 0.0 to 1.0).  Which makes sense because the full
+frequency range seemed like a reasonable thing to be a fraction of.
+Which I guess works fine for time too.  Just 1.0 would be the full size
+of fft_hist_count.  Default should be like 0.1 (6 seconds).
+
+
 XXX - central peaks display from ggi
 XXX - make fft samples all the same height, so more seconds are on the
 screen for bigger bins ???  or make it zoomable?

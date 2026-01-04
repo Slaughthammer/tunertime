@@ -16,10 +16,11 @@ public class parms {
 			/* number of samples in FFT window */
 	static public volatile int fft_size = 8192;
 			/* zoom level */
-	static public volatile int fft_width = Strobe.FFT_RANGE_MULT/4;
+	static public volatile int fft_width = Strobe.FFT_RANGE_MULT/10;
 	static public volatile int fft_height = Strobe.FFT_RANGE_MULT/4;
 			/* offset in FFT_RANGE_MULTs of screen */
-	static public volatile int fft_xoffset = 0, fft_yoffset = 0;
+	static public volatile int fft_xoffset = Strobe.FFT_RANGE_MULT;
+	static public volatile int fft_yoffset = 0;
 	static public volatile boolean fft_grid_freq = false;
 
 	static public volatile boolean changed = false;
@@ -56,7 +57,7 @@ public class parms {
 		fft_size = prefs.getInt("fft_size", 2048);
 		fft_width = prefs.getInt("fft_width", Strobe.FFT_RANGE_MULT/4);
 		fft_height = prefs.getInt("fft_height", Strobe.FFT_RANGE_MULT/4);
-		fft_xoffset = prefs.getInt("fft_xoffset", 0);
+		fft_xoffset = prefs.getInt("fft_xoffset", Strobe.FFT_RANGE_MULT);
 		fft_yoffset = prefs.getInt("fft_yoffset", 0);
 		fft_grid_freq = prefs.getBoolean("fft_grid_freq", false);
 		preset_mode = prefs.getBoolean("preset_mode", false);

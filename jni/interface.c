@@ -423,19 +423,19 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 		if (bitmap) {
 			int changed = check_parms(this);
 
-			if (!(*env)->GetBooleanField(env,this,fid_st_paused)) {
-				jint *bitmap_ptr = (*env)->GetPrimitiveArrayCritical(env, bitmap, 0);
-				if (changed) {
-					filled_rect(bitmap_ptr, 0, 0, width, height, 0xFF000000);
-					if (fft_mode) {
-						fft_redraw(bitmap_ptr);
-					} else {
-						strobe_redraw(bitmap_ptr);
-					}
+			jint *bitmap_ptr = (*env)->GetPrimitiveArrayCritical(env, bitmap, 0);
+			if (changed) {
+				filled_rect(bitmap_ptr, 0, 0, width, height, 0xFF000000);
+				if (fft_mode) {
+					fft_redraw(bitmap_ptr);
+				} else {
+					strobe_redraw(bitmap_ptr);
 				}
-				newdata(bitmap_ptr);
-				(*env)->ReleasePrimitiveArrayCritical(env, bitmap, bitmap_ptr, 0);
 			}
+			if (!(*env)->GetBooleanField(env,this,fid_st_paused)) {
+				newdata(bitmap_ptr);
+			}
+			(*env)->ReleasePrimitiveArrayCritical(env, bitmap, bitmap_ptr, 0);
 			/* send bitmap to surface */
 			if ((*env)->CallBooleanMethod(env, this, mid_st_do_draw, bitmap, width, height)) {
 				/* thread was interrupted, must be time for it to die */

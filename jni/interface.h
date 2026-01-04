@@ -8,8 +8,7 @@
 #define SND_BUFSAMPS 32768
 
 #define MAX_FFT_SIZE 32768
-#define FFT_RANGE_MULT 65536	/* for normalized values in fft_yoffset et al */
-#define FFT_SECONDS 5		/* 5 seconds on the screen at once */
+#define FFT_RANGE_MULT 65536	/* for normalized values in fft_x/yoffset etc */
 
 #define NUM_STROBES 3
 
