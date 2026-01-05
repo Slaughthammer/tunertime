@@ -962,31 +962,78 @@ of fft_hist_count.  Default should be like 0.1 (6 seconds).
 
 
 
+January 4, 2026.
+
+So I did what I wanted to do to the FFT and now it looks basically like
+ggi's fft.  I'm pretty happy about that, I think.
+
+The question on my mind is release, so let's talk about the families of
+features that are considered.
+
+Several people have asked for preset and tempering sort of settings, and
+their needs are so specific and unlike my own that I despair at coming up
+with a good common idiom that doesn't over-complicated things.  I kind of
+want to just give them a language to define the notes they want to make
+available, and a text box to type it in with, and expect them to use copy
+and paste to save settings.  I tell you, the last thing I want to do is,
+for example, make TunerTime depend on the /sdcard API so that it can
+import/export settings.  And I think the function of preset & temper is
+already kind of under-self-documenting.  I feel like to add a feature
+like to decide whether "note+" on the last note steps up an octave before
+looping to the first note, I would need a paragraph of explanatory text
+within the app.
+
+Someone asked me to make the FFT logarithmic in frequency, which seemed
+like such a no-brainer to me at the time.  Because the musical scale is
+inherently exponential.  But!  The harmonic series is inherently linear!
+harmonic[x] = n*fundamental.  And that puts the upper harmonics at an
+even spacing above the fundamental.  I feel like it's the single most
+significant analytical function, being able to recognize the harmonic
+series of a tone.  So I simply don't think logarithmic is a good idea!  I
+never actually want that!
+
+So the only other major feature I'm interested in is making the strobe
+mode auto-sense the note.
+
+I have the idea that if it performed an FFT and looked at the spectrum
+only to find peaks, and checked for peaks in a harmonic series with
+eachother, then it could auto-sense pretty easily.  And I think I could
+make it fairly selective, to only tune in on a strong signal and not jump
+around at random.
+
+But I also wonder if I shouldn't make the strobes work like the FFT, with
+enough history to render the whole screen each time, scrolling from the
+right.  In some ways, it would be really slick.  But then I have to
+decide if I really want the upper harmonics to scroll twice as fast, or
+should I do something about that too??  Should I add adjustable
+horizontal zoom?  A special 1-to-1 mode to make up for losing precision
+to horizontal scaling?  Averaging of more than one period in a single
+column?
+
+
+
+---next release---
+XXX - John K and Onno K want auto sense which note to tune, and i think i'm gonna give it to them
+XXX - change strobe to scroll from the right side, with one screen's worth of history
+XXX - experiment with constant horizontal speed in strobes, and maybe even zoom??
+XXX - form an opinion on highest FFT time (fft_width) zoom level, should probably be much bigger
+XXX - pressing mode button while paused munges up the bottom of the surface
+XXX - println()s should become Toasts
+XXX - should probably do something to make icon satisfy new android styleguide?  on android 10, it adds a white circle around the icon...should cut it down to a square with rounded corners?
+
+
+---future easy---
+XXX - Onno K wants up to 5 harmonics
+XXX - tenth-of-a-cent precision in presets, and in regular mode??
+XXX - add flat button beside sharp button  (in presets?)
+XXX - 'tone' button in PresetNoteActivity?
+
+
+---future unknown---
 XXX - Henrik N wants presets - separate copies of the settings for various instruments.  would like the set of notes to be selected in that too
 XXX - Onno K wants preset import/export to .csv
 XXX - Onno K wants octave advance when rolling over a preset
-XXX - Onno K wants up to 5 harmonics
-XXX - John K and Onno K want auto sense which note to tune, and i think i'm gonna give it to him
 XXX - Daniel G wants to know if it can tune to an external mic
 XXX - Diego C wants to rearrange the notes in the preset window
 
-XXX - should probably do something to make icon satisfy new android
-styleguide?  on android 10, it adds a white circle around the
-icon...should cut it down to a square with rounded corners?
-
-XXX - tenth-of-a-cent precision in presets, and in regular mode??
-XXX - add flat button beside sharp button
-XXX - 'tone' button in PresetNoteActivity?
-XXX - pressing mode button while paused munges up the bottom of the surface
-XXX - someday bring in log_fft branch
-
-
-XXX - preset shouldn't loop?
 XXX - consider resetting cents when going to 'note' mode
-
-XXX - println()s should become Toasts
-
-XXX - experiment with constant horizontal speed in strobes
-
-XXX - tone generator in FFT - is there a simple UI for this?
-
