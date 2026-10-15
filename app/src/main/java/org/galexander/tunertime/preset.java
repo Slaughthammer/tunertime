@@ -6,6 +6,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class preset {
+		/* notes are stored in tenths of a cent, 48000 = A4 at A_freq */
+	public static final int UNITS_PER_CENT = 10;
+
 	public int id;
 	public String name;
 	public List<Integer> notes;
@@ -41,18 +44,51 @@ public class preset {
 		return null;
 	}
 
+		/* if this preset has exactly one note for each of the 12 pitch
+		 * classes (a temperament), return the offset of each pitch class
+		 * from equal temperament, in tenths of a cent, indexed with
+		 * 0=A (like strobe_cents).  Otherwise null. */
+	public int[] temper_offsets() {
+		final int semi = 100*UNITS_PER_CENT;
+		if (notes.size() != 12) {
+			return null;
+		}
+		int[] ret = new int[12];
+		boolean[] seen = new boolean[12];
+		for (int v : notes) {
+			int t = v+semi/2;
+			int et = ((t >= 0) ? t : (t-semi+1)) / semi;	/* floor */
+			int pc = ((et%12)+12)%12;
+			if (seen[pc]) {
+				return null;
+			}
+			seen[pc] = true;
+			ret[pc] = v - et*semi;	/* within -50c..+50c */
+		}
+		return ret;
+	}
+
 	public static void load(SharedPreferences p) {
 		String ids_str = p.getString("presets", "");
 		List<Integer> ids = csi_to_intarr(ids_str);
 		presets.clear();
 		for (int id : ids) {
 			String name = p.getString("preset_"+id+"_name", null);
-			String notes = p.getString("preset_"+id+"_notes", null);
+			String notes = p.getString("preset_"+id+"_notes10", null);
+			int mult = 1;
+			if (notes == null) {
+				/* legacy: whole cents */
+				notes = p.getString("preset_"+id+"_notes", null);
+				mult = UNITS_PER_CENT;
+			}
 			if ((name != null) && (notes != null)) {
 				preset n = new preset();
 				n.id = id;
 				n.name = name;
 				n.notes = csi_to_intarr(notes);
+				for (int i = 0; i < n.notes.size(); i++) {
+					n.notes.set(i, n.notes.get(i)*mult);
+				}
 				presets.add(n);
 			}
 		}
@@ -62,7 +98,7 @@ public class preset {
 		e.putString("presets", presetarr_to_csi(presets));
 		for (preset p : presets) {
 			e.putString("preset_"+p.id+"_name", p.name);
-			e.putString("preset_"+p.id+"_notes",
+			e.putString("preset_"+p.id+"_notes10",
 						intarr_to_csi(p.notes));
 		}
 	}
@@ -71,20 +107,24 @@ public class preset {
 		byte[] b = s.getBytes();
 		int val = 0;
 		boolean any_val = false;
+		boolean neg = false;
 		List<Integer> ret = new ArrayList<Integer>();
 		for (int i = 0; i < b.length; i++) {
 			byte c = b[i];
 			if ((c == ',') && any_val) {
-				ret.add(val);
+				ret.add(neg ? -val : val);
 				val = 0;
 				any_val = false;
+				neg = false;
+			} else if ((c == '-') && !any_val) {
+				neg = true;
 			} else if ((c >= '0') && (c <= '9')) {
 				val = (val*10) + (c-'0');
 				any_val = true;
 			}
 		}
 		if (any_val) {
-			ret.add(val);
+			ret.add(neg ? -val : val);
 		}
 		return ret;
 	}

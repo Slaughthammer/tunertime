@@ -10,7 +10,13 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class parms {
-	static public volatile int strobe_cents = 4800;
+		/* strobe target, tenths of a cent (preset.UNITS_PER_CENT),
+		 * 48000 = A4.  read by the native side */
+	static public volatile int strobe_cents = 48000;
+		/* note-mode position before any temperament is applied */
+	static public int note_cents = 48000;
+		/* apply a 12-note preset as temperament in note mode */
+	static public boolean note_temper = true;
 	static public final int MAX_STROBES = 8;	/* matches jni/interface.h */
 	static public volatile int num_strobes = 5;
 		/* harmonic multiplier per strobe row, ascending */
@@ -40,6 +46,24 @@ public class parms {
 
 	private static SharedPreferences prefs = null;
 
+		/* offset (tenths of a cent) that the selected preset applies to
+		 * the pitch class of c in note mode, if it is a temperament */
+	public static int temper_offset(int c) {
+		int[] t = temper_offsets();
+		if (t == null) {
+			return 0;
+		}
+		final int semi = 100*preset.UNITS_PER_CENT;
+		return t[(((c+semi/2)/semi)%12+12)%12];
+	}
+	public static int[] temper_offsets() {
+		if (!note_temper) {
+			return null;
+		}
+		preset p = preset.find(preset_id);
+		return ((p == null) ? null : p.temper_offsets());
+	}
+
 
 	public static void init(Activity a) {
 		prefs = PreferenceManager.getDefaultSharedPreferences(a);
@@ -53,7 +77,15 @@ public class parms {
 			A_freq *= 10;
 		}
 		cents_per_octave = prefs.getInt("cents_per_octave", 0);
-		strobe_cents = prefs.getInt("strobe_cents", 4800);
+		if (prefs.contains("strobe_cents10")) {
+			strobe_cents = prefs.getInt("strobe_cents10", 48000);
+		} else {
+			/* legacy: whole cents */
+			strobe_cents = prefs.getInt("strobe_cents", 4800) *
+					preset.UNITS_PER_CENT;
+		}
+		note_cents = prefs.getInt("note_cents10", strobe_cents);
+		note_temper = prefs.getBoolean("note_temper", true);
 		load_harmonics();
 		strobe_color = prefs.getString("strobe_color", "slate");
 		fft_mode = prefs.getBoolean("fft_mode", false);
@@ -113,7 +145,8 @@ public class parms {
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putInt("A_freq", A_freq);
 		editor.putInt("cents_per_octave", cents_per_octave);
-		editor.putInt("strobe_cents", strobe_cents);
+		editor.putInt("strobe_cents10", strobe_cents);
+		editor.putInt("note_cents10", note_cents);
 		editor.putBoolean("fft_mode", fft_mode);
 		editor.putInt("fft_size", fft_size);
 		editor.putInt("fft_width", fft_width);

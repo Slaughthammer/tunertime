@@ -16,4 +16,11 @@
 		android:entryValues="@array/harmonics"
 		android:defaultValue="@array/harmonics_default" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="Presets">
+	<CheckBoxPreference
+		android:key="note_temper"
+		android:title="12-note preset tempers note mode"
+		android:summary="If the selected preset has one note for each of the 12 semitones, note mode tunes to its offsets"
+		android:defaultValue="true" />
+    </PreferenceCategory>
 </PreferenceScreen>

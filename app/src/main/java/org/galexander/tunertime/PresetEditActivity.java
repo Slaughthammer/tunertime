@@ -85,7 +85,8 @@ public class PresetEditActivity extends Activity {
 	public void do_new(View v) {
 		List<Integer> notes = get_preset().notes;
 		int n = notes.size();
-		notes.add((n >= 1) ? notes.get(n-1) : 4800);
+		notes.add((n >= 1) ? notes.get(n-1)
+					    : 4800*preset.UNITS_PER_CENT);
 		parms.preset_note = n;
 		startActivity(new Intent(v.getContext(),
 				PresetNoteActivity.class));

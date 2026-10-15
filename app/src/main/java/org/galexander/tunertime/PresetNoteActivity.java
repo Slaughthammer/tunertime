@@ -21,6 +21,9 @@ public class PresetNoteActivity extends Activity {
 	private List<Integer> notes;
 	private int note_idx;
 
+		/* notes are in tenths of a cent */
+	private static final int U = preset.UNITS_PER_CENT;
+
 	/*        C  C# D  D# E  F  F# G  G# A  A# B */
 	private static final int[] is_sharp = new int[]
 		{ 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0 };
@@ -41,7 +44,9 @@ public class PresetNoteActivity extends Activity {
 		pn_cents.setOnEditorActionListener(new SubmitListener() {
 			public void onSubmit(String s) {
 				try {
-					set_cents(Integer.parseInt(s));
+					double d = Double.parseDouble(
+						s.trim().replace(',', '.'));
+					set_cents((int)Math.round(d*U));
 				} catch (Exception x) { }
 			} });
 		pn_notes[0] = findViewById(R.id.pn_note_0);
@@ -97,14 +102,14 @@ public class PresetNoteActivity extends Activity {
 		if (cents < 0) {
 			cents = 0;
 			notes.set(note_idx, cents);
-		} else if (cents > 9600) {
-			cents = 9600;
+		} else if (cents > 9600*U) {
+			cents = 9600*U;
 			notes.set(note_idx, cents);
 		}
 
 		note n = new note(cents);
 		pn_text.setText(n.full_str);
-		pn_cents.setText(Integer.toString(n.cents));
+		pn_cents.setText(note.cents_edit_str(n.cents));
 
 		int t = no_sharps[n.note_idx];
 		for (int i = 0; i < pn_notes.length; i++) {
@@ -125,16 +130,16 @@ public class PresetNoteActivity extends Activity {
 			}
 		}
 		note n = new note(notes.get(note_idx));
-		notes.set(note_idx, (n.octave*1200) +
-			((idx+can_sharpen[idx]*is_sharp[n.note_idx])*100) +
-			n.cents - 900);
+		notes.set(note_idx, (n.octave*1200*U) +
+			((idx+can_sharpen[idx]*is_sharp[n.note_idx])*100*U) +
+			n.cents - 900*U);
 		update();
 	}
 
 	public void do_sharp(View v) {
 		note n = new note(notes.get(note_idx));
-		notes.set(note_idx, (n.octave*1200) +
-			(sharp_swap[n.note_idx]*100) + n.cents - 900);
+		notes.set(note_idx, (n.octave*1200*U) +
+			(sharp_swap[n.note_idx]*100*U) + n.cents - 900*U);
 		update();
 	}
 
@@ -148,19 +153,30 @@ public class PresetNoteActivity extends Activity {
 		}
 		note n = new note(notes.get(note_idx));
 		notes.set(note_idx,
-			(oct*1200) + (n.note_idx*100) + n.cents - 900);
+			(oct*1200*U) + (n.note_idx*100*U) + n.cents - 900*U);
 		update();
 	}
 
+		/* c in tenths of a cent */
 	private void set_cents(int c) {
 		int prev = notes.get(note_idx);
 		note n = new note(prev);
-		int next = (n.octave*1200) + (n.note_idx*100) + c - 900;
+		int next = (n.octave*1200*U) + (n.note_idx*100*U) + c - 900*U;
 		if (prev != next) {
 			notes.set(note_idx, next);
 			update();
 		}
 	}
+
+		/* cent steps; crossing +-50c moves on to the next note */
+	private void step_cents(int delta) {
+		notes.set(note_idx, notes.get(note_idx) + delta);
+		update();
+	}
+	public void do_cent_incr(View v)  { step_cents( 1*U); }
+	public void do_cent_decr(View v)  { step_cents(-1*U); }
+	public void do_tenth_incr(View v) { step_cents( 1); }
+	public void do_tenth_decr(View v) { step_cents(-1); }
 
 	public void do_save(View v) {
 		finish();

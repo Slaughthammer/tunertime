@@ -230,7 +230,7 @@ fft_recalculate(jobject this)
 {
 	int i;
 	for (i = 0; i < 88; i++) {
-		piano_freqs[i] = cents_to_freq(this, i*100, 1);
+		piano_freqs[i] = cents_to_freq(this, i*100*UNITS_PER_CENT, 1);
 	}
 	fft_hist_init();
 	bins_per_hz = fft_size / (double)sample_rate;
