@@ -171,6 +171,7 @@
 	    android:lines="1"
 	    android:singleLine="true"
 	    android:inputType="numberSigned|numberDecimal"
+	    android:digits="0123456789+-.,"
 	    android:imeOptions="actionDone" />
     </LinearLayout>
     <LinearLayout
