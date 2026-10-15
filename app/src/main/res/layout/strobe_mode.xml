@@ -3,6 +3,13 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
+    <Button android:id="@+id/auto_button"
+	android:layout_width="fill_parent"
+	android:layout_height="1dp"
+	android:layout_weight="1"
+	android:text="auto"
+	android:textAppearance="?android:attr/textAppearanceMedium"
+	android:onClick="do_auto" />
     <Button android:id="@+id/tone_button"
 	android:layout_width="fill_parent"
 	android:layout_height="1dp"

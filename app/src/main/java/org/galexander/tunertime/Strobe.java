@@ -56,6 +56,11 @@ public class Strobe extends Thread {
 		return ret;
 	}
 
+	/* called from the native loop with each new pitch estimate */
+	public void pitch_detected(double hz) {
+		ui.pitch_detected(hz);
+	}
+
 	public void toggle_pause() {
 		paused = !paused;
 		if (!paused) {

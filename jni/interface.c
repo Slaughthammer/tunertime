@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <jni.h>
 #include "interface.h"
+#include "pitch.h"
 
 int width;
 int height;
@@ -27,6 +28,7 @@ static jmethodID mid_println;
 static jmethodID mid_st_do_draw;
 static jmethodID mid_st_time_to_die;
 static jmethodID mid_st_check_surface;
+static jmethodID mid_st_pitch_detected;
 static jmethodID mid_tt_cents_to_freq;
 static jmethodID mid_li_read;
 static jmethodID mid_li_get_samplerate;
@@ -38,6 +40,7 @@ static jfieldID fid_st_ui;
 static jfieldID fid_st_paused;
 static jfieldID fid_p_strobe_cents;
 static jfieldID fid_p_num_strobes;
+static jfieldID fid_p_auto_note;
 static jfieldID fid_p_harm_mult;
 static jfieldID fid_p_strobe_color;
 static jfieldID fid_p_fft_mode;
@@ -245,6 +248,7 @@ jni_init(JNIEnv *env_)
 	METHOD(st_do_draw, strobe, "do_draw", "([III)Z")
 	METHOD(st_time_to_die, strobe, "time_to_die", "()Z")
 	METHOD(st_check_surface, strobe, "check_surface", "()[I")
+	METHOD(st_pitch_detected, strobe, "pitch_detected", "(D)V")
 	METHOD(tt_cents_to_freq, tunertime, "cents_to_freq", "(II)D")
 	STMETHOD(li_read, listener, "read", "([SI)I")
 	STMETHOD(li_get_samplerate, listener, "get_samplerate", "()I")
@@ -256,6 +260,7 @@ jni_init(JNIEnv *env_)
 	FIELD(st_paused, strobe, "paused", "Z");
 
 	STFIELD(p_strobe_cents, parms, "strobe_cents", "I")
+	STFIELD(p_auto_note, parms, "auto_note", "Z")
 	STFIELD(p_num_strobes, parms, "num_strobes", "I")
 	STFIELD(p_harm_mult, parms, "harm_mult", "[I")
 	STFIELD(p_strobe_color, parms, "strobe_color", "Ljava/lang/String;")
@@ -409,6 +414,7 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 	sound_init(this);
 	strobe_init();
 	fft_init();
+	pitch_init(sample_rate);
 
 	while (1) {
 		check_surface(this);
@@ -420,6 +426,18 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 
 		if (!sound_input(this)) {
 			return;
+		}
+
+		/* auto note detection: analysed here, outside the critical
+		 * region below, and handed to the UI as a plain call */
+		if ((snd_buflen > 0) && !fft_mode &&
+		    (*env)->GetStaticBooleanField(env, cl_parms, fid_p_auto_note) &&
+		    !(*env)->GetBooleanField(env, this, fid_st_paused)) {
+			double hz, conf;
+			if (pitch_feed(snd_buf, snd_buflen, &hz, &conf)) {
+				(*env)->CallVoidMethod(env, this,
+					mid_st_pitch_detected, hz);
+			}
 		}
 
 		/* process sound into bitmap */

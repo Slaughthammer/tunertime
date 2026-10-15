@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Button;
+import android.widget.Toast;
 import android.os.PowerManager;
 import android.app.Activity;
 import androidx.core.content.ContextCompat;
@@ -54,6 +55,7 @@ public class TunerTime extends Activity
 	private View strobe_mode_buttons;
 	private View fft_mode_buttons;
 	private Button tone_button;
+	private Button auto_button;
 
 	private PowerManager.WakeLock wakelock = null;
 
@@ -150,6 +152,14 @@ public class TunerTime extends Activity
 				R.layout.strobe_mode, mode_holder, false);
 		tone_button = (Button)strobe_mode_buttons.findViewById(
 				R.id.tone_button);
+		auto_button = (Button)strobe_mode_buttons.findViewById(
+				R.id.auto_button);
+		auto_button.setOnLongClickListener(
+				new View.OnLongClickListener() {
+			public boolean onLongClick(View v) {
+				auto_off();
+				return true;
+			} });
 		fft_mode_buttons = fl8r.inflate(
 				R.layout.fft_mode, mode_holder, false);
 	}
@@ -259,6 +269,78 @@ public class TunerTime extends Activity
 		} else {
 			set_mode(fft_buttons, true);
 		}
+	}
+
+	/* auto note detection: off -> follow; then tap toggles follow/lock,
+	 * long press turns it off.  only note mode follows. */
+	private boolean auto_locked = false;
+	private int det_semi = Integer.MIN_VALUE, det_count = 0;
+	private static final int DET_AGREE = 3;	/* estimates in a row */
+
+	public void do_auto(View v) {
+		if (!parms.auto_note && !auto_locked) {
+			parms.auto_note = true;
+			Toast.makeText(this, "auto: tap to lock, hold to turn off",
+					Toast.LENGTH_SHORT).show();
+		} else if (parms.auto_note) {
+			parms.auto_note = false;	/* lock */
+			auto_locked = true;
+		} else {
+			parms.auto_note = true;		/* unlock */
+			auto_locked = false;
+		}
+		det_count = 0;
+		update_status();
+	}
+
+	private void auto_off() {
+		parms.auto_note = false;
+		auto_locked = false;
+		det_count = 0;
+		update_status();
+	}
+
+	/* from the strobe thread */
+	public void pitch_detected(final double hz) {
+		runOnUiThread(new Runnable() {
+			public void run() {
+				on_pitch(hz);
+			} });
+	}
+
+	/* moves note mode to the nearest note once DET_AGREE estimates in a
+	 * row agree; silence holds the current note.  the cents offset set
+	 * by hand carries over to the new note. */
+	private void on_pitch(double hz) {
+		if (!parms.auto_note || parms.preset_mode || parms.fft_mode ||
+		    ToneGenerator.playing || (hz <= 0.0)) {
+			det_count = 0;
+			return;
+		}
+		int semi = 100*U;
+		int cur = (parms.note_cents + semi/2) / semi;
+		int off = parms.note_cents - cur*semi;
+		int k = (int)Math.round((freq_to_cents(hz) - off) /
+							(double)semi);
+		if (k == det_semi) {
+			det_count++;
+		} else {
+			det_semi = k;
+			det_count = 1;
+		}
+		if ((det_count >= DET_AGREE) && (k != cur) &&
+		    (k >= 0) && (k*semi + off <= 9600*U)) {
+			parms.note_cents = k*semi + off;
+			update_status();
+		}
+	}
+
+	/* inverse of cents_to_freq() for the fundamental */
+	private int freq_to_cents(double hz) {
+		double frac = ((double)parms.cents_per_octave)/12000.0d;
+		double c = 1200.0d * Math.log(hz*10.0d/parms.A_freq) /
+				Math.log(2.0d) / (1.0d+frac);
+		return (int)Math.round(c*U) + 4800*U;
 	}
 
 	public void do_tone(View v) {
@@ -509,6 +591,22 @@ public class TunerTime extends Activity
 		} else {
 			tone_button.getBackground().setColorFilter(
 				new LightingColorFilter(0x404040, 0));
+		}
+
+		auto_button.setEnabled(!parms.preset_mode);
+		if (parms.auto_note) {
+			auto_button.setText("follow");
+			auto_button.setTextColor(getResources().getColor(
+					R.color.accent));
+		} else if (auto_locked) {
+			auto_button.setText("locked");
+			auto_button.setTextColor(getResources().getColor(
+					R.color.warn));
+		} else {
+			auto_button.setText("auto");
+			auto_button.setTextColor(getResources().getColor(
+					parms.preset_mode ? R.color.outline
+							  : R.color.text));
 		}
 	}
 

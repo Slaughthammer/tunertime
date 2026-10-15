@@ -17,6 +17,8 @@ public class parms {
 	static public int note_cents = 48000;
 		/* apply a 12-note preset as temperament in note mode */
 	static public boolean note_temper = true;
+		/* auto note detection is following the input (read natively) */
+	static public volatile boolean auto_note = false;
 	static public final int MAX_STROBES = 8;	/* matches jni/interface.h */
 	static public volatile int num_strobes = 5;
 		/* harmonic multiplier per strobe row, ascending */
@@ -86,6 +88,7 @@ public class parms {
 		}
 		note_cents = prefs.getInt("note_cents10", strobe_cents);
 		note_temper = prefs.getBoolean("note_temper", true);
+		auto_note = prefs.getBoolean("auto_note", false);
 		load_harmonics();
 		strobe_color = prefs.getString("strobe_color", "slate");
 		fft_mode = prefs.getBoolean("fft_mode", false);
@@ -155,6 +158,7 @@ public class parms {
 		editor.putInt("fft_yoffset", fft_yoffset);
 		editor.putBoolean("fft_grid_freq", fft_grid_freq);
 		editor.putBoolean("preset_mode", preset_mode);
+		editor.putBoolean("auto_note", auto_note);
 		editor.putInt("preset_id", preset_id);
 		editor.putInt("preset_note", preset_note);
 		editor.putInt("preset_oct", preset_oct);
