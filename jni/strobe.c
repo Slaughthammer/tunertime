@@ -32,7 +32,9 @@ struct strobe_rec {
 
 
 int base_cents;
-int harm0_mult, harm1_mult, harm2_mult;
+int harm0_mult, harm1_mult, harm2_mult, harm3_mult, harm4_mult;
+static int *const harm_mult[NUM_STROBES] =
+	{ &harm0_mult, &harm1_mult, &harm2_mult, &harm3_mult, &harm4_mult };
 
 static struct strobe_rec strobes[NUM_STROBES];
 
@@ -335,8 +337,8 @@ strobe_newdata(jint *bitmap_ptr)
 static void
 update_labels(jobject this)
 {
-	char lab1[100], lab2[100], lab3[100];
-	char *labels[NUM_STROBES] = { lab1, lab2, lab3 };
+	char labs[NUM_STROBES][100];
+	char *labels[NUM_STROBES];
 	int i;
 	char pianoname[10];
 	static const char notes[12][3] =
@@ -344,10 +346,10 @@ update_labels(jobject this)
 	int note = ((base_cents+50)/100)%12;
 
 	for (i = 0; i < NUM_STROBES; i++) {
-		int mult = ((i==0) ? harm0_mult
-				   : ((i==1) ? harm1_mult : harm2_mult));
+		int mult = *harm_mult[i];
 		char *ext = ((mult==1) ? "st" : ((mult==2) ? "nd" :
 				((mult==3) ? "rd" : "th")));
+		labels[i] = labs[i];
 		sprintf(labels[i], "%2d%s %7.1f", mult, ext, strobes[i].freq);
 	}
 	set_labels(this, labels);
@@ -370,8 +372,7 @@ strobe_recalculate(jobject this)
 	int y = 0;
 
 	for (i = 0; i < NUM_STROBES; i++) {
-		int mult = ((i==0) ? harm0_mult
-				   : ((i==1) ? harm1_mult : harm2_mult));
+		int mult = *harm_mult[i];
 		strobes[i].prev_pos = 0;
 		strobes[i].y = y;
 		strobes[i].height = sheight;

@@ -29,5 +29,19 @@
 		android:entries="@array/harmonics"
 		android:entryValues="@array/harmonics"
 		android:defaultValue="4" />
+	<ListPreference
+		android:key="harm3"
+		android:title="Harmonic 3"
+		android:summary="%s"
+		android:entries="@array/harmonics"
+		android:entryValues="@array/harmonics"
+		android:defaultValue="6" />
+	<ListPreference
+		android:key="harm4"
+		android:title="Harmonic 4"
+		android:summary="%s"
+		android:entries="@array/harmonics"
+		android:entryValues="@array/harmonics"
+		android:defaultValue="8" />
     </PreferenceCategory>
 </PreferenceScreen>

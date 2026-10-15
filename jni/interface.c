@@ -40,6 +40,8 @@ static jfieldID fid_p_strobe_cents;
 static jfieldID fid_p_harm0_mult;
 static jfieldID fid_p_harm1_mult;
 static jfieldID fid_p_harm2_mult;
+static jfieldID fid_p_harm3_mult;
+static jfieldID fid_p_harm4_mult;
 static jfieldID fid_p_strobe_color;
 static jfieldID fid_p_fft_mode;
 static jfieldID fid_p_fft_size;
@@ -260,6 +262,8 @@ jni_init(JNIEnv *env_)
 	STFIELD(p_harm0_mult, parms, "harm0_mult", "I")
 	STFIELD(p_harm1_mult, parms, "harm1_mult", "I")
 	STFIELD(p_harm2_mult, parms, "harm2_mult", "I")
+	STFIELD(p_harm3_mult, parms, "harm3_mult", "I")
+	STFIELD(p_harm4_mult, parms, "harm4_mult", "I")
 	STFIELD(p_strobe_color, parms, "strobe_color", "Ljava/lang/String;")
 	STFIELD(p_fft_mode, parms, "fft_mode", "Z")
 	STFIELD(p_fft_size, parms, "fft_size", "I")
@@ -367,6 +371,8 @@ check_parms(jobject this)
 	harm0_mult = (*env)->GetStaticIntField(env, cl_parms, fid_p_harm0_mult);
 	harm1_mult = (*env)->GetStaticIntField(env, cl_parms, fid_p_harm1_mult);
 	harm2_mult = (*env)->GetStaticIntField(env, cl_parms, fid_p_harm2_mult);
+	harm3_mult = (*env)->GetStaticIntField(env, cl_parms, fid_p_harm3_mult);
+	harm4_mult = (*env)->GetStaticIntField(env, cl_parms, fid_p_harm4_mult);
 
 	{
 		jstring t = (*env)->GetStaticObjectField(env, cl_parms, fid_p_strobe_color);
