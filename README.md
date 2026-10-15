@@ -1,0 +1,83 @@
+# TunerTime (fork)
+
+A fork of [TunerTime](http://galexander.org/), the Android strobe tuner by
+Greg Alexander. Upstream lives at `http://galexander.org/git/tunertime.git`.
+The `upstream` branch here mirrors its `master` as of this fork, and `main`
+holds the changes below. The user manual is in `doc/index.html`, and the
+author's development log is `NOTES`.
+
+TunerTime is free software under the GNU GPL v2 (see `COPYING`), and so is
+this fork.
+
+## What this fork adds
+
+- **Auto note detection** (`jni/pitch.c`). A separate detector runs next to
+  the strobes: 2:1 decimation, an 8192-point Hann FFT every 2048 samples, and
+  a harmonic-sum search over the spectral peaks, gated on level and
+  confidence. Note mode follows after 3 agreeing estimates, holds on silence
+  and keeps the cent offset set by hand. The "auto" button cycles
+  off → follow → lock → follow; a long press turns it off. Tested in the field
+  with a ukulele only; piano, organ pipes (mixtures) and low bass strings are
+  the likely octave-error cases.
+- **Bench test for the detector** (`tools/test_pitch.c`): synthetic tones from
+  A0 to C8 (harmonic, missing fundamental, piano inharmonicity, sine, noisy).
+  It is plain C, so build it with any compiler, together with `jni/pitch.c`.
+- **Selectable harmonic rows**: Settings → "Harmonics shown", any of 1..20,
+  up to 8 strobe rows.
+- **Presets in tenths of a cent** (`preset.UNITS_PER_CENT`, 48000 = A4), with
+  ±1c / ±0.1c buttons and a ± key in the note editor. Existing whole-cent
+  presets and settings are migrated.
+- **A 12-note preset can temper note mode** (Settings toggle, on by default).
+  The title shows the active temperament and offset.
+- **Preset management** (`PresetIO.java`): long-press for
+  edit/rename/duplicate/move/export/delete, sort, import and export all.
+  Plain-text, hand-editable format, described in the header of every
+  exported file.
+- **Historical temperaments** (`temperaments.java`): Pythagorean, ¼ and ⅙
+  comma meantone, Werckmeister III, Kirnberger III, Vallotti, Young II and
+  Kellner, normalised to A = 0 so the A-frequency setting still means the A
+  you hear.
+- **Neutral dark UI** (`res/values/colors.xml`, theme `Tuner`), with the
+  native drawing in `jni/fft.c` and `jni/strobe.c` using the same palette.
+  "Slate" is the new default strobe colour; red/green and the others are
+  still in Settings.
+- **Android 15+ edge-to-edge fixes**: no screen draws under the status or
+  navigation bar, and the strobe tab bar no longer covers the last row.
+- **`dev` build type**: `org.galexander.tunertime.dev`, labelled
+  "TunerTime dev", which installs next to the Play Store app with its own
+  settings and presets.
+
+Open ideas from users, in `NOTES`: octave advance when stepping past the end
+of a preset, and CSV import/export.
+
+## Building
+
+You need the Android SDK and NDK (tested with NDK 28.2) and JDK 17.
+
+1. Create `local.properties` with `sdk.dir=/path/to/Android/Sdk`.
+2. Point `keystore.properties` at a keystore. The Android debug keystore
+   works (`~/.android/debug.keystore`, passwords `android`, alias
+   `androiddebugkey`).
+3. Build the native library, then the app:
+
+   ```sh
+   ndk-build NDK_PROJECT_PATH=. NDK_LIBS_OUT=app/src/main/lib -j8
+   ./gradlew assembleDev       # or assembleRelease
+   ```
+
+On Windows:
+
+- Git checks the upstream symlinks out as text files. Replace
+  `app/src/main/lib` with a real directory, and edit `local.properties` and
+  `keystore.properties` in place. `git update-index --skip-worktree` keeps
+  those local edits out of commits.
+- The NDK does not accept paths with spaces, so call it through the 8.3 short
+  path (`cygpath -d`).
+
+Traps when editing:
+
+- Files mix LF and CRLF line endings, and some contain Latin-1 bytes. Keep
+  each file's existing line endings and encoding.
+- Write non-ASCII characters in XML as entities (e.g. `&#177;`).
+- Do not `git add app/src/main` wholesale, because it would commit the built
+  `.so` files.

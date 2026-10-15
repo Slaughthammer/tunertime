@@ -99,18 +99,18 @@ static int
 find_peaks(struct peak *pk)
 {
 	int k, n = 0, kmin = (int)(MIN_F0*N/fs), kmax = (int)(MAX_PARTIAL*N/fs);
-	double floor = 0.0;
+	double level = 0.0;
 
 	if (kmin < 2) kmin = 2;
 	if (kmax > N/2-2) kmax = N/2-2;
 	for (k = kmin; k <= kmax; k++) {
-		floor += mag[k];
+		level += mag[k];
 	}
-	floor = 4.0 * floor / (kmax-kmin+1);
+	level = 4.0 * level / (kmax-kmin+1);
 
 	for (k = kmin; k <= kmax; k++) {
 		double a = mag[k-1], b = mag[k], c = mag[k+1];
-		if ((b <= floor) || (b <= a) || (b < c)) {
+		if ((b <= level) || (b <= a) || (b < c)) {
 			continue;
 		}
 		double la = log(a+1e-9), lb = log(b), lc = log(c+1e-9);

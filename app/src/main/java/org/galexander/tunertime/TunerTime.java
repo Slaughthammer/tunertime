@@ -560,8 +560,8 @@ public class TunerTime extends Activity
 		note n = new note(parms.strobe_cents);
 		String oct_str = Integer.toString(n.octave);
 
-				/* note mode shows the position before the
-				 * temperament, which is shown in the title */
+		/* note mode shows the position before the
+		 * temperament, which is shown in the title */
 		note nn = new note(parms.note_cents);
 		note_semi_display.setText(nn.note_str);
 		note_oct_display.setText(Integer.toString(nn.octave));

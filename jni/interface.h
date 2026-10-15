@@ -12,6 +12,7 @@
 #define MAX_PEAKS 100
 
 #define MAX_STROBES 8
+#define UNITS_PER_CENT 10	/* cents are in tenths (Java preset.UNITS_PER_CENT) */
 
 
 /* interface.c: */
@@ -34,8 +35,6 @@ extern short snd_buf[SND_BUFSAMPS];
 extern int snd_buflen;
 
 void println(const char *fmt, ...);
-	/* cents are in tenths of a cent (Java preset.UNITS_PER_CENT) */
-#define UNITS_PER_CENT 10
 double cents_to_freq(jobject this, jint cents, jint mult);
 void set_labels(jobject this, char *labels[MAX_STROBES]);
 void set_pianoname(jobject this, char *pianoname);
