@@ -89,12 +89,16 @@ public class PresetNoteActivity extends Activity {
 		notes = null;
 	}
 
+		/* selected button: surface tinted toward the accent blue;
+		 * the rest keep the plain button surface */
 	private final static LightingColorFilter brightf =
-			new LightingColorFilter(0xbbbbbb, 0x004444);
-	private final static LightingColorFilter darkf =
-			new LightingColorFilter(0x888888, 0x330000);
+			new LightingColorFilter(0x888888, 0x1a3a7a);
 	private void set_brightness(View v, boolean bright) {
-		v.getBackground().setColorFilter(bright ? brightf : darkf);
+		if (bright) {
+			v.getBackground().setColorFilter(brightf);
+		} else {
+			v.getBackground().clearColorFilter();
+		}
 	}
 
 	private void update() {
