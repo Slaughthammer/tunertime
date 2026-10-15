@@ -89,7 +89,7 @@ xor_hline(jint *bitmap_ptr, int x1, int x2, int y)
 	int x;
 	for (x = x1; x < x2; x++) {
 		jint *p = ADDR_PIXEL(x, y);
-		*p ^= 0x884B00;
+		*p ^= 0x004B88;
 	}
 }
 
@@ -99,7 +99,7 @@ xor_vline(jint *bitmap_ptr, int x, int y1, int y2)
 	int y;
 	for (y = y1; y < y2; y++) {
 		jint *p = ADDR_PIXEL(x, y);
-		*p ^= 0x884B00;
+		*p ^= 0x004B88;
 	}
 }
 

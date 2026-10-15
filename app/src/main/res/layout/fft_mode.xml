@@ -3,6 +3,6 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:text="strobe"
-    android:textColor="#FF8C00"
+    android:textColor="#008CFF"
     android:textAppearance="?android:attr/textAppearanceMedium"
     android:onClick="do_mode" />

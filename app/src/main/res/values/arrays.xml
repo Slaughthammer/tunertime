@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string-array name="color_name">
-		<item>Orange</item>
+		<item>Azure</item>
 		<item>Red / Green</item>
 		<item>Black / White</item>
 		<item>Blue / Yellow</item>
 		<item>Red / Blue</item>
 	</string-array>
 	<string-array name="color_value">
-		<item>orange</item>
+		<item>azure</item>
 		<item>redgreen</item>
 		<item>blackwhite</item>
 		<item>blueyellow</item>

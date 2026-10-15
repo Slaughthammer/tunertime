@@ -22,7 +22,7 @@
 	    android:lines="1"
 	    android:singleLine="true"
 	    android:textAppearance="?android:attr/textAppearanceLarge" 
-	    android:textColor="#FFA329" />
+	    android:textColor="#29A3FF" />
 	<Button
 	    android:layout_width="fill_parent"
 	    android:layout_height="1dp"

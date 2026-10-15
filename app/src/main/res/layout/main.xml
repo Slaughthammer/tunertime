@@ -33,7 +33,7 @@
 		android:lines="1"
 		android:singleLine="true"
 		android:textAppearance="?android:attr/textAppearanceMedium"
-		android:textColor="#FF8C00" />
+		android:textColor="#008CFF" />
 	    <TextView android:id="@+id/stretch_display"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
@@ -41,7 +41,7 @@
 		android:lines="1"
 		android:singleLine="true"
 		android:textAppearance="?android:attr/textAppearanceMedium"
-		android:textColor="#FF8C00" />
+		android:textColor="#008CFF" />
 	    <FrameLayout android:id="@+id/mode_holder"
 		android:layout_width="fill_parent"
 		android:layout_height="1dp"

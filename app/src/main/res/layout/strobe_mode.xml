@@ -15,7 +15,7 @@
 	android:layout_height="1dp"
 	android:layout_weight="1"
 	android:text="FFT"
-	android:textColor="#FF8C00"
+	android:textColor="#008CFF"
 	android:textAppearance="?android:attr/textAppearanceMedium"
 	android:onClick="do_mode" />
 </LinearLayout>
