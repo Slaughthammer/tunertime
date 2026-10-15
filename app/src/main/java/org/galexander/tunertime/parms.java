@@ -10,7 +10,7 @@ public class parms {
 	static public volatile int strobe_cents = 4800;
 	static public volatile int harm0_mult = 1, harm1_mult = 2,
 				harm2_mult = 4;
-	static public volatile String strobe_color = "azure";
+	static public volatile String strobe_color = "slate";
 
 	static public volatile boolean fft_mode = false;
 			/* number of samples in FFT window */
@@ -52,7 +52,7 @@ public class parms {
 		harm0_mult = Integer.parseInt(prefs.getString("harm0", "1"));
 		harm1_mult = Integer.parseInt(prefs.getString("harm1", "2"));
 		harm2_mult = Integer.parseInt(prefs.getString("harm2", "4"));
-		strobe_color = prefs.getString("strobe_color", "azure");
+		strobe_color = prefs.getString("strobe_color", "slate");
 		fft_mode = prefs.getBoolean("fft_mode", false);
 		fft_size = prefs.getInt("fft_size", 2048);
 		fft_width = prefs.getInt("fft_width", Strobe.FFT_RANGE_MULT/4);

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<!-- neutral dark palette; native colors in jni/ mirror these -->
+	<color name="bg">#121417</color>
+	<color name="surface">#1E2228</color>
+	<color name="surface_pressed">#2A3140</color>
+	<color name="outline">#2E343C</color>
+	<color name="text">#E8EAED</color>
+	<color name="text_muted">#9AA0A6</color>
+	<color name="accent">#4C8DFF</color>
+	<color name="warn">#FFB300</color>
+	<color name="ok">#4CAF50</color>
+</resources>

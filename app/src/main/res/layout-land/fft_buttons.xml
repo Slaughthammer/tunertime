@@ -31,7 +31,8 @@
 	    android:lines="1"
 	    android:singleLine="true"
 	    android:textAppearance="?android:attr/textAppearanceLarge" 
-	    android:textColor="#29A3FF" />
+	    android:textColor="@color/text"
+		android:fontFamily="monospace" />
 	<Button
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
