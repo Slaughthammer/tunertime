@@ -206,8 +206,38 @@ public class PresetSelectActivity extends Activity {
 		} else if (id == R.id.action_preset_export) {
 			start_export(null);
 			return true;
+		} else if (id == R.id.action_preset_temperament) {
+			pick_temperament();
+			return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	/* add one of the built-in historical temperaments as a new preset
+	 * and select it, so note mode is tempered by it right away */
+	private void pick_temperament() {
+		String[] items = new String[temperaments.names.length];
+		for (int i = 0; i < items.length; i++) {
+			items[i] = temperaments.names[i] + "\n    " +
+					temperaments.about[i];
+		}
+		new AlertDialog.Builder(this)
+			.setTitle("Add temperament (A = 0)")
+			.setItems(items, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface d, int which) {
+					preset n = preset.make();
+					n.name = PresetIO.unique_name(
+						temperaments.names[which], names());
+					n.notes.addAll(
+						temperaments.make_notes(which));
+					parms.preset_id = n.id;
+					changed();
+					Toast.makeText(PresetSelectActivity.this,
+						"Added \"" + n.name + "\"",
+						Toast.LENGTH_SHORT).show();
+				} })
+			.setNegativeButton("Cancel", null)
+			.show();
 	}
 
 	private Set<String> names() {

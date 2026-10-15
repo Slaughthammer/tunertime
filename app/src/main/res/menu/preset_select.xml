@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:id="@+id/action_preset_temperament"
+		android:title="Add historical temperament..."
+		android:showAsAction="never" />
 	<item android:id="@+id/action_preset_sort"
 		android:title="Sort by name"
 		android:showAsAction="never" />
