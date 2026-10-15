@@ -3,6 +3,7 @@ package org.galexander.tunertime;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.util.TypedValue;
 import android.view.SurfaceHolder;
 import java.util.concurrent.Semaphore;
 
@@ -68,6 +69,7 @@ public class Strobe extends Thread {
 	private Paint pause_p = null;
 	private Paint pianoname_p = null;
 	private String[] labels = null;
+	private int label_h = 0;
 	private String pianoname = null;
 
 	private void draw_labels(Canvas c) {
@@ -80,11 +82,20 @@ public class Strobe extends Thread {
 			label_p = new Paint();
 			label_p.setARGB(0xff,0x00,0x8c,0xff);
 			label_p.setTextAlign(Paint.Align.LEFT);
-			label_p.setTextSize(strobe_height/6);
 			label_p.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));
 			label_p.setFakeBoldText(true);
 			label_p.setAntiAlias(true);
 			label_p.setSubpixelText(true);
+		}
+		if (label_h != strobe_height) {
+			/* a fifth of a row, but at least 12sp so that five rows
+			 * still read in landscape, and never over a third */
+			float sp12 = TypedValue.applyDimension(
+				TypedValue.COMPLEX_UNIT_SP, 12.0f,
+				ui.getResources().getDisplayMetrics());
+			float sz = Math.max(strobe_height/5.0f, sp12);
+			label_p.setTextSize(Math.min(sz, strobe_height/3.0f));
+			label_h = strobe_height;
 		}
 		int y = -(int)label_p.getFontMetrics().ascent;
 		for (int i = 0; i < labels.length; i++) {
@@ -122,7 +133,11 @@ public class Strobe extends Thread {
 			pianoname_p.setAntiAlias(true);
 			pianoname_p.setSubpixelText(true);
 		}
-		int y = -(int)label_p.getFontMetrics().ascent;
+		int y = -(int)pianoname_p.getFontMetrics().ascent;
+		if (label_p != null) {
+			/* share the baseline of the first label */
+			y = Math.max(y, -(int)label_p.getFontMetrics().ascent);
+		}
 		c.drawText(pianoname, width-1, y, pianoname_p);
 	}
 

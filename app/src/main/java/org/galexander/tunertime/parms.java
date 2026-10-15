@@ -9,7 +9,7 @@ import java.util.Map;
 public class parms {
 	static public volatile int strobe_cents = 4800;
 	static public volatile int harm0_mult = 1, harm1_mult = 2,
-				harm2_mult = 4;
+				harm2_mult = 4, harm3_mult = 6, harm4_mult = 8;
 	static public volatile String strobe_color = "azure";
 
 	static public volatile boolean fft_mode = false;
@@ -52,6 +52,8 @@ public class parms {
 		harm0_mult = Integer.parseInt(prefs.getString("harm0", "1"));
 		harm1_mult = Integer.parseInt(prefs.getString("harm1", "2"));
 		harm2_mult = Integer.parseInt(prefs.getString("harm2", "4"));
+		harm3_mult = Integer.parseInt(prefs.getString("harm3", "6"));
+		harm4_mult = Integer.parseInt(prefs.getString("harm4", "8"));
 		strobe_color = prefs.getString("strobe_color", "azure");
 		fft_mode = prefs.getBoolean("fft_mode", false);
 		fft_size = prefs.getInt("fft_size", 2048);

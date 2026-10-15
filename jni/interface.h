@@ -11,7 +11,7 @@
 #define FFT_RANGE_MULT 65536	/* for normalized values in fft_x/yoffset etc */
 #define MAX_PEAKS 100
 
-#define NUM_STROBES 3
+#define NUM_STROBES 5
 
 
 /* interface.c: */
@@ -41,7 +41,7 @@ void set_pianoname(jobject this, char *pianoname);
 
 /* strobe.c: */
 extern int base_cents;
-extern int harm0_mult, harm1_mult, harm2_mult;
+extern int harm0_mult, harm1_mult, harm2_mult, harm3_mult, harm4_mult;
 
 void strobe_init(void);
 void strobe_color(const char *s);
