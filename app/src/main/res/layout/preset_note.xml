@@ -170,8 +170,41 @@
 	    android:minEms="3"
 	    android:lines="1"
 	    android:singleLine="true"
-	    android:numeric="signed"
+	    android:inputType="numberSigned|numberDecimal"
 	    android:imeOptions="actionDone" />
+    </LinearLayout>
+    <LinearLayout
+	android:orientation="horizontal"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content">
+	<Button
+	    android:layout_width="1dp"
+	    android:layout_weight="1"
+	    android:layout_height="wrap_content"
+	    android:text="-1c"
+	    android:textAppearance="?android:attr/textAppearanceLarge"
+	    android:onClick="do_cent_decr" />
+	<Button
+	    android:layout_width="1dp"
+	    android:layout_weight="1"
+	    android:layout_height="wrap_content"
+	    android:text="-0.1c"
+	    android:textAppearance="?android:attr/textAppearanceLarge"
+	    android:onClick="do_tenth_decr" />
+	<Button
+	    android:layout_width="1dp"
+	    android:layout_weight="1"
+	    android:layout_height="wrap_content"
+	    android:text="+0.1c"
+	    android:textAppearance="?android:attr/textAppearanceLarge"
+	    android:onClick="do_tenth_incr" />
+	<Button
+	    android:layout_width="1dp"
+	    android:layout_weight="1"
+	    android:layout_height="wrap_content"
+	    android:text="+1c"
+	    android:textAppearance="?android:attr/textAppearanceLarge"
+	    android:onClick="do_cent_incr" />
     </LinearLayout>
     <LinearLayout
 	android:orientation="horizontal"

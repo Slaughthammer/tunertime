@@ -57,6 +57,9 @@ public class TunerTime extends Activity
 
 	private PowerManager.WakeLock wakelock = null;
 
+		/* cents values are in tenths of a cent */
+	private static final int U = preset.UNITS_PER_CENT;
+
 	private Strobe strobe = null;
 	private SurfaceHolder holder = null;
 	private int width = 0;
@@ -90,7 +93,7 @@ public class TunerTime extends Activity
 			.setOnLongClickListener(new View.OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {
-				incr_cents(700);
+				incr_cents(700*U);
 				return true;
 			}
 		});
@@ -98,7 +101,7 @@ public class TunerTime extends Activity
 			.setOnLongClickListener(new View.OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {
-				incr_cents(-700);
+				incr_cents(-700*U);
 				return true;
 			}
 		});
@@ -206,7 +209,13 @@ public class TunerTime extends Activity
 			} else if (buttons == preset_buttons) {
 				brighten_mode(preset_button);
 			}
+			boolean was_preset = parms.preset_mode;
 			parms.preset_mode = (buttons == preset_buttons);
+			if (was_preset && !parms.preset_mode) {
+				/* carry the preset note over to note mode */
+				parms.note_cents = parms.strobe_cents -
+					parms.temper_offset(parms.strobe_cents);
+			}
 			if (parms.preset_mode) {
 				preset p = preset.find(parms.preset_id);
 				if (p == null) {
@@ -263,17 +272,17 @@ public class TunerTime extends Activity
 	}
 
 	private void incr_cents(int delta) {
-		parms.strobe_cents += delta;
-		parms.strobe_cents = range_limit(parms.strobe_cents, 0, 9600);
+		parms.note_cents += delta;
+		parms.note_cents = range_limit(parms.note_cents, 0, 9600*U);
 		update_status();
 	}
 
-	public void semi_incr(View v) { incr_cents(  100); }
-	public void semi_decr(View v) { incr_cents( -100); }
-	public void oct_incr(View v)  { incr_cents( 1200); }
-	public void oct_decr(View v)  { incr_cents(-1200); }
-	public void cent_incr(View v) { incr_cents(    1); }
-	public void cent_decr(View v) { incr_cents(   -1); }
+	public void semi_incr(View v) { incr_cents(  100*U); }
+	public void semi_decr(View v) { incr_cents( -100*U); }
+	public void oct_incr(View v)  { incr_cents( 1200*U); }
+	public void oct_decr(View v)  { incr_cents(-1200*U); }
+	public void cent_incr(View v) { incr_cents(    1*U); }
+	public void cent_decr(View v) { incr_cents(   -1*U); }
 
 	public void A_incrp1(View v) {
 		parms.A_freq++;
@@ -408,7 +417,7 @@ public class TunerTime extends Activity
 		if ((p == null) || (p.notes.size() == 0)) {
 			parms.preset_note = 0;
 			parms.preset_oct = 0;
-			parms.strobe_cents = 4800;
+			parms.strobe_cents = 4800*U;
 		} else {
 			int n = p.notes.size();
 			while (parms.preset_note < 0) {
@@ -416,13 +425,13 @@ public class TunerTime extends Activity
 			}
 			parms.preset_note %= n;
 			parms.strobe_cents = p.notes.get(parms.preset_note) +
-					1200*parms.preset_oct;
+					1200*U*parms.preset_oct;
 			while (parms.strobe_cents < 0) {
-				parms.strobe_cents += 1200;
+				parms.strobe_cents += 1200*U;
 				parms.preset_oct++;
 			}
-			while (parms.strobe_cents > 9600) {
-				parms.strobe_cents -= 1200;
+			while (parms.strobe_cents > 9600*U) {
+				parms.strobe_cents -= 1200*U;
 				parms.preset_oct--;
 			}
 		}
@@ -432,10 +441,23 @@ public class TunerTime extends Activity
 		 * because status display is really the only part that will go
 		 * wonkers if the values go out-of-range anyways.  */
 	private void update_status() {
+		String temper_str = null;
 		if (parms.preset_mode) {
 			update_preset();
+		} else {
+			/* note mode: apply the selected preset if it is a
+			 * temperament (12 notes, one per pitch class) */
+			parms.note_cents = range_limit(parms.note_cents,
+							0, 9600*U);
+			int off = 0;
+			if (parms.temper_offsets() != null) {
+				off = parms.temper_offset(parms.note_cents);
+				temper_str = preset.find(parms.preset_id).name +
+					" " + note.cents_str(off);
+			}
+			parms.strobe_cents = parms.note_cents + off;
 		}
-		parms.strobe_cents = range_limit(parms.strobe_cents, 0, 9600);
+		parms.strobe_cents = range_limit(parms.strobe_cents, 0, 9600*U);
 		parms.A_freq = range_limit(parms.A_freq, 2200, 8800);
 		parms.harm0_mult = range_limit(parms.harm0_mult, 1, 20);
 		parms.harm1_mult = range_limit(parms.harm1_mult, 1, 20);
@@ -459,9 +481,16 @@ public class TunerTime extends Activity
 		note n = new note(parms.strobe_cents);
 		String oct_str = Integer.toString(n.octave);
 
-		note_semi_display.setText(n.note_str);
-		note_oct_display.setText(oct_str);
-		note_cent_display.setText(n.cents_str);
+				/* note mode shows the position before the
+				 * temperament, which is shown in the title */
+		note nn = new note(parms.note_cents);
+		note_semi_display.setText(nn.note_str);
+		note_oct_display.setText(Integer.toString(nn.octave));
+		note_cent_display.setText(nn.cents_str);
+		if (!parms.fft_mode && !parms.preset_mode) {
+			setTitle("TunerTime: strobe" + ((temper_str != null) ?
+					(" (" + temper_str + ")") : ""));
+		}
 
 		preset_semi_display.setText(n.note_str+" "+n.cents_str);
 		preset_oct_display.setText(oct_str);
@@ -486,8 +515,10 @@ public class TunerTime extends Activity
 		}
 	}
 
+		/* cents in tenths of a cent (preset.UNITS_PER_CENT), 48000=A4.
+		 * also called from the native side */
 	public double cents_to_freq(int cents, int harm_mult) {
-		double c = (double)(cents-4800);
+		double c = ((double)(cents-4800*U)) / (double)U;
 		c += 1200.0d * Math.log((double)harm_mult) / Math.log(2.0d);
 		double frac = ((double)parms.cents_per_octave)/12000.0d;
 		double octpow = c*(1.0d+frac) / 1200.0d;

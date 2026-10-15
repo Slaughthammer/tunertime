@@ -341,7 +341,8 @@ update_labels(jobject this)
 	char pianoname[10];
 	static const char notes[12][3] =
 	    { "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#" };
-	int note = ((base_cents+50)/100)%12;
+	const int semi = 100*UNITS_PER_CENT;
+	int note = ((base_cents+semi/2)/semi)%12;
 
 	for (i = 0; i < NUM_STROBES; i++) {
 		int mult = ((i==0) ? harm0_mult
@@ -351,7 +352,7 @@ update_labels(jobject this)
 		sprintf(labels[i], "%2d%s %7.1f", mult, ext, strobes[i].freq);
 	}
 	set_labels(this, labels);
-	i = ((base_cents+50)/100)+1;
+	i = ((base_cents+semi/2)/semi)+1;
 	if ((i < 1) || (i > 88)) {
 		sprintf(pianoname, "%s__", notes[note]);
 	} else {
