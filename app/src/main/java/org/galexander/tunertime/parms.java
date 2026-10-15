@@ -23,7 +23,7 @@ public class parms {
 	static public volatile int num_strobes = 5;
 		/* harmonic multiplier per strobe row, ascending */
 	static public volatile int[] harm_mult = { 1, 2, 4, 6, 8, 1, 1, 1 };
-	static public volatile String strobe_color = "slate";
+	static public volatile String strobe_color = "batlow";
 
 	static public volatile boolean fft_mode = false;
 			/* number of samples in FFT window */
@@ -90,7 +90,7 @@ public class parms {
 		note_temper = prefs.getBoolean("note_temper", true);
 		auto_note = prefs.getBoolean("auto_note", false);
 		load_harmonics();
-		strobe_color = prefs.getString("strobe_color", "slate");
+		strobe_color = prefs.getString("strobe_color", "batlow");
 		fft_mode = prefs.getBoolean("fft_mode", false);
 		fft_size = prefs.getInt("fft_size", 2048);
 		fft_width = prefs.getInt("fft_width", Strobe.FFT_RANGE_MULT/4);

@@ -72,13 +72,28 @@ static unsigned color_slate_light(int x) {
 	return COLOR_VALUE((x*29)/32, (x*29)/32, (x*15)/16);
 }
 
-static unsigned (*color1)(int x) = color_slate_dark;
-static unsigned (*color2)(int x) = color_slate_light;
+	/* batlow: the positive half of the wave sweeps the whole map from
+	 * deep blue to pale pink as it gets louder, the negative half stays
+	 * deep blue, so quiet input is dark like the other schemes.  x comes
+	 * through exptab[], whose quietest value is about 101 */
+#define BATLOW_X0 101
+static unsigned color_batlow_hi(int x) {
+	return batlow((x-BATLOW_X0)/(double)(254-BATLOW_X0));
+}
+static unsigned color_batlow_lo(int x) {
+	return batlow(0.0);
+}
+
+static unsigned (*color1)(int x) = color_batlow_hi;
+static unsigned (*color2)(int x) = color_batlow_lo;
 
 void
 strobe_color(const char *s)
 {
-	if (!s || !strcmp(s, "slate")) {
+	if (!s || !strcmp(s, "batlow")) {
+		color1 = color_batlow_hi;
+		color2 = color_batlow_lo;
+	} else if (!strcmp(s, "slate")) {
 		color1 = color_slate_dark;
 		color2 = color_slate_light;
 	} else if (!strcmp(s, "redgreen")) {
@@ -94,8 +109,8 @@ strobe_color(const char *s)
 		color1 = color_red;
 		color2 = color_blue;
 	} else {
-		color1 = color_slate_dark;
-		color2 = color_slate_light;
+		color1 = color_batlow_hi;
+		color2 = color_batlow_lo;
 	}
 }
 

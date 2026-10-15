@@ -104,6 +104,39 @@ xor_vline(jint *bitmap_ptr, int x, int y1, int y2)
 		*p ^= 0x303438;
 	}
 }
+/* batlow (F. Crameri, Scientific colour maps): perceptually uniform and
+ * readable with colour-vision deficiency.  t in [0, 1], deep blue to pale
+ * pink; 10 stops, linearly interpolated */
+unsigned
+batlow(double t)
+{
+#define BATLOW_RANGES 9
+	static const unsigned stops[BATLOW_RANGES+1][3] =
+			{ {   1,  25,  89 },	/* deep blue */
+			  {  16,  63,  96 },
+			  {  28,  90,  98 },
+			  {  60, 109,  86 },
+			  { 104, 123,  62 },	/* olive */
+			  { 157, 137,  43 },
+			  { 210, 147,  67 },	/* orange */
+			  { 248, 161, 123 },
+			  { 253, 183, 188 },
+			  { 250, 204, 250 } };	/* pale pink */
+	int k;
+	unsigned a, b;
+
+	if (!(t > 0.0)) t = 0.0;	/* also catches NaN */
+	if (t > 1.0) t = 1.0;
+	t *= BATLOW_RANGES;
+	k = (int)t;
+	if (k > BATLOW_RANGES-1) k = BATLOW_RANGES-1;
+	b = (unsigned)((t-k)*255.0);
+	a = 255-b;
+	return COLOR_VALUE((a*stops[k][0] + b*stops[k+1][0]) / 255,
+			   (a*stops[k][1] + b*stops[k+1][1]) / 255,
+			   (a*stops[k][2] + b*stops[k+1][2]) / 255);
+}
+
 
 
 

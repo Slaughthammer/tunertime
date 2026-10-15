@@ -381,58 +381,11 @@ fft_draw_grids(jint *bitmap_ptr)
 static unsigned
 color_for_value(double x)
 {
-	/* batlow (F. Crameri, Scientific colour maps): perceptually
-	 * uniform and readable with colour-vision deficiency */
-#define NUM_RANGES 9
-	static const unsigned spectrum[NUM_RANGES+1][3] =
-			{ {   1,  25,  89 },	/* deep blue */
-			  {  16,  63,  96 },
-			  {  28,  90,  98 },
-			  {  60, 109,  86 },
-			  { 104, 123,  62 },	/* olive */
-			  { 157, 137,  43 },
-			  { 210, 147,  67 },	/* orange */
-			  { 248, 161, 123 },
-			  { 253, 183, 188 },
-			  { 250, 204, 250 } };	/* pale pink */
-	int range = 0;
-	unsigned r1, g1, b1;
-	unsigned r2, g2, b2;
-	unsigned r, g, b;
-	unsigned ix, i1mx;
-
 	if (x < 0.0000001) {
-		return COLOR_VALUE(spectrum[0][0], spectrum[0][1], spectrum[0][2]);
+		return batlow(0.0);
 	}
 	x = log(1.0 + x * 500.0) / 10.3;
-	if (x < 0.0) {
-		return COLOR_VALUE(spectrum[0][0], spectrum[0][1], spectrum[0][2]);
-	}
-	if (x > 1.0) {
-		x = 1.0;
-	}
-
-	x *= ((double)NUM_RANGES);
-	while (x > 1.0) {
-		x -= 1.0;
-		range++;
-	}
-	if (range > NUM_RANGES-1) {
-		range = NUM_RANGES-1;
-		x = 1.0;
-	}
-	r1 = spectrum[range][0];
-	g1 = spectrum[range][1];
-	b1 = spectrum[range][2];
-	r2 = spectrum[range+1][0];
-	g2 = spectrum[range+1][1];
-	b2 = spectrum[range+1][2];
-	ix = x*255.0;
-	i1mx = 255-ix;
-	r = (i1mx*r1 + ix*r2) / 255;
-	g = (i1mx*g1 + ix*g2) / 255;
-	b = (i1mx*b1 + ix*b2) / 255;
-	return COLOR_VALUE(r,g,b);
+	return batlow(x);
 }
 
 

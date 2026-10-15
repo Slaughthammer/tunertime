@@ -39,8 +39,9 @@ this fork.
   you hear.
 - **Neutral dark UI** (`res/values/colors.xml`, theme `Tuner`), with the
   native drawing in `jni/fft.c` and `jni/strobe.c` using the same palette.
-  "Slate" is the new default strobe colour; red/green and the others are
-  still in Settings. The FFT spectrogram uses Crameri's batlow colormap.
+  Both the strobe (new default colour scheme) and the FFT spectrogram use
+  Crameri's batlow colormap; slate, red/green and the others are still in
+  Settings.
 - **Android 15+ edge-to-edge fixes**: no screen draws under the status or
   navigation bar, and the strobe tab bar no longer covers the last row.
 - **`dev` build type**: `org.galexander.tunertime.dev`, labelled

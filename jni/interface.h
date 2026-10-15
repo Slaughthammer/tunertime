@@ -26,6 +26,7 @@ void hline(jint *bitmap_ptr, int x1, int y, int x2, unsigned color);
 void vline(jint *bitmap_ptr, int x, int y1, int y2, unsigned color);
 void xor_hline(jint *bitmap_ptr, int x1, int x2, int y);
 void xor_vline(jint *bitmap_ptr, int x, int y1, int y2);
+unsigned batlow(double t);
 #define SEVEN_CHARS 40
 #define SEVEN_WID (width/SEVEN_CHARS)
 void seven_seg(jint *bitmap_ptr, int x, int y, char c, unsigned color);
