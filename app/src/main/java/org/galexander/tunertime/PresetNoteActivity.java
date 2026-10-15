@@ -68,6 +68,24 @@ public class PresetNoteActivity extends Activity {
 		pn_octs[8] = findViewById(R.id.pn_oct_8);
 	}
 
+	/* flip the sign of the cents field and apply it */
+	public void do_negate(View v) {
+		String s = pn_cents.getText().toString().trim();
+		if (s.startsWith("-")) {
+			s = s.substring(1);
+		} else if (s.startsWith("+")) {
+			s = "-" + s.substring(1);
+		} else {
+			s = "-" + s;
+		}
+		pn_cents.setText(s);
+		pn_cents.setSelection(s.length());
+		try {
+			double d = Double.parseDouble(s.replace(',', '.'));
+			set_cents((int)Math.round(d*U));
+		} catch (Exception x) { }
+	}
+
 	public void onResume() {
 		parms.load();
 		super.onResume();
