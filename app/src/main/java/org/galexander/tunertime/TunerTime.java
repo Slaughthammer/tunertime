@@ -437,11 +437,6 @@ public class TunerTime extends Activity
 		}
 		parms.strobe_cents = range_limit(parms.strobe_cents, 0, 9600);
 		parms.A_freq = range_limit(parms.A_freq, 2200, 8800);
-		parms.harm0_mult = range_limit(parms.harm0_mult, 1, 20);
-		parms.harm1_mult = range_limit(parms.harm1_mult, 1, 20);
-		parms.harm2_mult = range_limit(parms.harm2_mult, 1, 20);
-		parms.harm3_mult = range_limit(parms.harm3_mult, 1, 20);
-		parms.harm4_mult = range_limit(parms.harm4_mult, 1, 20);
 
 		parms.fft_size = range_limit(parms.fft_size, 512, 32768);
 		parms.fft_width = range_limit(parms.fft_width, 128, Strobe.FFT_RANGE_MULT);

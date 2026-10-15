@@ -4,12 +4,17 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class parms {
 	static public volatile int strobe_cents = 4800;
-	static public volatile int harm0_mult = 1, harm1_mult = 2,
-				harm2_mult = 4, harm3_mult = 6, harm4_mult = 8;
+	static public final int MAX_STROBES = 8;	/* matches jni/interface.h */
+	static public volatile int num_strobes = 5;
+		/* harmonic multiplier per strobe row, ascending */
+	static public volatile int[] harm_mult = { 1, 2, 4, 6, 8, 1, 1, 1 };
 	static public volatile String strobe_color = "slate";
 
 	static public volatile boolean fft_mode = false;
@@ -49,11 +54,7 @@ public class parms {
 		}
 		cents_per_octave = prefs.getInt("cents_per_octave", 0);
 		strobe_cents = prefs.getInt("strobe_cents", 4800);
-		harm0_mult = Integer.parseInt(prefs.getString("harm0", "1"));
-		harm1_mult = Integer.parseInt(prefs.getString("harm1", "2"));
-		harm2_mult = Integer.parseInt(prefs.getString("harm2", "4"));
-		harm3_mult = Integer.parseInt(prefs.getString("harm3", "6"));
-		harm4_mult = Integer.parseInt(prefs.getString("harm4", "8"));
+		load_harmonics();
 		strobe_color = prefs.getString("strobe_color", "slate");
 		fft_mode = prefs.getBoolean("fft_mode", false);
 		fft_size = prefs.getInt("fft_size", 2048);
@@ -67,6 +68,45 @@ public class parms {
 		preset_note = prefs.getInt("preset_note", 0);
 		preset_oct = prefs.getInt("preset_oct", 0);
 		preset.load(prefs);
+	}
+
+	/* "harmonics" is the set of multipliers shown, one strobe row each;
+	 * older versions stored one multiplier per row as harm0..harm4 */
+	private static void load_harmonics() {
+		Set<String> set = prefs.getStringSet("harmonics", null);
+		if (set == null) {
+			set = new HashSet<String>();
+			String[] defs = { "1", "2", "4", "6", "8" };
+			for (int i = 0; i < defs.length; i++) {
+				set.add(prefs.getString("harm"+i, defs[i]));
+			}
+		}
+		TreeSet<Integer> sorted = new TreeSet<Integer>();
+		for (String s : set) {
+			try {
+				int m = Integer.parseInt(s);
+				if ((m >= 1) && (m <= 20)) {
+					sorted.add(m);
+				}
+			} catch (NumberFormatException e) {
+			}
+		}
+		if (sorted.isEmpty()) {
+			sorted.add(1);
+		}
+		int[] mult = new int[MAX_STROBES];
+		int n = 0;
+		for (int m : sorted) {
+			if (n >= MAX_STROBES) {
+				break;
+			}
+			mult[n++] = m;
+		}
+		for (int i = n; i < MAX_STROBES; i++) {
+			mult[i] = 1;
+		}
+		harm_mult = mult;
+		num_strobes = n;
 	}
 
 	public static void save() {

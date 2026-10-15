@@ -37,11 +37,8 @@ static jfieldID fid_st_pianoname;
 static jfieldID fid_st_ui;
 static jfieldID fid_st_paused;
 static jfieldID fid_p_strobe_cents;
-static jfieldID fid_p_harm0_mult;
-static jfieldID fid_p_harm1_mult;
-static jfieldID fid_p_harm2_mult;
-static jfieldID fid_p_harm3_mult;
-static jfieldID fid_p_harm4_mult;
+static jfieldID fid_p_num_strobes;
+static jfieldID fid_p_harm_mult;
 static jfieldID fid_p_strobe_color;
 static jfieldID fid_p_fft_mode;
 static jfieldID fid_p_fft_size;
@@ -259,11 +256,8 @@ jni_init(JNIEnv *env_)
 	FIELD(st_paused, strobe, "paused", "Z");
 
 	STFIELD(p_strobe_cents, parms, "strobe_cents", "I")
-	STFIELD(p_harm0_mult, parms, "harm0_mult", "I")
-	STFIELD(p_harm1_mult, parms, "harm1_mult", "I")
-	STFIELD(p_harm2_mult, parms, "harm2_mult", "I")
-	STFIELD(p_harm3_mult, parms, "harm3_mult", "I")
-	STFIELD(p_harm4_mult, parms, "harm4_mult", "I")
+	STFIELD(p_num_strobes, parms, "num_strobes", "I")
+	STFIELD(p_harm_mult, parms, "harm_mult", "[I")
 	STFIELD(p_strobe_color, parms, "strobe_color", "Ljava/lang/String;")
 	STFIELD(p_fft_mode, parms, "fft_mode", "Z")
 	STFIELD(p_fft_size, parms, "fft_size", "I")
@@ -307,11 +301,11 @@ cents_to_freq(jobject this, jint cents, jint mult)
 
 
 void
-set_labels(jobject this, char *labels[NUM_STROBES])
+set_labels(jobject this, char *labels[MAX_STROBES])
 {
-	jobjectArray j_labels = (*env)->NewObjectArray(env, NUM_STROBES, cl_string, NULL);
+	jobjectArray j_labels = (*env)->NewObjectArray(env, num_strobes, cl_string, NULL);
 	int i;
-	for (i = 0; i < NUM_STROBES; i++) {
+	for (i = 0; i < num_strobes; i++) {
 		jstring lab = (*env)->NewStringUTF(env, labels[i]);
 		(*env)->SetObjectArrayElement(env, j_labels, i, lab);
 		(*env)->DeleteLocalRef(env, lab);
@@ -368,11 +362,14 @@ check_parms(jobject this)
 	(*env)->SetStaticBooleanField(env, cl_parms, fid_p_changed, JNI_FALSE);
 
 	base_cents = (*env)->GetStaticIntField(env, cl_parms, fid_p_strobe_cents);
-	harm0_mult = (*env)->GetStaticIntField(env, cl_parms, fid_p_harm0_mult);
-	harm1_mult = (*env)->GetStaticIntField(env, cl_parms, fid_p_harm1_mult);
-	harm2_mult = (*env)->GetStaticIntField(env, cl_parms, fid_p_harm2_mult);
-	harm3_mult = (*env)->GetStaticIntField(env, cl_parms, fid_p_harm3_mult);
-	harm4_mult = (*env)->GetStaticIntField(env, cl_parms, fid_p_harm4_mult);
+	num_strobes = (*env)->GetStaticIntField(env, cl_parms, fid_p_num_strobes);
+	if (num_strobes < 1) num_strobes = 1;
+	if (num_strobes > MAX_STROBES) num_strobes = MAX_STROBES;
+	{
+		jintArray a = (*env)->GetStaticObjectField(env, cl_parms, fid_p_harm_mult);
+		(*env)->GetIntArrayRegion(env, a, 0, MAX_STROBES, harm_mult);
+		(*env)->DeleteLocalRef(env, a);
+	}
 
 	{
 		jstring t = (*env)->GetStaticObjectField(env, cl_parms, fid_p_strobe_color);

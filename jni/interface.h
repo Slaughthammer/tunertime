@@ -11,7 +11,7 @@
 #define FFT_RANGE_MULT 65536	/* for normalized values in fft_x/yoffset etc */
 #define MAX_PEAKS 100
 
-#define NUM_STROBES 5
+#define MAX_STROBES 8
 
 
 /* interface.c: */
@@ -35,13 +35,14 @@ extern int snd_buflen;
 
 void println(const char *fmt, ...);
 double cents_to_freq(jobject this, jint cents, jint mult);
-void set_labels(jobject this, char *labels[NUM_STROBES]);
+void set_labels(jobject this, char *labels[MAX_STROBES]);
 void set_pianoname(jobject this, char *pianoname);
 
 
 /* strobe.c: */
 extern int base_cents;
-extern int harm0_mult, harm1_mult, harm2_mult, harm3_mult, harm4_mult;
+extern int num_strobes;
+extern int harm_mult[MAX_STROBES];
 
 void strobe_init(void);
 void strobe_color(const char *s);

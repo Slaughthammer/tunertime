@@ -8,40 +8,12 @@
 		android:entries="@array/color_name"
 		android:entryValues="@array/color_value"
 		android:defaultValue="slate" />
-	<ListPreference
-		android:key="harm0"
-		android:title="Harmonic 0"
-		android:summary="%s"
+	<MultiSelectListPreference
+		android:key="harmonics"
+		android:title="Harmonics shown"
+		android:summary="One strobe row per checked harmonic, lowest first (up to 8)"
 		android:entries="@array/harmonics"
 		android:entryValues="@array/harmonics"
-		android:defaultValue="1" />
-	<ListPreference
-		android:key="harm1"
-		android:title="Harmonic 1"
-		android:summary="%s"
-		android:entries="@array/harmonics"
-		android:entryValues="@array/harmonics"
-		android:defaultValue="2" />
-	<ListPreference
-		android:key="harm2"
-		android:title="Harmonic 2"
-		android:summary="%s"
-		android:entries="@array/harmonics"
-		android:entryValues="@array/harmonics"
-		android:defaultValue="4" />
-	<ListPreference
-		android:key="harm3"
-		android:title="Harmonic 3"
-		android:summary="%s"
-		android:entries="@array/harmonics"
-		android:entryValues="@array/harmonics"
-		android:defaultValue="6" />
-	<ListPreference
-		android:key="harm4"
-		android:title="Harmonic 4"
-		android:summary="%s"
-		android:entries="@array/harmonics"
-		android:entryValues="@array/harmonics"
-		android:defaultValue="8" />
+		android:defaultValue="@array/harmonics_default" />
     </PreferenceCategory>
 </PreferenceScreen>
