@@ -32,7 +32,7 @@
 	    android:lines="1"
 	    android:singleLine="true"
 	    android:textAppearance="?android:attr/textAppearanceLarge" 
-	    android:textColor="#fc4" />
+	    android:textColor="#33FF66" />
 	<Button android:id="@+id/semi_plus"
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
@@ -70,7 +70,7 @@
 	    android:lines="1"
 	    android:singleLine="true"
 	    android:textAppearance="?android:attr/textAppearanceLarge" 
-	    android:textColor="#fc4" />
+	    android:textColor="#33FF66" />
 	<Button
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
@@ -107,7 +107,7 @@
 	    android:lines="1"
 	    android:singleLine="true"
 	    android:textAppearance="?android:attr/textAppearanceLarge" 
-	    android:textColor="#fc4" />
+	    android:textColor="#33FF66" />
 	<Button
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"

@@ -194,11 +194,11 @@ fft_draw_xslider(jint *bitmap_ptr)
 	if (x2 <= x1) x2 = x1+1;
 	if (x2 > disp_w) x2 = disp_w;
 	if (x1 > 0) {
-		filled_rect(bitmap_ptr, 0,y1,x1,height, 0xFFFF0000);
+		filled_rect(bitmap_ptr, 0,y1,x1,height, 0xFF003B10);
 	}
-	filled_rect(bitmap_ptr, x1,y1,x2,height, 0xFF00FF00);
+	filled_rect(bitmap_ptr, x1,y1,x2,height, 0xFF00FF41);
 	if (x2 < disp_w) {
-		filled_rect(bitmap_ptr, x2,y1,disp_w,height, 0xFFFF0000);
+		filled_rect(bitmap_ptr, x2,y1,disp_w,height, 0xFF003B10);
 	}
 }
 
@@ -214,11 +214,11 @@ fft_draw_yslider(jint *bitmap_ptr)
 	if (y2 < 0) y2 = 0;
 	if (y2 > disp_h) y2 = disp_h;
 	if (y1 > 0) {
-		filled_rect(bitmap_ptr, x1,0,width,y1, 0xFFFF0000);
+		filled_rect(bitmap_ptr, x1,0,width,y1, 0xFF003B10);
 	}
-	filled_rect(bitmap_ptr, x1,y1,width,y2, 0xFF00FF00);
+	filled_rect(bitmap_ptr, x1,y1,width,y2, 0xFF00FF41);
 	if (y2 < disp_h) {
-		filled_rect(bitmap_ptr, x1,y2,width,disp_h, 0xFFFF0000);
+		filled_rect(bitmap_ptr, x1,y2,width,disp_h, 0xFF003B10);
 	}
 }
 
@@ -284,17 +284,17 @@ fft_draw_piano(jint *bitmap_ptr)
 		if (y2 > height) y2 = height;
 
 		if (name) {			/* white keys */
-			filled_rect(bitmap_ptr, x2, y1, x3, y2, 0xFFFFFFFF);
+			filled_rect(bitmap_ptr, x2, y1, x3, y2, 0xFF00FF41);
 			if (y0 + (SEVEN_WID*2) <= last_y) {
 				seven_seg(bitmap_ptr, x1, y0,
-					name[0], 0xFFAAAAFF);
+					name[0], 0xFF00C032);
 				seven_seg(bitmap_ptr, x1+SEVEN_WID, y0,
-					((i+9)/12)+'0', 0xFFAAAAFF);
+					((i+9)/12)+'0', 0xFF00C032);
 				last_y = y0;
 				grid_y[num_grid_y++] = y;
 			}
 		} else {
-			filled_rect(bitmap_ptr, x2, y1, x3, y2, 0xFF666666);
+			filled_rect(bitmap_ptr, x2, y1, x3, y2, 0xFF005A18);
 		}
 	}
 }
@@ -343,7 +343,7 @@ fft_draw_freqs(jint *bitmap_ptr)
 		if (y1 < 0) y1 = 0;
 		if (y2 > disp_h) y2 = disp_h;
 
-		filled_rect(bitmap_ptr, x2, y1, x3, y2, 0xFFFFFFFF);
+		filled_rect(bitmap_ptr, x2, y1, x3, y2, 0xFF00FF41);
 		xor_hline(bitmap_ptr, 0, x1, y);
 		grid_y[num_grid_y++] = y;
 		if ((y0 >= 0) && (y3 < disp_h)) {
@@ -351,7 +351,7 @@ fft_draw_freqs(jint *bitmap_ptr)
 			for (i = 0; label[i]; i++) {
 				seven_seg(bitmap_ptr,
 					x1 + (SEVEN_WID*i), y0, label[i],
-					0xFFAAAAFF);
+					0xFF00C032);
 			}
 		}
 	}
@@ -383,12 +383,12 @@ color_for_value(double x)
 {
 #define NUM_RANGES 5
 	static const unsigned spectrum[NUM_RANGES+1][3] =
-			{ { 0, 0, 0 },		/* black */
-			  { 1, 0, 1 },		/* purple */
-			  { 0, 0, 1 },		/* blue */
-			  { 0, 1, 0 },		/* green */
-			  { 1, 1, 0 },		/* orange */
-			  { 1, 0, 0 } };	/* red */
+			{ {   0,   0,   0 },	/* black */
+			  {   0,  48,  10 },	/* deep green */
+			  {   0, 130,  35 },	/* green */
+			  {   0, 255,  65 },	/* phosphor green */
+			  {  80, 255, 110 },	/* light green */
+			  { 170, 255, 185 } };	/* pale green */
 	int range = 0;
 	unsigned r1, g1, b1;
 	unsigned r2, g2, b2;
@@ -423,9 +423,9 @@ color_for_value(double x)
 	b2 = spectrum[range+1][2];
 	ix = x*255.0;
 	i1mx = 255-ix;
-	r = i1mx*r1 + ix*r2;
-	g = i1mx*g1 + ix*g2;
-	b = i1mx*b1 + ix*b2;
+	r = (i1mx*r1 + ix*r2) / 255;
+	g = (i1mx*g1 + ix*g2) / 255;
+	b = (i1mx*b1 + ix*b2) / 255;
 	return COLOR_VALUE(r,g,b);
 }
 
@@ -447,7 +447,7 @@ fft_display_peaks(jint *bitmap_ptr, int x1, int x2, double *peaks)
 		if (y1 < 0) break;
 		int y2 = y1+thick;
 		if (y2 > disp_h) y2 = disp_h;
-		filled_rect(bitmap_ptr, x1,y1,x2,y2, 0xFF22FFFF);
+		filled_rect(bitmap_ptr, x1,y1,x2,y2, 0xFFFFFFFF);
 	}
 }
 
@@ -458,7 +458,7 @@ fft_display_col(jint *bitmap_ptr, int x1, int x2, double *spect)
 
 	if (disp_h <= 0) return;
 	if (!spect) {
-		filled_rect(bitmap_ptr, x1, 0, x2, disp_h, 0xFF222222);
+		filled_rect(bitmap_ptr, x1, 0, x2, disp_h, 0xFF000F04);
 		return;
 	}
 

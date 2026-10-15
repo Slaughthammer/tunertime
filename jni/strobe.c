@@ -64,14 +64,23 @@ static unsigned color_blue(int x) {
 static unsigned color_yellow(int x) {
 	return COLOR_VALUE(x, x, x/2);
 }
+static unsigned color_matrix_dark(int x) {
+	return COLOR_VALUE(0, (x*3)/8, x/16);
+}
+static unsigned color_matrix_light(int x) {
+	return COLOR_VALUE((x*2)/3, x, (x*2)/3);
+}
 
-static unsigned (*color1)(int x) = color_red;
-static unsigned (*color2)(int x) = color_green;
+static unsigned (*color1)(int x) = color_matrix_dark;
+static unsigned (*color2)(int x) = color_matrix_light;
 
 void
 strobe_color(const char *s)
 {
-	if (!s) {
+	if (!s || !strcmp(s, "matrix")) {
+		color1 = color_matrix_dark;
+		color2 = color_matrix_light;
+	} else if (!strcmp(s, "redgreen")) {
 		color1 = color_red;
 		color2 = color_green;
 	} else if (!strcmp(s, "blackwhite")) {
@@ -84,8 +93,8 @@ strobe_color(const char *s)
 		color1 = color_red;
 		color2 = color_blue;
 	} else {
-		color1 = color_red;
-		color2 = color_green;
+		color1 = color_matrix_dark;
+		color2 = color_matrix_light;
 	}
 }
 
@@ -285,9 +294,9 @@ strobe_draw_htic(jint *bitmap_ptr, struct strobe_rec *s)
 	step = s->freq / s->multiplier;
 	for (x = step; x < width; x += step) {
 		int h = (s->height*3)/10;
-		vline(bitmap_ptr, x, s->y, s->y+h, 0xFFFFFFAA);
-		vline(bitmap_ptr, x-1, s->y, s->y+h, 0xFFFFFFAA);
-		vline(bitmap_ptr, x-2, s->y, s->y+h, 0xFFFFFFAA);
+		vline(bitmap_ptr, x, s->y, s->y+h, 0xFF7CFF96);
+		vline(bitmap_ptr, x-1, s->y, s->y+h, 0xFF7CFF96);
+		vline(bitmap_ptr, x-2, s->y, s->y+h, 0xFF7CFF96);
 	}
 }
 
@@ -301,7 +310,7 @@ strobe_redraw(jint *bitmap_ptr)
 	int i;
 
 	for (i = 0; i < NUM_STROBES-1; i++) {
-		hline(bitmap_ptr, 0, y, width, 0xFFFFFFFF);
+		hline(bitmap_ptr, 0, y, width, 0xFF00FF41);
 		y += h;
 	}
 }

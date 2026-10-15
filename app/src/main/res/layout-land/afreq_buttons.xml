@@ -35,7 +35,7 @@
 	    android:lines="1"
 	    android:singleLine="true"
 	    android:textAppearance="?android:attr/textAppearanceLarge" 
-	    android:textColor="#66F" />
+	    android:textColor="#00FF41" />
 	<TextView
 	    android:layout_width="1dp"
 	    android:layout_height="wrap_content"
@@ -44,7 +44,7 @@
 	    android:singleLine="true"
 	    android:text="Hz"
 	    android:textAppearance="?android:attr/textAppearanceLarge" 
-	    android:textColor="#DD6" />
+	    android:textColor="#9FFFB0" />
     </LinearLayout>
     <LinearLayout
 	android:orientation="horizontal"
@@ -72,6 +72,6 @@
 	android:layout_weight="1"
 	android:text="reset"
 	android:textAppearance="?android:attr/textAppearanceMedium"
-	android:textColor="#800"
+	android:textColor="#00A030"
 	android:onClick="reset_afreq" />
 </LinearLayout>
