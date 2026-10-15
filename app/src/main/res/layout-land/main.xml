@@ -5,14 +5,18 @@
     android:layout_height="fill_parent"
     android:layout_width="fill_parent"
     >
-    <FrameLayout android:id="@+id/surface_frame"
+    <!-- vertical, so the strobe-mode tab bar added below the surface
+	 never covers the bottom strobe row -->
+    <LinearLayout android:id="@+id/surface_frame"
+	android:orientation="vertical"
 	android:layout_height="fill_parent"
 	android:layout_width="1dp"
 	android:layout_weight="5">
 	<SurfaceView android:id="@+id/strobe"
 	    android:layout_width="fill_parent"
-	    android:layout_height="fill_parent" />
-    </FrameLayout>
+	    android:layout_height="1dp"
+	    android:layout_weight="1" />
+    </LinearLayout>
     <LinearLayout
 	android:layout_height="fill_parent"
 	android:layout_width="1dp"
