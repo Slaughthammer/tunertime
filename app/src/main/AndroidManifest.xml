@@ -2,9 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <application android:label="TunerTime" android:icon="@drawable/icon"
+    <application android:label="${appLabel}" android:icon="@drawable/icon"
 		android:theme="@style/Tuner">
-        <activity android:name="TunerTime" android:label="TunerTime"
+        <activity android:name="TunerTime" android:label="${appLabel}"
 		android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

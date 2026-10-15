@@ -35,6 +35,7 @@ android {
         targetSdk = 36
         versionCode = 17
         versionName = "17.0"
+        manifestPlaceholders["appLabel"] = "TunerTime"
     }
 
     buildTypes {
@@ -45,6 +46,13 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
+        }
+        // a release build that installs next to the Play Store app,
+        // with its own settings and presets: ./gradlew assembleDev
+        create("dev") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".dev"
+            manifestPlaceholders["appLabel"] = "TunerTime dev"
         }
     }
     compileOptions {
