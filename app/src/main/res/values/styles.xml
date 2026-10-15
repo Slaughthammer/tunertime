@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<!-- Matrix look: phosphor green on black, monospace everywhere -->
-	<style name="Matrix" parent="@android:style/Theme.Material">
+	<!-- Orange look: amber on black, monospace everywhere -->
+	<style name="Orange" parent="@android:style/Theme.Material">
 		<item name="android:colorBackground">#000000</item>
 		<item name="android:windowBackground">@android:color/black</item>
-		<item name="android:colorPrimary">#001a07</item>
+		<item name="android:colorPrimary">#1a0e00</item>
 		<item name="android:colorPrimaryDark">#000000</item>
-		<item name="android:colorAccent">#00ff41</item>
-		<item name="android:colorControlNormal">#00a030</item>
-		<item name="android:textColorPrimary">#00ff41</item>
-		<item name="android:textColorSecondary">#00b030</item>
-		<item name="android:textColorTertiary">#007a22</item>
-		<item name="android:textColorHint">#005a18</item>
+		<item name="android:colorAccent">#ff8c00</item>
+		<item name="android:colorControlNormal">#a05800</item>
+		<item name="android:textColorPrimary">#ff8c00</item>
+		<item name="android:textColorSecondary">#b06100</item>
+		<item name="android:textColorTertiary">#7a4300</item>
+		<item name="android:textColorHint">#5a3200</item>
 		<item name="android:statusBarColor">#000000</item>
 		<item name="android:navigationBarColor">#000000</item>
-		<item name="android:textViewStyle">@style/Matrix.TextView</item>
-		<item name="android:buttonStyle">@style/Matrix.Button</item>
-		<item name="android:editTextStyle">@style/Matrix.EditText</item>
+		<item name="android:textViewStyle">@style/Orange.TextView</item>
+		<item name="android:buttonStyle">@style/Orange.Button</item>
+		<item name="android:editTextStyle">@style/Orange.EditText</item>
 	</style>
-	<style name="Matrix.TextView" parent="@android:style/Widget.Material.TextView">
+	<style name="Orange.TextView" parent="@android:style/Widget.Material.TextView">
 		<item name="android:fontFamily">monospace</item>
 	</style>
-	<style name="Matrix.Button" parent="@android:style/Widget.Material.Button">
+	<style name="Orange.Button" parent="@android:style/Widget.Material.Button">
 		<item name="android:fontFamily">monospace</item>
-		<item name="android:textColor">#00ff41</item>
+		<item name="android:textColor">#ff8c00</item>
 		<item name="android:textAllCaps">false</item>
 		<item name="android:background">@drawable/mode_button</item>
 	</style>
-	<style name="Matrix.EditText" parent="@android:style/Widget.Material.EditText">
+	<style name="Orange.EditText" parent="@android:style/Widget.Material.EditText">
 		<item name="android:fontFamily">monospace</item>
 	</style>
 </resources>

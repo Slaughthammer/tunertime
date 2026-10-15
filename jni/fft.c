@@ -194,11 +194,11 @@ fft_draw_xslider(jint *bitmap_ptr)
 	if (x2 <= x1) x2 = x1+1;
 	if (x2 > disp_w) x2 = disp_w;
 	if (x1 > 0) {
-		filled_rect(bitmap_ptr, 0,y1,x1,height, 0xFF003B10);
+		filled_rect(bitmap_ptr, 0,y1,x1,height, 0xFF3B2000);
 	}
-	filled_rect(bitmap_ptr, x1,y1,x2,height, 0xFF00FF41);
+	filled_rect(bitmap_ptr, x1,y1,x2,height, 0xFFFF8C00);
 	if (x2 < disp_w) {
-		filled_rect(bitmap_ptr, x2,y1,disp_w,height, 0xFF003B10);
+		filled_rect(bitmap_ptr, x2,y1,disp_w,height, 0xFF3B2000);
 	}
 }
 
@@ -214,11 +214,11 @@ fft_draw_yslider(jint *bitmap_ptr)
 	if (y2 < 0) y2 = 0;
 	if (y2 > disp_h) y2 = disp_h;
 	if (y1 > 0) {
-		filled_rect(bitmap_ptr, x1,0,width,y1, 0xFF003B10);
+		filled_rect(bitmap_ptr, x1,0,width,y1, 0xFF3B2000);
 	}
-	filled_rect(bitmap_ptr, x1,y1,width,y2, 0xFF00FF41);
+	filled_rect(bitmap_ptr, x1,y1,width,y2, 0xFFFF8C00);
 	if (y2 < disp_h) {
-		filled_rect(bitmap_ptr, x1,y2,width,disp_h, 0xFF003B10);
+		filled_rect(bitmap_ptr, x1,y2,width,disp_h, 0xFF3B2000);
 	}
 }
 
@@ -284,17 +284,17 @@ fft_draw_piano(jint *bitmap_ptr)
 		if (y2 > height) y2 = height;
 
 		if (name) {			/* white keys */
-			filled_rect(bitmap_ptr, x2, y1, x3, y2, 0xFF00FF41);
+			filled_rect(bitmap_ptr, x2, y1, x3, y2, 0xFFFF8C00);
 			if (y0 + (SEVEN_WID*2) <= last_y) {
 				seven_seg(bitmap_ptr, x1, y0,
-					name[0], 0xFF00C032);
+					name[0], 0xFFC06A00);
 				seven_seg(bitmap_ptr, x1+SEVEN_WID, y0,
-					((i+9)/12)+'0', 0xFF00C032);
+					((i+9)/12)+'0', 0xFFC06A00);
 				last_y = y0;
 				grid_y[num_grid_y++] = y;
 			}
 		} else {
-			filled_rect(bitmap_ptr, x2, y1, x3, y2, 0xFF005A18);
+			filled_rect(bitmap_ptr, x2, y1, x3, y2, 0xFF5A3200);
 		}
 	}
 }
@@ -343,7 +343,7 @@ fft_draw_freqs(jint *bitmap_ptr)
 		if (y1 < 0) y1 = 0;
 		if (y2 > disp_h) y2 = disp_h;
 
-		filled_rect(bitmap_ptr, x2, y1, x3, y2, 0xFF00FF41);
+		filled_rect(bitmap_ptr, x2, y1, x3, y2, 0xFFFF8C00);
 		xor_hline(bitmap_ptr, 0, x1, y);
 		grid_y[num_grid_y++] = y;
 		if ((y0 >= 0) && (y3 < disp_h)) {
@@ -351,7 +351,7 @@ fft_draw_freqs(jint *bitmap_ptr)
 			for (i = 0; label[i]; i++) {
 				seven_seg(bitmap_ptr,
 					x1 + (SEVEN_WID*i), y0, label[i],
-					0xFF00C032);
+					0xFFC06A00);
 			}
 		}
 	}
@@ -384,11 +384,11 @@ color_for_value(double x)
 #define NUM_RANGES 5
 	static const unsigned spectrum[NUM_RANGES+1][3] =
 			{ {   0,   0,   0 },	/* black */
-			  {   0,  48,  10 },	/* deep green */
-			  {   0, 130,  35 },	/* green */
-			  {   0, 255,  65 },	/* phosphor green */
-			  {  80, 255, 110 },	/* light green */
-			  { 170, 255, 185 } };	/* pale green */
+			  {  48,  26,   0 },	/* deep orange */
+			  { 130,  72,   0 },	/* brown-orange */
+			  { 255, 140,   0 },	/* orange */
+			  { 255, 176,  64 },	/* light orange */
+			  { 255, 217, 136 } };	/* pale orange */
 	int range = 0;
 	unsigned r1, g1, b1;
 	unsigned r2, g2, b2;
@@ -458,7 +458,7 @@ fft_display_col(jint *bitmap_ptr, int x1, int x2, double *spect)
 
 	if (disp_h <= 0) return;
 	if (!spect) {
-		filled_rect(bitmap_ptr, x1, 0, x2, disp_h, 0xFF000F04);
+		filled_rect(bitmap_ptr, x1, 0, x2, disp_h, 0xFF0F0800);
 		return;
 	}
 

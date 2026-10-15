@@ -7,7 +7,7 @@
 		android:summary="%s"
 		android:entries="@array/color_name"
 		android:entryValues="@array/color_value"
-		android:defaultValue="matrix" />
+		android:defaultValue="orange" />
 	<ListPreference
 		android:key="harm0"
 		android:title="Harmonic 0"

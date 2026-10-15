@@ -3,7 +3,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <application android:label="TunerTime" android:icon="@drawable/icon"
-		android:theme="@style/Matrix">
+		android:theme="@style/Orange">
         <activity android:name="TunerTime" android:label="TunerTime"
 		android:exported="true">
             <intent-filter>

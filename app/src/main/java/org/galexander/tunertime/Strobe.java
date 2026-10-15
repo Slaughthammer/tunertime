@@ -78,7 +78,7 @@ public class Strobe extends Thread {
 		int strobe_height = height/labels.length;
 		if (label_p == null) {
 			label_p = new Paint();
-			label_p.setARGB(0xff,0x00,0xff,0x41);
+			label_p.setARGB(0xff,0xff,0x8c,0x00);
 			label_p.setTextAlign(Paint.Align.LEFT);
 			label_p.setTextSize(strobe_height/6);
 			label_p.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));
@@ -96,7 +96,7 @@ public class Strobe extends Thread {
 	private void draw_paused(Canvas c) {
 		if (pause_p == null) {
 			pause_p = new Paint();
-			pause_p.setARGB(0xff,0x00,0xff,0x41);
+			pause_p.setARGB(0xff,0xff,0x8c,0x00);
 			pause_p.setTextAlign(Paint.Align.LEFT);
 			pause_p.setTextSize(height/10);
 			pause_p.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));
@@ -114,7 +114,7 @@ public class Strobe extends Thread {
 		}
 		if (pianoname_p == null) {
 			pianoname_p = new Paint();
-			pianoname_p.setARGB(0xff,0x00,0xff,0x41);
+			pianoname_p.setARGB(0xff,0xff,0x8c,0x00);
 			pianoname_p.setTextAlign(Paint.Align.RIGHT);
 			pianoname_p.setTextSize(height/24);
 			pianoname_p.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));

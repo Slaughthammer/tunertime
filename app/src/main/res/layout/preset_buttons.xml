@@ -22,7 +22,7 @@
 	    android:lines="1"
 	    android:singleLine="true"
 	    android:textAppearance="?android:attr/textAppearanceLarge" 
-	    android:textColor="#33FF66" />
+	    android:textColor="#FFA329" />
 	<Button
 	    android:layout_width="fill_parent"
 	    android:layout_height="1dp"
@@ -50,7 +50,7 @@
 	    android:lines="1"
 	    android:singleLine="true"
 	    android:textAppearance="?android:attr/textAppearanceLarge" 
-	    android:textColor="#33FF66" />
+	    android:textColor="#FFA329" />
 	<Button
 	    android:layout_width="fill_parent"
 	    android:layout_height="1dp"
