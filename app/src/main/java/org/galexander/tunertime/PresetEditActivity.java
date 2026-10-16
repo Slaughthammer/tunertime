@@ -18,10 +18,15 @@ public class PresetEditActivity extends Activity {
 	private EditText name_view = null;
 	private ListView list = null;
 
+	protected void attachBaseContext(android.content.Context base) {
+		super.attachBaseContext(Lang.wrap(base));
+	}
+
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		parms.init(this);
+		setTitle(R.string.title_preset_edit);
 		setContentView(R.layout.preset_edit);
 
 		name_view = (EditText)findViewById(R.id.preset_name);
@@ -103,10 +108,11 @@ public class PresetEditActivity extends Activity {
 				}
 			} };
 		new AlertDialog.Builder(this)
-			.setTitle("Confirm")
-			.setMessage("Really delete \""+get_preset().name+"\"?")
-			.setPositiveButton("Delete", listener)
-			.setNegativeButton("Cancel", listener)
+			.setTitle(R.string.confirm)
+			.setMessage(getString(R.string.really_delete,
+					get_preset().name))
+			.setPositiveButton(R.string.delete, listener)
+			.setNegativeButton(R.string.cancel, listener)
 			.show();
 	}
 }

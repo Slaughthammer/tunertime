@@ -1,8 +1,5 @@
 package org.galexander.tunertime;
 
-import android.media.AudioFormat;
-import android.media.AudioRecord;
-import android.media.MediaRecorder;
 import java.util.concurrent.Semaphore;
 
 public class Listener extends Thread {
@@ -19,6 +16,10 @@ public class Listener extends Thread {
 				/* bufs_r == bufs_w --> empty */
 	private volatile static int bufs_r = 0;
 	private volatile static int bufs_w = 0;
+		/* MicSelect.switches when each buffer was recorded, and for
+		 * the buffer read last */
+	private static final int[] gens = new int[NUMBUFS];
+	private volatile static int read_gen = 0;
 	
 
 	public static void start_recording() {
@@ -41,10 +42,17 @@ public class Listener extends Thread {
 				return n;
 			}
 			System.arraycopy(bufs[bufs_r], 0, dst, n, BUFSZ);
+			read_gen = gens[bufs_r];
 			bufs_r = (bufs_r + 1) % NUMBUFS;
 			n += BUFSZ;
 		}
 		return n;
+	}
+
+	/* changes when the samples read last came through another
+	 * microphone (or channel) than before; see mixture */
+	public static int buffer_gen() {
+		return read_gen;
 	}
 
 	public static int get_samplerate() {
@@ -62,36 +70,16 @@ public class Listener extends Thread {
 
 	
 	/* the thread itself: */
-	private AudioRecord recorder = null;
+		/* audio source and microphone choice (Settings "Audio") */
+	private MicSelect recorder = null;
 
 	private boolean sound_init() {
-		int ar_bufsz = AudioRecord.getMinBufferSize(
-				44100, AudioFormat.CHANNEL_IN_MONO,
-				AudioFormat.ENCODING_PCM_16BIT);
-		ar_bufsz *= 2;		/* at least two hardware buffers */
-		ar_bufsz = Math.max(ar_bufsz, (44100/4)*2); /* at least 250ms */
-
-		recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
-				44100, AudioFormat.CHANNEL_IN_MONO,
-				AudioFormat.ENCODING_PCM_16BIT, ar_bufsz);
-		if (recorder.getState() != AudioRecord.STATE_INITIALIZED) {
-			System.out.println("failed to initialize audio\n");
+		recorder = new MicSelect();
+		if (!recorder.open(BUFSZ)) {
+			recorder = null;
 			return false;
 		}
-		if ((recorder.getAudioFormat() !=
-					AudioFormat.ENCODING_PCM_16BIT) ||
-		    (recorder.getChannelCount() != 1)) {
-			System.out.println("got funny format/channels back from AudioRecord!");
-			return false;
-		}
-		try {
-			recorder.startRecording();
-		} catch (IllegalStateException e) {
-			System.out.println("illegal state for startRecording()");
-			return false;
-		}
-		samplerate = recorder.getSampleRate();
-		
+		samplerate = recorder.samplerate();
 		return true;
 	}
 
@@ -99,10 +87,7 @@ public class Listener extends Thread {
 		if (recorder == null) {
 			return;
 		}
-		try {
-			recorder.stop();
-		} catch (IllegalStateException e) { /* whatever */ }
-		recorder.release();
+		recorder.close();
 		recorder = null;
 	}
 
@@ -115,10 +100,10 @@ public class Listener extends Thread {
 		}
 		if (sound_init()) {
 			while (!time_to_die()) {
-				int n = recorder.read(bufs[bufs_w], 0, BUFSZ);
-				if (n != BUFSZ) {
+				if (!recorder.read(bufs[bufs_w], BUFSZ)) {
 					break;
 				}
+				gens[bufs_w] = MicSelect.switches;
 				bufs_w = (bufs_w + 1) % NUMBUFS;
 				if (bufs_w == bufs_r) {
 					System.out.println("Listener record buffer overflow");

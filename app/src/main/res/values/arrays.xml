@@ -1,12 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<!-- entries are in strings.xml (translated); values are stored -->
+	<string-array name="language_name">
+		<item>@string/language_system</item>
+		<item>@string/language_english</item>
+		<item>@string/language_german</item>
+	</string-array>
+	<string-array name="language_value">
+		<item>system</item>
+		<item>en</item>
+		<item>de</item>
+	</string-array>
+	<string-array name="audio_source_name">
+		<item>@string/source_auto</item>
+		<item>@string/source_unprocessed</item>
+		<item>@string/source_voice</item>
+		<item>@string/source_mic</item>
+		<item>@string/source_camcorder</item>
+	</string-array>
+	<string-array name="audio_source_value">
+		<item>auto</item>
+		<item>unprocessed</item>
+		<item>voice_recognition</item>
+		<item>mic</item>
+		<item>camcorder</item>
+	</string-array>
+	<!-- filled at runtime in Settings.java -->
+	<string-array name="microphone_name">
+		<item>@string/mic_auto</item>
+		<item>@string/mic_default</item>
+	</string-array>
+	<string-array name="microphone_value">
+		<item>auto</item>
+		<item>default</item>
+	</string-array>
 	<string-array name="color_name">
-		<item>Batlow</item>
-		<item>Slate / White</item>
-		<item>Red / Green</item>
-		<item>Black / White</item>
-		<item>Blue / Yellow</item>
-		<item>Red / Blue</item>
+		<item>@string/color_batlow</item>
+		<item>@string/color_slate</item>
+		<item>@string/color_redgreen</item>
+		<item>@string/color_blackwhite</item>
+		<item>@string/color_blueyellow</item>
+		<item>@string/color_redblue</item>
 	</string-array>
 	<string-array name="color_value">
 		<item>batlow</item>
@@ -44,5 +78,60 @@
 		<item>18</item>
 		<item>19</item>
 		<item>20</item>
+	</string-array>
+	<!-- organ mode: footages, stored as multiples of the 32' pitch
+	     (parms.FOOTAGE_DIV = 4 is 8', the note itself) -->
+	<string-array name="footage_name">
+		<item>32\'</item>
+		<item>16\'</item>
+		<item>10 2/3\'</item>
+		<item>8\'</item>
+		<item>5 1/3\'</item>
+		<item>4\'</item>
+		<item>3 1/5\'</item>
+		<item>2 2/3\'</item>
+		<item>2\'</item>
+		<item>1 3/5\'</item>
+		<item>1 1/3\'</item>
+		<item>1 1/7\'</item>
+		<item>1\'</item>
+		<item>8/9\'</item>
+		<item>4/5\'</item>
+		<item>2/3\'</item>
+		<item>1/2\'</item>
+		<item>1/3\'</item>
+		<item>1/4\'</item>
+		<item>1/6\'</item>
+		<item>1/8\'</item>
+	</string-array>
+	<string-array name="footage_value">
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+		<item>4</item>
+		<item>6</item>
+		<item>8</item>
+		<item>10</item>
+		<item>12</item>
+		<item>16</item>
+		<item>20</item>
+		<item>24</item>
+		<item>28</item>
+		<item>32</item>
+		<item>36</item>
+		<item>40</item>
+		<item>48</item>
+		<item>64</item>
+		<item>96</item>
+		<item>128</item>
+		<item>192</item>
+		<item>256</item>
+	</string-array>
+	<string-array name="footage_default">
+		<item>2</item>
+		<item>4</item>
+		<item>8</item>
+		<item>12</item>
+		<item>16</item>
 	</string-array>
 </resources>

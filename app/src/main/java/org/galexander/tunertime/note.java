@@ -2,13 +2,18 @@ package org.galexander.tunertime;
 
 public class note {
 	public int note_idx;
-	public String note_str;
+	public String note_str;	/* pitch class in the note-names setting:
+				 * "F#", or German "Fis" */
 	public int cents;		/* tenths of a cent (preset.UNITS_PER_CENT) */
 	public String cents_str;
 	public int octave;
-	public String full_str;
+	public String name_oct;	/* with the octave: "F#4", German "fis1"
+				 * (superscript 1) */
+	public String full_str;	/* "F#4 +01.5c" */
 
 	private static final String NOTE_NAMES[] = new String[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+		/* German: B is English Bb, H is English B */
+	private static final String GERMAN_NAMES[] = new String[] { "C", "Cis", "D", "Dis", "E", "F", "Fis", "G", "Gis", "A", "B", "H" };
 
 	private static final int U = preset.UNITS_PER_CENT;
 
@@ -17,14 +22,111 @@ public class note {
 		int adj_cents = cents_+900*U;	/* based on C instead of A */
 
 		note_idx = ((adj_cents+50*U)/(100*U))%12;
-		note_str = NOTE_NAMES[note_idx];
 
 		cents = (((adj_cents%(100*U))+50*U)%(100*U))-50*U;
 		cents_str = cents_str(cents);
 
 		octave = (adj_cents+50*U)/(1200*U);
 
-		full_str = note_str + "-" + octave + " " + cents_str;
+		note_str = class_name(note_idx);
+		name_oct = german() ? german(note_idx, octave)
+				    : (note_str + octave);
+		full_str = name_oct + " " + cents_str;
+	}
+
+		/* the "German note names" setting */
+	public static boolean german() {
+		return parms.german_names;
+	}
+
+		/* name of pitch class idx (0 = C), without octave */
+	public static String class_name(int idx) {
+		return (german() ? GERMAN_NAMES : NOTE_NAMES)[idx];
+	}
+
+		/* superscript and subscript digits 0-9 */
+	private static final String SUPER = "⁰¹²³⁴" +
+					    "⁵⁶⁷⁸⁹";
+	private static final String SUB = "₀₁₂₃₄" +
+					  "₅₆₇₈₉";
+
+		/* German notation as organ builders write it: capitals up to
+		 * the great octave, with a subscript digit counting the
+		 * octaves below it; lower case from the small octave up, with
+		 * a superscript digit counting the octaves above it.  (_n is
+		 * subscript n, ^n superscript n here.)
+		 *   C0 = C_2 (Subkontra-C)    C1 = C_1 (Kontra-C, 32')
+		 *   C2 = C   (grosses C, 8')  C3 = c   (kleines c)
+		 *   C4 = c^1 (middle C)       C5 = c^2, ... C8 = c^5
+		 *   A4 = a^1, A#4 = b^1, B3 = h, F#2 = Fis, C#1 = Cis_1 */
+	public static String german(int idx, int oct) {
+		String s = GERMAN_NAMES[idx];
+		if (oct <= 2) {
+			return (oct == 2) ? s : (s + digits(2-oct, SUB));
+		}
+		s = s.toLowerCase();
+		return (oct == 3) ? s : (s + digits(oct-3, SUPER));
+	}
+	private static String digits(int n, String set) {
+		String d = Integer.toString(n);
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < d.length(); i++) {
+			sb.append(set.charAt(d.charAt(i) - '0'));
+		}
+		return sb.toString();
+	}
+
+		/* label for octave oct (scientific numbering): "4", or with
+		 * German names the C of that octave, c^1 */
+	public static String octave_name(int oct) {
+		return german() ? german(0, oct) : Integer.toString(oct);
+	}
+
+		/* the strobe's corner label: "A49" (piano key 49 = A4), or with
+		 * German names just the note, a^1 */
+	public static String piano_name(int cents_) {
+		note n = new note(cents_);
+		if (german()) {
+			return n.name_oct;
+		}
+		int key = (cents_+50*U)/(100*U)+1;
+		return n.note_str + (((key < 1) || (key > 88)) ? "__"
+							: Integer.toString(key));
+	}
+
+		/* translates note names in English text (C D E F G A B with an
+		 * optional # or b, not part of a longer word, e.g. "wolf G#-Eb")
+		 * to the German names ("wolf Gis-Es") if those are selected */
+	public static String names_in(String s) {
+		if (!german()) {
+			return s;
+		}
+		StringBuilder sb = new StringBuilder();
+		int n = s.length();
+		for (int i = 0; i < n; i++) {
+			char c = s.charAt(i);
+			int idx = "C D EF G A B".indexOf(c);
+			int len = 1;
+			char acc = (i+1 < n) ? s.charAt(i+1) : ' ';
+			if ((acc == '#') || (acc == 'b')) {
+				len = 2;
+			}
+			if ((c == ' ') || (idx < 0) ||
+			    ((i > 0) && Character.isLetter(s.charAt(i-1))) ||
+			    ((i+len < n) && Character.isLetter(s.charAt(i+len)))) {
+				sb.append(c);	/* not a note name */
+				continue;
+			}
+			if (acc == 'b') {
+				/* Ces Des Es Fes Ges As B */
+				sb.append((c == 'E') ? "Es" : (c == 'A') ? "As" :
+					(c == 'B') ? "B" : (c + "es"));
+			} else {
+				sb.append(GERMAN_NAMES[(idx+len-1)%12]);
+			}
+			i += len-1;
+		}
+		return sb.toString();
 	}
 
 		/* tenths of a cent -> "+03.5c" */

@@ -33,9 +33,9 @@ android {
         applicationId = "org.galexander.tunertime"
         minSdk = 21
         targetSdk = 36
-        versionCode = 17
-        versionName = "17.0"
-        manifestPlaceholders["appLabel"] = "TunerTime"
+        versionCode = 18
+        versionName = "18.0-organ"
+        manifestPlaceholders["appLabel"] = "TunerTime Organ"
     }
 
     buildTypes {
@@ -52,7 +52,7 @@ android {
         create("dev") {
             initWith(getByName("release"))
             applicationIdSuffix = ".dev"
-            manifestPlaceholders["appLabel"] = "TunerTime dev"
+            manifestPlaceholders["appLabel"] = "TunerTime Organ"
         }
     }
     compileOptions {

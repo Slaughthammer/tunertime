@@ -42,10 +42,15 @@ public class PresetSelectActivity extends Activity {
 		 * kept across the file picker in case we get recreated */
 	private int export_id = -1;
 
+	protected void attachBaseContext(android.content.Context base) {
+		super.attachBaseContext(Lang.wrap(base));
+	}
+
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		parms.init(this);
+		setTitle(R.string.title_preset_select);
 		setContentView(R.layout.preset_select);
 		if (savedInstanceState != null) {
 			export_id = savedInstanceState.getInt("export_id", -1);
@@ -121,15 +126,15 @@ public class PresetSelectActivity extends Activity {
 			return;
 		}
 		menu.setHeaderTitle(preset.presets.get(pos).name);
-		menu.add(Menu.NONE, CM_EDIT, Menu.NONE, "Edit");
-		menu.add(Menu.NONE, CM_RENAME, Menu.NONE, "Rename");
-		menu.add(Menu.NONE, CM_DUP, Menu.NONE, "Duplicate");
-		menu.add(Menu.NONE, CM_UP, Menu.NONE, "Move up")
+		menu.add(Menu.NONE, CM_EDIT, Menu.NONE, R.string.cm_edit);
+		menu.add(Menu.NONE, CM_RENAME, Menu.NONE, R.string.cm_rename);
+		menu.add(Menu.NONE, CM_DUP, Menu.NONE, R.string.cm_duplicate);
+		menu.add(Menu.NONE, CM_UP, Menu.NONE, R.string.cm_move_up)
 			.setEnabled(pos > 0);
-		menu.add(Menu.NONE, CM_DOWN, Menu.NONE, "Move down")
+		menu.add(Menu.NONE, CM_DOWN, Menu.NONE, R.string.cm_move_down)
 			.setEnabled(pos < preset.presets.size()-1);
-		menu.add(Menu.NONE, CM_EXPORT, Menu.NONE, "Export...");
-		menu.add(Menu.NONE, CM_DELETE, Menu.NONE, "Delete");
+		menu.add(Menu.NONE, CM_EXPORT, Menu.NONE, R.string.cm_export);
+		menu.add(Menu.NONE, CM_DELETE, Menu.NONE, R.string.cm_delete);
 	}
 
 	public boolean onContextItemSelected(MenuItem item) {
@@ -216,28 +221,38 @@ public class PresetSelectActivity extends Activity {
 	/* add one of the built-in historical temperaments as a new preset
 	 * and select it, so note mode is tempered by it right away */
 	private void pick_temperament() {
-		String[] items = new String[temperaments.names.length];
+		final String[] names = res_or(R.array.temperament_names,
+						temperaments.names);
+		String[] about = res_or(R.array.temperament_about,
+					temperaments.about);
+		String[] items = new String[names.length];
 		for (int i = 0; i < items.length; i++) {
-			items[i] = temperaments.names[i] + "\n    " +
-					temperaments.about[i];
+			items[i] = names[i] + "\n    " + note.names_in(about[i]);
 		}
 		new AlertDialog.Builder(this)
-			.setTitle("Add temperament (A = 0)")
+			.setTitle(R.string.add_temperament_title)
 			.setItems(items, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface d, int which) {
 					preset n = preset.make();
 					n.name = PresetIO.unique_name(
-						temperaments.names[which], names());
+						names[which], names());
 					n.notes.addAll(
 						temperaments.make_notes(which));
 					parms.preset_id = n.id;
 					changed();
 					Toast.makeText(PresetSelectActivity.this,
-						"Added \"" + n.name + "\"",
+						getString(R.string.added, n.name),
 						Toast.LENGTH_SHORT).show();
 				} })
-			.setNegativeButton("Cancel", null)
+			.setNegativeButton(R.string.cancel, null)
 			.show();
+	}
+
+	/* the translated list, unless it no longer matches
+	 * temperaments.java */
+	private String[] res_or(int id, String[] fallback) {
+		String[] r = getResources().getStringArray(id);
+		return (r.length == fallback.length) ? r : fallback;
 	}
 
 	private Set<String> names() {
@@ -269,24 +284,24 @@ public class PresetSelectActivity extends Activity {
 	private void do_rename(final preset p) {
 		final EditText e = edit_dialog_view(p.name);
 		new AlertDialog.Builder(this)
-			.setTitle("Rename preset")
+			.setTitle(R.string.rename_title)
 			.setView(padded(e))
-			.setPositiveButton("Rename",
+			.setPositiveButton(R.string.rename,
 				new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface d, int w) {
 					p.name = PresetIO.clean_name(
 						e.getText().toString());
 					changed();
 				} })
-			.setNegativeButton("Cancel", null)
+			.setNegativeButton(R.string.cancel, null)
 			.show();
 	}
 
 	private void do_delete(final preset p) {
 		new AlertDialog.Builder(this)
-			.setTitle("Confirm")
-			.setMessage("Really delete \""+p.name+"\"?")
-			.setPositiveButton("Delete",
+			.setTitle(R.string.confirm)
+			.setMessage(getString(R.string.really_delete, p.name))
+			.setPositiveButton(R.string.delete,
 				new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface d, int w) {
 					preset.presets.remove(p);
@@ -295,7 +310,7 @@ public class PresetSelectActivity extends Activity {
 					}
 					changed();
 				} })
-			.setNegativeButton("Cancel", null)
+			.setNegativeButton(R.string.cancel, null)
 			.show();
 	}
 
@@ -303,14 +318,14 @@ public class PresetSelectActivity extends Activity {
 		try {
 			startActivityForResult(i, req);
 		} catch (android.content.ActivityNotFoundException ex) {
-			Toast.makeText(this, "No file picker available",
+			Toast.makeText(this, R.string.no_file_picker,
 					Toast.LENGTH_LONG).show();
 		}
 	}
 
 	/* p == null exports all presets */
 	private void start_export(preset p) {
-		String fn = "TunerTime presets.txt";
+		String fn = getString(R.string.export_file_name);
 		if (p != null) {
 			fn = p.name.replaceAll("[\\\\/:*?\"<>|]", "_") + ".txt";
 		}
@@ -361,11 +376,12 @@ public class PresetSelectActivity extends Activity {
 			} finally {
 				os.close();
 			}
-			Toast.makeText(this, "Exported " + l.size() +
-				((l.size() == 1) ? " preset" : " presets"),
+			Toast.makeText(this, getResources().getQuantityString(
+				R.plurals.exported, l.size(), l.size()),
 				Toast.LENGTH_SHORT).show();
 		} catch (Exception ex) {
-			error_dialog("Export failed", ex.toString());
+			error_dialog(getString(R.string.export_failed),
+					ex.toString());
 		}
 	}
 
@@ -393,7 +409,8 @@ public class PresetSelectActivity extends Activity {
 			}
 			text = bs.toString("UTF-8");
 		} catch (Exception ex) {
-			error_dialog("Import failed", ex.toString());
+			error_dialog(getString(R.string.import_failed),
+					ex.toString());
 			return;
 		}
 
@@ -401,18 +418,21 @@ public class PresetSelectActivity extends Activity {
 		if (r.errors.size() > 0) {
 			/* all or nothing, so a typo doesn't leave half a
 			 * file imported */
+			/* the messages themselves are about the file format,
+			 * whose keywords are English (PresetIO) */
 			StringBuilder sb = new StringBuilder(
-				"Nothing was imported.\n\n");
+				getString(R.string.nothing_imported) + "\n\n");
 			int n = 0;
 			for (String s : r.errors) {
 				if (++n > 20) {
-					sb.append("... and "+(r.errors.size()-20)+
-						" more\n");
+					sb.append(getString(R.string.and_more,
+						r.errors.size()-20)).append("\n");
 					break;
 				}
 				sb.append(s).append("\n");
 			}
-			error_dialog("Import failed", sb.toString());
+			error_dialog(getString(R.string.import_failed),
+					sb.toString());
 			return;
 		}
 
@@ -428,10 +448,11 @@ public class PresetSelectActivity extends Activity {
 			p.notes.addAll(e.notes);
 		}
 		changed();
-		Toast.makeText(this, "Imported " + r.presets.size() +
-			((r.presets.size() == 1) ? " preset" : " presets") +
-			((renamed > 0) ? (", " + renamed +
-				" renamed to avoid a name clash") : ""),
+		int k = r.presets.size();
+		Toast.makeText(this, getResources().getQuantityString(
+				R.plurals.imported, k, k) +
+			((renamed > 0) ? getResources().getQuantityString(
+				R.plurals.imported_renamed, renamed, renamed) : ""),
 			Toast.LENGTH_LONG).show();
 	}
 
@@ -439,7 +460,7 @@ public class PresetSelectActivity extends Activity {
 		new AlertDialog.Builder(this)
 			.setTitle(title)
 			.setMessage(msg)
-			.setPositiveButton("OK", null)
+			.setPositiveButton(R.string.ok, null)
 			.show();
 	}
 }

@@ -13,6 +13,9 @@
 
 #define MAX_STROBES 8
 #define UNITS_PER_CENT 10	/* cents are in tenths (Java preset.UNITS_PER_CENT) */
+	/* organ mode rows hold multiples of the 32' pitch, so 8' (the note
+	 * itself) is ORGAN_DIV (Java parms.FOOTAGE_DIV) */
+#define ORGAN_DIV 4
 
 
 /* interface.c: */
@@ -39,14 +42,23 @@ void println(const char *fmt, ...);
 double cents_to_freq(jobject this, jint cents, jint mult);
 void set_labels(jobject this, char *labels[MAX_STROBES]);
 void set_pianoname(jobject this, char *pianoname);
+void focus_drift(jobject this, double freq, double cycles, double secs,
+		double buf_secs);
 
 
 /* strobe.c: */
 extern int base_cents;
 extern int num_strobes;
 extern int harm_mult[MAX_STROBES];
+extern int organ_mode;
+	/* highest strobe frequency in organ mode, as a fraction of the sample
+	 * rate: four samples per period still make a readable pattern.
+	 * Java asks for it with Strobe.organ_max_freq() */
+#define ORGAN_MAX_FREQ 0.25
 
 void strobe_init(void);
+void strobe_focus(double ratio);
+int strobe_drift(double *freq, double *cycles, double *secs);
 void strobe_color(const char *s);
 void strobe_redraw(jint *bitmap_ptr);
 void strobe_newdata(jint *bitmap_ptr);
@@ -65,6 +77,11 @@ void fft_init(void);
 void fft_recalculate(jobject this);
 void fft_newdata(jint *bitmap_ptr);
 void fft_redraw(jint *bitmap_ptr);
+
+
+/* record.c: the last few seconds of input, for DebugRecorder.java */
+void record_init(int rate);
+void record_feed(const short *s, int n);
 
 
 #endif /* __INTERFACE_H */

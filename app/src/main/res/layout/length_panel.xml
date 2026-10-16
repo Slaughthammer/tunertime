@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- length mode readout, added below the strobes in organ mode: only
+     the length to cut off or to add, big, across the full width; the
+     pipe controls below -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
+    <TextView android:id="@+id/length_display"
+	style="@style/Tuner.Readout"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:maxLines="2"
+	android:autoSizeMaxTextSize="28sp" />
+    <include layout="@layout/length_controls" />
+</LinearLayout>

@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.LightingColorFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -21,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Button;
 import android.widget.Toast;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.app.Activity;
 import androidx.core.content.ContextCompat;
 import androidx.core.app.ActivityCompat;
@@ -38,15 +38,17 @@ public class TunerTime extends Activity
 	private TextView stretch_display;
 	private View note_buttons;
 	private TextView note_semi_display;
-	private TextView note_oct_display;
 	private TextView note_cent_display;
 	private View afreq_buttons;
 	private TextView afreq_center_display;
 	private View stretch_buttons;
 	private TextView stretch_stretch_display;
+	private View mixture_buttons;
+	private TextView mixture_display;
+	private TextView mixture_status;
+	private final mixture mix = new mixture();
 	private View preset_buttons;
 	private TextView preset_semi_display;
-	private TextView preset_oct_display;
 	private View fft_buttons;
 	private TextView N_display;
 	private Button grid_button;
@@ -56,6 +58,9 @@ public class TunerTime extends Activity
 	private View fft_mode_buttons;
 	private Button tone_button;
 	private Button auto_button;
+	private Button mode_button;
+	private View length_panel;
+	private pipelength length;
 
 	private PowerManager.WakeLock wakelock = null;
 
@@ -67,8 +72,25 @@ public class TunerTime extends Activity
 	private int width = 0;
 	private int height = 0;
 
+	/* the language this activity was created in (Lang) */
+	private String lang = null;
+
+	protected void attachBaseContext(Context base) {
+		super.attachBaseContext(Lang.wrap(base));
+	}
+
+	protected void onRestart() {
+		super.onRestart();
+		/* the language was changed in Settings (before Android 13;
+		 * later versions recreate the activity themselves) */
+		if (!Lang.get(this).equals(lang)) {
+			recreate();
+		}
+	}
+
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		lang = Lang.get(this);
 
 		parms.init(this);
 		setContentView(R.layout.main);
@@ -87,8 +109,6 @@ public class TunerTime extends Activity
 				R.layout.note_buttons, buttons_holder, false);
 		note_semi_display = (TextView)note_buttons.findViewById(
 				R.id.semi_display);
-		note_oct_display = (TextView)note_buttons.findViewById(
-				R.id.oct_display);
 		note_cent_display = (TextView)note_buttons.findViewById(
 				R.id.cent_display);
 		((Button)note_buttons.findViewById(R.id.semi_plus))
@@ -118,12 +138,17 @@ public class TunerTime extends Activity
 		stretch_stretch_display = (TextView)stretch_buttons.
 				findViewById(R.id.stretch_display2);
 
+		mixture_buttons = fl8r.inflate(
+				R.layout.mixture_buttons, buttons_holder,false);
+		mixture_display = (TextView)mixture_buttons.
+				findViewById(R.id.mixture_display);
+		mixture_status = (TextView)mixture_buttons.
+				findViewById(R.id.mixture_status);
+
 		preset_buttons = fl8r.inflate(
 				R.layout.preset_buttons, buttons_holder, false);
 		preset_semi_display = (TextView)preset_buttons.findViewById(
 				R.id.preset_semi_display);
-		preset_oct_display = (TextView)preset_buttons.findViewById(
-				R.id.preset_oct_display);
 
 		fft_buttons = fl8r.inflate(
 				R.layout.fft_buttons, buttons_holder, false);
@@ -160,8 +185,14 @@ public class TunerTime extends Activity
 				auto_off();
 				return true;
 			} });
+		mode_button = (Button)strobe_mode_buttons.findViewById(
+				R.id.mode_button);
 		fft_mode_buttons = fl8r.inflate(
 				R.layout.fft_mode, mode_holder, false);
+
+		length_panel = fl8r.inflate(
+				R.layout.length_panel, surface_frame, false);
+		length = new pipelength(this, length_panel);
 	}
 
 	public void onStart() {
@@ -172,8 +203,16 @@ public class TunerTime extends Activity
 		wakelock.acquire();
 		stop_strobe();
 		parms.load();
+		if (parms.organ_mode) {
+			parms.fft_mode = false;	/* length mode replaces it */
+		} else {
+			parms.length_mode = false;
+		}
+		organ_resume();
 		if (parms.fft_mode) {
 			set_mode(fft_buttons, true);
+		} else if (parms.mixture_mode) {
+			set_mode(mixture_buttons, false);
 		} else {
 			set_mode((parms.preset_mode ? preset_buttons
 						    : note_buttons), false);
@@ -196,12 +235,12 @@ public class TunerTime extends Activity
 		super.onPause();
 	}
 
+	/* the tab of the current mode is shown selected (underlined) */
 	private void darken_mode(Button b) {
-		b.getBackground().setColorFilter(
-                                new LightingColorFilter(0x88888888, 0));
+		b.setSelected(false);
 	}
 	private void brighten_mode(Button b) {
-		b.getBackground().clearColorFilter();
+		b.setSelected(true);
 	}
 	private void set_mode(View buttons, boolean fft_mode_) {
 		String title = null;
@@ -214,11 +253,13 @@ public class TunerTime extends Activity
 				brighten_mode(note_button);
 			} else if (buttons == afreq_buttons) {
 				brighten_mode(afreq_button);
-			} else if (buttons == stretch_buttons) {
+			} else if ((buttons == stretch_buttons) ||
+				   (buttons == mixture_buttons)) {
 				brighten_mode(stretch_button);
 			} else if (buttons == preset_buttons) {
 				brighten_mode(preset_button);
 			}
+			mixture_set(buttons == mixture_buttons);
 			boolean was_preset = parms.preset_mode;
 			parms.preset_mode = (buttons == preset_buttons);
 			if (was_preset && !parms.preset_mode) {
@@ -226,7 +267,9 @@ public class TunerTime extends Activity
 				parms.note_cents = parms.strobe_cents -
 					parms.temper_offset(parms.strobe_cents);
 			}
-			if (parms.preset_mode) {
+			if (parms.mixture_mode) {
+				title = getString(R.string.title_mixture);
+			} else if (parms.preset_mode) {
 				preset p = preset.find(parms.preset_id);
 				if (p == null) {
 					parms.preset_note = 0;
@@ -236,22 +279,20 @@ public class TunerTime extends Activity
 						parms.preset_id = p.id;
 					}
 				}
-				title = "TunerTime: strobe (" +
-					((p != null) ? p.name : "...") + ")";
+				title = getString(R.string.title_strobe_with,
+					(p != null) ? p.name : "...");
 			} else {
-				title = "TunerTime: strobe";
+				title = getString(R.string.title_strobe);
 			}
 		} else {
-			title = "TunerTime: FFT";
+			title = getString(R.string.title_fft);
 			parms.fft_xoffset = Strobe.FFT_RANGE_MULT;
+			mixture_set(false);
 		}
 		buttons_holder.removeAllViews();
 		buttons_holder.addView(buttons);
 		parms.fft_mode = fft_mode_;
-		surface_frame.removeView(strobe_buttons);
-		if (!parms.fft_mode) {
-			surface_frame.addView(strobe_buttons);
-		}
+		place_strobe_extras();
 		mode_holder.removeAllViews();
 		mode_holder.addView(parms.fft_mode ? fft_mode_buttons
 						   : strobe_mode_buttons);
@@ -263,7 +304,33 @@ public class TunerTime extends Activity
 	}
 
 
+	/* below the strobes: the length readout (length mode), then the
+	 * strobe-mode tab bar */
+	private void place_strobe_extras() {
+		surface_frame.removeView(length_panel);
+		surface_frame.removeView(strobe_buttons);
+		if (!parms.fft_mode) {
+			if (parms.length_mode) {
+				surface_frame.addView(length_panel);
+			}
+			surface_frame.addView(strobe_buttons);
+		}
+		/* in organ mode a toggle, highlighted while the length
+		 * panel is shown */
+		mode_button.setText(parms.organ_mode ? R.string.mode_length
+						     : R.string.mode_fft);
+		mode_button.setSelected(parms.organ_mode && parms.length_mode);
+	}
+
 	public void do_mode(View v) {
+		if (parms.organ_mode) {
+			/* organ mode toggles length mode instead of FFT */
+			parms.length_mode = !parms.length_mode;
+			length.clear();
+			place_strobe_extras();
+			update_status();
+			return;
+		}
 		if (parms.fft_mode) {
 			set_mode(note_buttons, false);
 		} else {
@@ -272,22 +339,50 @@ public class TunerTime extends Activity
 	}
 
 	/* auto note detection: off -> follow; then tap toggles follow/lock,
-	 * long press turns it off.  only note mode follows. */
-	private boolean auto_locked = false;
+	 * long press turns it off.  only note mode follows.  the state is
+	 * parms.auto_note and parms.auto_locked, kept across rotation */
 	private int det_semi = Integer.MIN_VALUE, det_count = 0;
 	private static final int DET_AGREE = 3;	/* estimates in a row */
 
+	/* Corrections while following.  If the user moves the note by hand
+	 * (semitone or octave buttons) while follow is on, within
+	 * CORR_RECENT ms of a stable detection, the interval from the
+	 * detected note to the note chosen (follow_shift, semitones) is
+	 * remembered and added to every later detection.  So correcting a
+	 * 4' stop down an octave once makes the whole stop follow an octave
+	 * lower, a Quint 2 2/3' corrected a twelfth down follows a twelfth
+	 * lower, and the corrected note is not snatched back by the next
+	 * estimate.  A toast shows the shift whenever it is set.  It is
+	 * cleared, and detections are taken as heard again, when
+	 *  - auto is turned off (long press) or turned on afresh,
+	 *  - nothing clear was heard for SHIFT_SILENCE ms (a new stop),
+	 *  - the user corrects back to the note as detected.
+	 * Lock and unlock keep it. */
+	private int follow_shift = 0;
+	private int det_stable = Integer.MIN_VALUE;	/* last agreed note */
+	private double det_stable_hz = 0.0;
+	private long det_stable_time = 0, last_heard = 0;
+	private static final long CORR_RECENT = 4000;
+	private static final long SHIFT_SILENCE = 10000;
+	private Toast shift_toast = null;
+
 	public void do_auto(View v) {
-		if (!parms.auto_note && !auto_locked) {
+		if (!auto_applies()) {
+			return;
+		}
+		if (!parms.auto_note && !parms.auto_locked) {
 			parms.auto_note = true;
-			Toast.makeText(this, "auto: tap to lock, hold to turn off",
+			follow_shift = 0;
+			det_stable = Integer.MIN_VALUE;
+			Toast.makeText(this, R.string.toast_auto,
 					Toast.LENGTH_SHORT).show();
 		} else if (parms.auto_note) {
 			parms.auto_note = false;	/* lock */
-			auto_locked = true;
+			parms.auto_locked = true;
 		} else {
 			parms.auto_note = true;		/* unlock */
-			auto_locked = false;
+			parms.auto_locked = false;
+			last_heard = SystemClock.uptimeMillis();
 		}
 		det_count = 0;
 		update_status();
@@ -295,9 +390,20 @@ public class TunerTime extends Activity
 
 	private void auto_off() {
 		parms.auto_note = false;
-		auto_locked = false;
+		parms.auto_locked = false;
 		det_count = 0;
+		follow_shift = 0;
+		det_stable = Integer.MIN_VALUE;
 		update_status();
+	}
+
+	/* follow moves note_cents, which only note mode shows: preset mode
+	 * steps through its notes, and mixture mode tunes to mixture_cents.
+	 * elsewhere the button is disabled and auto_note is kept as it is,
+	 * so following resumes when going back to note mode */
+	private boolean auto_applies() {
+		return !parms.preset_mode && !parms.mixture_mode &&
+			!parms.fft_mode;
 	}
 
 	/* from the strobe thread */
@@ -310,9 +416,21 @@ public class TunerTime extends Activity
 
 	/* moves note mode to the nearest note once DET_AGREE estimates in a
 	 * row agree; silence holds the current note.  the cents offset set
-	 * by hand carries over to the new note. */
+	 * by hand carries over to the new note, and so does a correction
+	 * (follow_shift, above). */
 	private void on_pitch(double hz) {
-		if (!parms.auto_note || parms.preset_mode || parms.fft_mode ||
+		if (parms.length_mode && !ToneGenerator.playing) {
+			length.add(hz);
+		}
+		long now = SystemClock.uptimeMillis();
+		if (hz > 0.0) {
+			last_heard = now;
+		} else if ((follow_shift != 0) &&
+			   (now - last_heard > SHIFT_SILENCE)) {
+			follow_shift = 0;
+			show_shift();
+		}
+		if (!parms.auto_note || !auto_applies() ||
 		    ToneGenerator.playing || (hz <= 0.0)) {
 			det_count = 0;
 			return;
@@ -328,16 +446,60 @@ public class TunerTime extends Activity
 			det_semi = k;
 			det_count = 1;
 		}
-		if ((det_count >= DET_AGREE) && (k != cur) &&
-		    (k >= 0) && (k*semi + off <= 9600*U)) {
-			parms.note_cents = k*semi + off;
+		if (det_count < DET_AGREE) {
+			return;
+		}
+		/* remembered even out of range (a 32' pipe heard below A0),
+		 * so that it can be corrected */
+		det_stable = k;
+		det_stable_hz = hz;
+		det_stable_time = now;
+		int t = k + follow_shift;
+		if ((t != cur) && (t >= 0) && (t*semi + off <= 9600*U)) {
+			parms.note_cents = t*semi + off;
 			update_status();
 		}
 	}
 
+	/* the user moved the note from semitone 'from' to 'to' by hand */
+	private void user_moved_note(int from, int to) {
+		if (!parms.auto_note || !auto_applies()) {
+			return;
+		}
+		long now = SystemClock.uptimeMillis();
+		boolean recent = (det_stable != Integer.MIN_VALUE) &&
+				 (now - det_stable_time < CORR_RECENT);
+		if (recent) {
+			follow_shift = to - det_stable;
+			show_shift();
+		}
+		DebugRecorder.intervention(this,
+			recent ? det_stable*100*U : DebugRecorder.NONE,
+			recent ? det_stable_hz : 0.0,
+			from*100*U, to*100*U, follow_shift);
+	}
+
+	private void show_shift() {
+		if (shift_toast != null) {
+			shift_toast.cancel();
+		}
+		String s;
+		if (follow_shift == 0) {
+			s = getString(R.string.follow_as_detected);
+		} else {
+			int a = Math.abs(follow_shift);
+			String sign = (follow_shift > 0) ? "+" : "-";
+			s = (a % 12 == 0)
+				? getString(R.string.follow_shift_oct, sign, a/12)
+				: getString(R.string.follow_shift_semi, sign, a);
+		}
+		shift_toast = Toast.makeText(this, s, Toast.LENGTH_SHORT);
+		shift_toast.show();
+	}
+
 	/* inverse of cents_to_freq() for the fundamental */
 	private int freq_to_cents(double hz) {
-		double frac = ((double)parms.cents_per_octave)/12000.0d;
+		double frac = ((double)parms.stretch())/12000.0d;
 		double c = 1200.0d * Math.log(hz*10.0d/parms.A_freq) /
 				Math.log(2.0d) / (1.0d+frac);
 		return (int)Math.round(c*U) + 4800*U;
@@ -354,8 +516,14 @@ public class TunerTime extends Activity
 	}
 
 	private void incr_cents(int delta) {
+		int semi = 100*U;
+		int before = (parms.note_cents + semi/2) / semi;
 		parms.note_cents += delta;
 		parms.note_cents = range_limit(parms.note_cents, 0, 9600*U);
+		int after = (parms.note_cents + semi/2) / semi;
+		if (after != before) {
+			user_moved_note(before, after);
+		}
 		update_status();
 	}
 
@@ -447,7 +615,147 @@ public class TunerTime extends Activity
 		set_mode(afreq_buttons, false);
 	}
 	public void stretch_clicked(View v) {
-		set_mode(stretch_buttons, false);
+		if (!parms.organ_mode) {
+			set_mode(stretch_buttons, false);
+		} else if (parms.mixture_mode) {
+			mixture_measure(v);	/* tapped again: measure again */
+		} else {
+			set_mode(mixture_buttons, false);
+		}
+	}
+
+	/* organ mode: no stretch; the stretch tab becomes mixture mode, and
+	 * a tap on a strobe row focuses its partial instead of pausing */
+	private void organ_resume() {
+		stretch_button.setText(parms.organ_mode ? R.string.tab_mixture
+							: R.string.tab_stretch);
+		if (!parms.organ_mode || (parms.focus_row() < 0)) {
+			/* the focused footage is no longer shown */
+			parms.focus_ratio = 0.0d;
+		}
+		if (!parms.organ_mode) {
+			parms.mixture_mode = false;
+		}
+		mix.stop();
+	}
+
+	/* entering mixture mode starts from the current target and measures
+	 * right away */
+	private void mixture_set(boolean on) {
+		if (on && !parms.mixture_mode) {
+			parms.mixture_cents = parms.strobe_cents;
+			parms.mixture_mode = true;
+			mixture_measure(null);
+		} else if (!on) {
+			parms.mixture_mode = false;
+			mix.stop();
+		}
+	}
+
+	public void mixture_measure(View v) {
+		int fr = parms.focus_row();
+		if ((fr >= 0) && Strobe.row_too_high(this, fr)) {
+			/* the target moved up since it was focused */
+			too_high_toast();
+			parms.focus_ratio = 0.0d;
+		}
+		if (parms.focus_row() < 0) {
+			/* nothing focused: the 8' row, else the lowest */
+			int i;
+			for (i = 0; i < parms.num_strobes; i++) {
+				if (parms.row_ratio(i) == 1.0d) {
+					break;
+				}
+			}
+			parms.focus_ratio = parms.row_ratio(
+					(i < parms.num_strobes) ? i : 0);
+		}
+		mix.start();
+		update_status();
+	}
+
+	/* back to the nearest note, with no offset */
+	public void mixture_reset(View v) {
+		int semi = 100*U;
+		mix.stop();
+		parms.mixture_cents = ((parms.mixture_cents + semi/2) / semi) *
+						semi;
+		update_status();
+	}
+
+	/* from the strobe thread, after each buffer while a row is focused */
+	public void focus_drift(double freq, double cycles, double secs) {
+		if (parms.length_mode) {
+			/* shown with the next pitch estimate (on_pitch) */
+			length.add_drift(freq, cycles, secs);
+		}
+		if (!mix.measuring()) {
+			return;
+		}
+		final double cents = mix.feed(freq, cycles, secs);
+		runOnUiThread(new Runnable() {
+			public void run() {
+				if (!parms.mixture_mode) {
+					return;
+				}
+				if (Double.isNaN(cents)) {
+					/* just the progress: update_status()
+					 * would set parms.changed, and the
+					 * strobe recalculation that follows
+					 * resets the drift being measured */
+					update_mixture_status();
+					return;
+				}
+				/* in tune where it was measured */
+				parms.mixture_cents += (int)Math.round(cents*U);
+				update_status();
+			} });
+	}
+
+	/* organ mode: the tapped strobe row's partial becomes the focused
+	 * one, tapped again it is released */
+	private void tap_row(int y, int h) {
+		int n = parms.num_strobes;
+		if ((n < 1) || (h <= 0)) {
+			return;
+		}
+		int row = range_limit((y*n)/h, 0, n-1);
+		double r = parms.row_ratio(row);
+		if ((parms.focus_ratio != r) && Strobe.row_too_high(this, row)) {
+			/* a blank row: no drift to show or measure */
+			too_high_toast();
+			return;
+		}
+		parms.focus_ratio = (parms.focus_ratio == r) ? 0.0d : r;
+		if (parms.focus_ratio == 0.0d) {
+			mix.stop();
+		} else if (mix.measuring()) {
+			mix.start();		/* measure the new row */
+		}
+		update_status();
+	}
+
+	private void too_high_toast() {
+		Toast.makeText(this, R.string.toast_row_too_high,
+				Toast.LENGTH_SHORT).show();
+	}
+
+	private void update_mixture_status() {
+		note n = new note(parms.mixture_cents);
+		/* Helmholtz names carry the octave already */
+		mixture_display.setText(n.name_oct + " " + n.cents_str);
+		String f = (parms.focus_row() >= 0) ?
+				parms.footage_str(parms.focus_ratio) : null;
+		if (mix.measuring()) {
+			mixture_status.setText(getString(
+				R.string.mixture_measuring, f,
+				(int)Math.round(mix.progress()*100.0d)));
+		} else if (f != null) {
+			mixture_status.setText(getString(R.string.mixture_held,
+							 f));
+		} else {
+			mixture_status.setText(R.string.mixture_tap_row);
+		}
 	}
 	public void preset_clicked(View v) {
 		set_mode(preset_buttons, false);
@@ -471,13 +779,13 @@ public class TunerTime extends Activity
 	private void do_about() {
 		AlertDialog.Builder b = new AlertDialog.Builder(this);
 		b.setCancelable(true);
-		b.setPositiveButton("OK",
+		b.setPositiveButton(R.string.ok,
 			new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface di, int which) { }
 			});
 		b.setIcon(android.R.drawable.ic_dialog_info);
-		b.setTitle("About");
-		b.setMessage("TunerTime version " + my_version());
+		b.setTitle(R.string.about_title);
+		b.setMessage(getString(R.string.about_message, my_version()));
 		b.show();
 	}
 
@@ -524,7 +832,12 @@ public class TunerTime extends Activity
 		 * wonkers if the values go out-of-range anyways.  */
 	private void update_status() {
 		String temper_str = null;
-		if (parms.preset_mode) {
+		if (parms.mixture_mode) {
+			/* wherever the focused partial was measured */
+			parms.mixture_cents = range_limit(parms.mixture_cents,
+							0, 9600*U);
+			parms.strobe_cents = parms.mixture_cents;
+		} else if (parms.preset_mode) {
 			update_preset();
 		} else {
 			/* note mode: apply the selected preset if it is a
@@ -558,55 +871,63 @@ public class TunerTime extends Activity
 
 				/* strobe_cents is based on A, adj_cents on C */
 		note n = new note(parms.strobe_cents);
-		String oct_str = Integer.toString(n.octave);
 
 		/* note mode shows the position before the
 		 * temperament, which is shown in the title */
 		note nn = new note(parms.note_cents);
-		note_semi_display.setText(nn.note_str);
-		note_oct_display.setText(Integer.toString(nn.octave));
+		note_semi_display.setText(nn.name_oct);
 		note_cent_display.setText(nn.cents_str);
-		if (!parms.fft_mode && !parms.preset_mode) {
-			setTitle("TunerTime: strobe" + ((temper_str != null) ?
-					(" (" + temper_str + ")") : ""));
+		if (!parms.fft_mode && !parms.preset_mode &&
+		    !parms.mixture_mode) {
+			setTitle((temper_str != null)
+				? getString(R.string.title_strobe_with, temper_str)
+				: getString(R.string.title_strobe));
 		}
 
-		preset_semi_display.setText(n.note_str+" "+n.cents_str);
-		preset_oct_display.setText(oct_str);
+		preset_semi_display.setText(n.name_oct + " " + n.cents_str);
 
 		String center_str = string_int10(parms.A_freq);
-		center_display.setText("A="+center_str);
-		afreq_center_display.setText(center_str);
+		center_display.setText(getString(R.string.status_a, center_str));
+		afreq_center_display.setText(getString(R.string.hz, center_str));
 
 		String stretch_str = ((parms.cents_per_octave >= 0) ? "+" : "-") +
 				string_int10(Math.abs(parms.cents_per_octave));
 		stretch_display.setText(stretch_str);
 		stretch_stretch_display.setText(stretch_str);
-
-		N_display.setText(Integer.toString(parms.fft_size));
-		grid_button.setText(parms.fft_grid_freq ? "Hz" : "scale");
-
-		if (ToneGenerator.playing) {
-			tone_button.getBackground().clearColorFilter();
-		} else {
-			tone_button.getBackground().setColorFilter(
-				new LightingColorFilter(0x404040, 0));
+		if (parms.organ_mode) {
+			/* no stretch: the mixture offset, if any */
+			stretch_display.setText(parms.mixture_mode ?
+				getString(R.string.status_mix, n.cents_str) :
+				getString(R.string.status_organ));
+			update_mixture_status();
 		}
 
-		auto_button.setEnabled(!parms.preset_mode);
+		N_display.setText(Integer.toString(parms.fft_size));
+		grid_button.setText(parms.fft_grid_freq ? R.string.fft_hz
+							: R.string.fft_scale);
+
+		/* highlighted while the tone plays */
+		tone_button.setSelected(ToneGenerator.playing);
+		tone_button.setTextColor(getResources().getColor(
+			ToneGenerator.playing ? R.color.accent : R.color.text));
+
+		auto_button.setEnabled(auto_applies());
 		if (parms.auto_note) {
-			auto_button.setText("follow");
+			auto_button.setText(R.string.auto_follow);
 			auto_button.setTextColor(getResources().getColor(
 					R.color.accent));
-		} else if (auto_locked) {
-			auto_button.setText("locked");
+		} else if (parms.auto_locked) {
+			auto_button.setText(R.string.auto_locked);
 			auto_button.setTextColor(getResources().getColor(
 					R.color.warn));
 		} else {
-			auto_button.setText("auto");
+			auto_button.setText(R.string.auto);
 			auto_button.setTextColor(getResources().getColor(
-					parms.preset_mode ? R.color.outline
-							  : R.color.text));
+					!auto_applies() ? R.color.outline
+							: R.color.text));
+		}
+		if (parms.length_mode) {
+			length.update();
 		}
 	}
 
@@ -615,7 +936,7 @@ public class TunerTime extends Activity
 	public double cents_to_freq(int cents, int harm_mult) {
 		double c = ((double)(cents-4800*U)) / (double)U;
 		c += 1200.0d * Math.log((double)harm_mult) / Math.log(2.0d);
-		double frac = ((double)parms.cents_per_octave)/12000.0d;
+		double frac = ((double)parms.stretch())/12000.0d;
 		double octpow = c*(1.0d+frac) / 1200.0d;
 		double mult = Math.pow(2.0d, octpow);
 		return ((double)parms.A_freq)*mult/10.0d;
@@ -646,13 +967,13 @@ public class TunerTime extends Activity
 		    (results[0] != PackageManager.PERMISSION_GRANTED)) {
 			new AlertDialog.Builder(this)
 			.setCancelable(false)
-			.setPositiveButton("OK",
+			.setPositiveButton(R.string.ok,
 				new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface di,
 						int which) { finish(); } })
 			.setIcon(android.R.drawable.ic_dialog_alert)
-			.setTitle("Oh no!")
-			.setMessage("TunerTime requires access to the microphone for all of its features.  You can override the permission in system settings -> apps & notifications -> advanced -> permission manager.")
+			.setTitle(R.string.perm_title)
+			.setMessage(R.string.perm_message)
 			.show();
 		} else {
 			if (holder != null) {
@@ -795,7 +1116,10 @@ public class TunerTime extends Activity
 				update_status();
 				return true;
 			case MotionEvent.ACTION_UP:
-				if (could_be_click && (strobe != null)) {
+				if (could_be_click && parms.organ_mode &&
+				    !parms.fft_mode) {
+					tap_row(y1, height);
+				} else if (could_be_click && (strobe != null)) {
 					strobe.toggle_pause();
 					update_status();
 				}
