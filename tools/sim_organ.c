@@ -5,6 +5,7 @@
  *   sim_organ                 all scenarios, one line each, and a summary
  *   sim_organ -v [name]       ... with every note's details
  *   sim_organ -w dir [name]   also writes each scenario as dir/<name>.wav
+ *   sim_organ -a N            N estimates in a row move the note (3)
  *                             (16-bit mono, replay with test_pitch file.wav)
  *   name                      only scenarios whose name contains it
  *
@@ -69,7 +70,7 @@ static jint bitmap[400*700];
 
 /* ---- app constants emulated (Java side) ---- */
 #define BUFLEN		1024	/* samples per audio buffer */
-#define DET_AGREE	3	/* TunerTime.DET_AGREE */
+static int det_agree = 3;	/* TunerTime.DET_AGREE; -a N */
 #define LEN_WINDOW	1.0	/* pipelength.WINDOW */
 #define LEN_MIN_EST	5	/* pipelength.MIN_EST */
 #define STABLE_CENTS	1.0	/* pipelength.STABLE_CENTS */
@@ -772,7 +773,7 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 			if (hz > 0.0) {
 				if (g == det_semi) det_count++;
 				else { det_semi = g; det_count = 1; }
-				if ((det_count >= DET_AGREE) && (g != shown)) {
+				if ((det_count >= det_agree) && (g != shown)) {
 					shown = g;
 					if (verbose > 1) {
 						char nm[8];
@@ -924,7 +925,7 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 			if (g == -999) { dc = 0; }
 			else if (g == ds) dc++;
 			else { ds = g; dc = 1; }
-			if ((g != -999) && (dc >= DET_AGREE)) sh = g;
+			if ((g != -999) && (dc >= det_agree)) sh = g;
 			if (est[e].t < k->on) continue;
 			if (est[e].t >= end) break;
 			if ((kr[i].lat < 0.0) && (sh != -999) &&
@@ -1338,7 +1339,7 @@ static void sc_noise(void) {
 static void sc_speech(void) {
 	church("noise: speech");
 	S->speech = 1500.0; S->speech_on = 0.0; S->speech_off = 1e9;
-	S->secs = 15.0;
+	S->secs = 40.0;
 }
 static void sc_steps(void) {
 	church("noise: footsteps");
@@ -1368,6 +1369,8 @@ int main(int argc, char **argv) {
 	for (a = 1; a < argc; a++) {
 		if (!strcmp(argv[a], "-v")) verbose++;
 		else if (!strcmp(argv[a], "-w") && (a+1 < argc)) wavdir = argv[++a];
+		else if (!strcmp(argv[a], "-a") && (a+1 < argc))
+			det_agree = atoi(argv[++a]);
 		else only = argv[a];
 	}
 	S = calloc(1, sizeof *S);
