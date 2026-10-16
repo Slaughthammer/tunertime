@@ -1030,7 +1030,6 @@ static void write_wav(const char *path, const short *buf, int n, int sr) {
 static struct scen *S;
 
 static void church(const char *name) {
-	static unsigned seed = 1;
 	memset(S, 0, sizeof *S);
 	S->name = name;
 	S->sr = 44100;
@@ -1040,7 +1039,12 @@ static void church(const char *name) {
 	S->hum = 15.0; S->rumble = 15.0; S->wind = 20.0;
 	S->wobble = 0.7;
 	S->mstart = MSTART;
-	S->seed = seed++;
+	{	/* from the name, so that each scenario stays the same
+		 * whatever else is added */
+		const char *c;
+		S->seed = 5381;
+		for (c = name; *c; c++) S->seed = S->seed*33 + (unsigned char)*c;
+	}
 }
 static void lab(const char *name) {
 	church(name);
@@ -1151,6 +1155,11 @@ static void sc_subbass(void) {
 static void sc_subbass4(void) {
 	church("Subbass 16' 4th-ord 200Hz");
 	S->mic_hp = 200.0; S->mic_ord = 4;
+	run_keys(pedal, 7, 0.5, STOPPED, 4000, 0.3, 3.5, 0.8);
+}
+static void sc_subhum(void) {
+	church("Subbass 16' strong hum");
+	S->hum = 150.0; S->rumble = 40.0;
 	run_keys(pedal, 7, 0.5, STOPPED, 4000, 0.3, 3.5, 0.8);
 }
 static void sc_prin16(void) {
@@ -1320,6 +1329,7 @@ static const builder builders[] = {
 	sc_clean, sc_principal, sc_principal48, sc_early, sc_early16, sc_hot,
 	sc_quiet, sc_gedackt,
 	sc_flute4, sc_gamba, sc_trumpet, sc_krumm, sc_subbass, sc_subbass4,
+	sc_subhum,
 	sc_prin16, sc_32, sc_prin32, sc_posaune, sc_high2, sc_high1,
 	sc_trem_flute, sc_trem_prin, sc_wobble, sc_celeste, sc_unda,
 	sc_leak, sc_neighbour, sc_mix_all, sc_mix_muted, sc_sesq, sc_octaves,

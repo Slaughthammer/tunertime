@@ -51,6 +51,12 @@
 				 * tools/test_pitch.c score 0.84-1,
 				 * the lowest with mains hum */
 #define SINE_CONF	0.8	/* share a lone partial needs to stand alone */
+#define SUB_SCORE	0.85	/* f0/2 or f0/3 replaces f0 if it scores at
+				 * least this share of f0's score.. */
+#define SUB_GAIN	0.1	/* ..and explains this much more */
+#define SUB_MIN_F0	30.0	/* ..and is not below this: under 30 Hz the
+				 * harmonics are so dense that mains hum
+				 * (50, 100, 150 Hz) falls on them */
 #define FOCUS_SPAN	550.0	/* cents either side of the expected partial,
 				 * under half an octave so that only one
 				 * octave of it can be in reach */
@@ -354,6 +360,26 @@ analyse(double *conf)
 		if (*conf < SINE_CONF) return 0.0;
 	} else if (best > 0.0) {
 		*conf = explained(pk, n, best_f)/total;
+		/* the octave or twelfth below, if it scores nearly as well
+		 * and explains clearly more: the winner was a strong upper
+		 * partial (Krummhorn through a phone mic: the 3rd beats the
+		 * weak 1st on score, but leaves the 5th, 7th.. unexplained)
+		 * or one rank of a mixture (its 2' rather than the 4', the
+		 * common divisor of its 2', 1 1/3' and 1' ranks) */
+		double f = best_f, c = *conf;
+		for (d = 2; d <= 3; d++) {
+			double fd = best_f/d, sd, cd;
+			if (fd < SUB_MIN_F0) break;
+			sd = score(pk, n, &fd);
+			cd = explained(pk, n, fd)/total;
+			if ((sd >= SUB_SCORE*best) && (cd >= *conf + SUB_GAIN) &&
+			    (cd > c)) {
+				f = fd;
+				c = cd;
+			}
+		}
+		best_f = f;
+		*conf = c;
 		if (*conf < MIN_CONF) return 0.0;
 	} else {
 		return 0.0;
