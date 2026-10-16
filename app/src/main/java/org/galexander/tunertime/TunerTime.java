@@ -702,6 +702,27 @@ public class TunerTime extends Activity
 		return c + parms.temper_offset(c);
 	}
 
+	/* the next key, without leaving mixture mode: the target moves by
+	 * a step of note mode and keeps its offset from the step (the
+	 * organ's pitch is much the same from key to key), until measure
+	 * is tapped with the reference rank sounding.  note mode moves
+	 * along, so that it is at the same key when going back to it */
+	public void mixture_semi_incr(View v) { mixture_move(1); }
+	public void mixture_semi_decr(View v) { mixture_move(-1); }
+	private void mixture_move(int d) {
+		int semi = 100*U;
+		int k = nearest_step(parms.mixture_cents);
+		if ((k+d < 0) || ((k+d)*semi > 9600*U)) {
+			return;
+		}
+		mix.stop();
+		parms.mixture_cents += step_cents(k+d) - step_cents(k);
+		parms.mixture_ref = 0.0d;
+		int nk = (parms.note_cents + semi/2) / semi;
+		parms.note_cents += (k+d-nk)*semi;
+		update_status();
+	}
+
 	/* back to the nearest note (of the temperament, if one is in
 	 * effect), with no offset */
 	public void mixture_reset(View v) {
