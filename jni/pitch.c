@@ -2,7 +2,8 @@
  *
  * Runs on the strobe thread alongside the strobes, so it has to be cheap
  * and must not touch the FFT-mode state in fft.c.  The input is decimated
- * 2:1 (the partials we care about are well below 11kHz), and every HOP new
+ * 2:1 (the partials we care about are below 9kHz) behind a half-band
+ * low-pass, and every HOP new
  * samples an N-point FFT is taken over the last N.  At 44.1kHz that is a
  * 0.37s window with 2.7Hz bins, analysed about 11 times a second.
  *
@@ -42,13 +43,13 @@
 #define TOL_SPACING	0.2	/* ... but never more than this * f0 */
 #define MIN_F0		15.0	/* a bit under C0, the 32' organ C */
 #define MAX_F0		4300.0	/* a bit over C8 */
+#define MAX_SINE_F0	8000.0	/* a lone partial: the top of a 1' rank */
 #define MAX_PARTIAL	9000.0
 #define MIN_RMS		60.0	/* 16-bit units; quieter input is ignored */
 #define MIN_CONF	0.7	/* share of peak energy on the winner's
-				 * harmonics; synthetic tones score
-				 * 0.74-1, the lowest at the top end,
-				 * where aliases from the 2:1 decimation
-				 * add stray peaks */
+				 * harmonics; the synthetic tones of
+				 * tools/test_pitch.c score 0.84-1,
+				 * the lowest with mains hum */
 #define SINE_CONF	0.8	/* share a lone partial needs to stand alone */
 #define FOCUS_SPAN	550.0	/* cents either side of the expected partial,
 				 * under half an octave so that only one
@@ -58,13 +59,35 @@ static double fs;		/* sample rate after decimation */
 static float ring[N];		/* decimated input, circular */
 static int ring_pos;
 static int fresh;		/* decimated samples since the last analysis */
-static int odd;			/* waiting for the second sample of a pair */
-static float pair;
+/* the 2:1 decimation's low-pass: a half-band FIR, 2*HB_M+1 taps of a
+ * Kaiser-windowed sinc, every other one zero.  The partials of a top pipe
+ * (a 2' or 1' rank at 5-8 kHz) lie at 10-24 kHz; a plain average of two
+ * samples let them fold back at -7 dB and fake a harmonic series below
+ * (E8 heard as C6), this keeps them 50 dB down above 13 kHz */
+#define HB_M		19
+#define HB_BETA		5.0
+static double hb_c[HB_M+1];	/* by distance from the centre tap */
+static float hb_x[2*HB_M+1];	/* input history, circular */
+static int hb_pos;
+static int odd;			/* the next input sample makes no output */
 static double focus_ratio, expect_hz;	/* pitch_hint() */
 
 static double re[N], im[N], win[N], mag[N/2];
 static double tw_r[N/2], tw_i[N/2];
 static int bitrev[N];
+
+/* modified Bessel function of order 0, for the Kaiser window */
+static double
+bessel_i0(double x)
+{
+	double s = 1.0, t = 1.0;
+	int k;
+	for (k = 1; k < 30; k++) {
+		t *= (x/(2.0*k))*(x/(2.0*k));
+		s += t;
+	}
+	return s;
+}
 
 void
 pitch_init(int sample_rate)
@@ -73,7 +96,22 @@ pitch_init(int sample_rate)
 
 	fs = sample_rate / 2.0;
 	memset(ring, 0, sizeof ring);
-	ring_pos = fresh = odd = 0;
+	memset(hb_x, 0, sizeof hb_x);
+	ring_pos = fresh = odd = hb_pos = 0;
+	{
+		double sum = 0.0;
+		for (i = 0; i <= HB_M; i++) {
+			double x = (double)i/HB_M;
+			hb_c[i] = (i == 0) ? 0.5 : (i % 2) ?
+				sin(M_PI*i/2.0)/(M_PI*i) *
+				bessel_i0(HB_BETA*sqrt(1.0 - x*x)) /
+				bessel_i0(HB_BETA) : 0.0;
+			sum += (i == 0) ? hb_c[i] : 2.0*hb_c[i];
+		}
+		for (i = 0; i <= HB_M; i++) {
+			hb_c[i] /= sum;		/* unity gain at DC */
+		}
+	}
 	for (i = 0; i < N; i++) {
 		win[i] = 0.5 - 0.5*cos(2.0*M_PI*i/N);	/* Hann */
 		for (j = 0, b = 0; b < LGN; b++) {
@@ -305,7 +343,7 @@ analyse(double *conf)
 			try_f0(pk, n, next-pk[i].f, &best, &best_f);
 		}
 	}
-	if ((best == 0.0) && (pk[0].f >= MIN_F0) && (pk[0].f <= MAX_F0)) {
+	if ((best == 0.0) && (pk[0].f >= MIN_F0) && (pk[0].f <= MAX_SINE_F0)) {
 		/* no harmonic series: a lone strong partial (flute stop,
 		 * tuning fork, top octave) is the fundamental itself */
 		*conf = pk[0].m/total;
@@ -325,13 +363,22 @@ pitch_feed(const short *s, int len, double *hz, double *conf)
 {
 	int i, ret = 0;
 	for (i = 0; i < len; i++) {
-		if (!odd) {
-			pair = s[i];
-			odd = 1;
+		int k, c;
+		double y;
+		hb_x[hb_pos] = s[i];
+		hb_pos = (hb_pos+1) % (2*HB_M+1);
+		odd = !odd;
+		if (odd) {
 			continue;
 		}
-		odd = 0;
-		ring[ring_pos] = 0.5f*(pair + s[i]);	/* crude low-pass */
+		/* hb_pos is now the oldest sample; the centre is HB_M on */
+		c = (hb_pos + HB_M) % (2*HB_M+1);
+		y = hb_c[0]*hb_x[c];
+		for (k = 1; k <= HB_M; k += 2) {
+			y += hb_c[k]*(hb_x[(c+k) % (2*HB_M+1)] +
+				hb_x[(c+2*HB_M+1-k) % (2*HB_M+1)]);
+		}
+		ring[ring_pos] = (float)y;
 		ring_pos = (ring_pos+1) % N;
 		if (++fresh >= HOP) {
 			fresh = 0;
