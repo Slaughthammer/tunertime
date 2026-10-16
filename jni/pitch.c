@@ -210,7 +210,7 @@ static double
 score(struct peak *pk, int n, double *f0)
 {
 	double s = 0.0, w = 1.0, fsum = 0.0, fwt = 0.0;
-	int h, i, matched = 0;
+	int h, i, matched = 0, lowest = 0;
 
 	for (h = 1; h <= MAX_HARM; h++, w *= 0.85) {
 		double t = h * *f0, tol = tolerance(h, *f0);
@@ -224,12 +224,15 @@ score(struct peak *pk, int n, double *f0)
 		}
 		if (best > 0.0) {
 			s += w*best;
-			matched++;
+			if (!matched++) lowest = h;
 			fsum += h*best * (bestf/h);	/* high partials resolve */
 			fwt += h*best;			/* f0 more finely */
 		}
 	}
-	if (matched < 2) {
+	/* two partials alone, the lowest of them the 3rd or above, are no
+	 * evidence of a tone: any two partials are the 4th and 5th of
+	 * something, like the tail of C8 and a new E8 (C6) */
+	if ((matched < 2) || ((matched == 2) && (lowest > 2))) {
 		return 0.0;
 	}
 	*f0 = fsum/fwt;
