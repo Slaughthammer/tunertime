@@ -354,6 +354,9 @@ public class TunerTime extends Activity
 	private Toast shift_toast = null;
 
 	public void do_auto(View v) {
+		if (!auto_applies()) {
+			return;
+		}
 		if (!parms.auto_note && !auto_locked) {
 			parms.auto_note = true;
 			follow_shift = 0;
@@ -381,6 +384,15 @@ public class TunerTime extends Activity
 		update_status();
 	}
 
+	/* follow moves note_cents, which only note mode shows: preset mode
+	 * steps through its notes, and mixture mode tunes to mixture_cents.
+	 * elsewhere the button is disabled and auto_note is kept as it is,
+	 * so following resumes when going back to note mode */
+	private boolean auto_applies() {
+		return !parms.preset_mode && !parms.mixture_mode &&
+			!parms.fft_mode;
+	}
+
 	/* from the strobe thread */
 	public void pitch_detected(final double hz) {
 		runOnUiThread(new Runnable() {
@@ -405,7 +417,7 @@ public class TunerTime extends Activity
 			follow_shift = 0;
 			show_shift();
 		}
-		if (!parms.auto_note || parms.preset_mode || parms.fft_mode ||
+		if (!parms.auto_note || !auto_applies() ||
 		    ToneGenerator.playing || (hz <= 0.0)) {
 			det_count = 0;
 			return;
@@ -438,7 +450,7 @@ public class TunerTime extends Activity
 
 	/* the user moved the note from semitone 'from' to 'to' by hand */
 	private void user_moved_note(int from, int to) {
-		if (!parms.auto_note || parms.preset_mode || parms.fft_mode) {
+		if (!parms.auto_note || !auto_applies()) {
 			return;
 		}
 		long now = SystemClock.uptimeMillis();
@@ -871,7 +883,7 @@ public class TunerTime extends Activity
 				new LightingColorFilter(0x404040, 0));
 		}
 
-		auto_button.setEnabled(!parms.preset_mode);
+		auto_button.setEnabled(auto_applies());
 		if (parms.auto_note) {
 			auto_button.setText("follow");
 			auto_button.setTextColor(getResources().getColor(
@@ -883,8 +895,8 @@ public class TunerTime extends Activity
 		} else {
 			auto_button.setText("auto");
 			auto_button.setTextColor(getResources().getColor(
-					parms.preset_mode ? R.color.outline
-							  : R.color.text));
+					!auto_applies() ? R.color.outline
+							: R.color.text));
 		}
 		if (parms.length_mode) {
 			length.update();
