@@ -13,7 +13,7 @@
 	    android:layout_width="fill_parent"
 	    android:layout_height="1dp"
 	    android:layout_weight="1"
-	    android:text="N+"
+	    android:text="@string/fft_n_plus"
 	    android:onClick="N_incr" />
 	<TextView android:id="@+id/N_display"
 	    style="@style/Tuner.Readout"
@@ -24,7 +24,7 @@
 	    android:layout_width="fill_parent"
 	    android:layout_height="1dp"
 	    android:layout_weight="1"
-	    android:text="N-"
+	    android:text="@string/fft_n_minus"
 	    android:onClick="N_decr" />
     </LinearLayout>
     <Button android:id="@+id/grid_button"
@@ -32,6 +32,6 @@
 	android:layout_width="1dp"
 	android:layout_height="fill_parent"
 	android:layout_weight="1"
-	android:text="scale"
+	android:text="@string/fft_scale"
 	android:onClick="grid_toggle" />
 </LinearLayout>

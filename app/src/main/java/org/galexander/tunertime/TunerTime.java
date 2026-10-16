@@ -72,8 +72,25 @@ public class TunerTime extends Activity
 	private int width = 0;
 	private int height = 0;
 
+	/* the language this activity was created in (Lang) */
+	private String lang = null;
+
+	protected void attachBaseContext(Context base) {
+		super.attachBaseContext(Lang.wrap(base));
+	}
+
+	protected void onRestart() {
+		super.onRestart();
+		/* the language was changed in Settings (before Android 13;
+		 * later versions recreate the activity themselves) */
+		if (!Lang.get(this).equals(lang)) {
+			recreate();
+		}
+	}
+
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		lang = Lang.get(this);
 
 		parms.init(this);
 		setContentView(R.layout.main);
@@ -251,7 +268,7 @@ public class TunerTime extends Activity
 					parms.temper_offset(parms.strobe_cents);
 			}
 			if (parms.mixture_mode) {
-				title = "TunerTime: mixture";
+				title = getString(R.string.title_mixture);
 			} else if (parms.preset_mode) {
 				preset p = preset.find(parms.preset_id);
 				if (p == null) {
@@ -262,13 +279,13 @@ public class TunerTime extends Activity
 						parms.preset_id = p.id;
 					}
 				}
-				title = "TunerTime: strobe (" +
-					((p != null) ? p.name : "...") + ")";
+				title = getString(R.string.title_strobe_with,
+					(p != null) ? p.name : "...");
 			} else {
-				title = "TunerTime: strobe";
+				title = getString(R.string.title_strobe);
 			}
 		} else {
-			title = "TunerTime: FFT";
+			title = getString(R.string.title_fft);
 			parms.fft_xoffset = Strobe.FFT_RANGE_MULT;
 			mixture_set(false);
 		}
@@ -300,7 +317,8 @@ public class TunerTime extends Activity
 		}
 		/* in organ mode a toggle, highlighted while the length
 		 * panel is shown */
-		mode_button.setText(parms.organ_mode ? "length" : "FFT");
+		mode_button.setText(parms.organ_mode ? R.string.mode_length
+						     : R.string.mode_fft);
 		mode_button.setSelected(parms.organ_mode && parms.length_mode);
 	}
 
@@ -353,7 +371,7 @@ public class TunerTime extends Activity
 			parms.auto_note = true;
 			follow_shift = 0;
 			det_stable = Integer.MIN_VALUE;
-			Toast.makeText(this, "auto: tap to lock, hold to turn off",
+			Toast.makeText(this, R.string.toast_auto,
 					Toast.LENGTH_SHORT).show();
 		} else if (parms.auto_note) {
 			parms.auto_note = false;	/* lock */
@@ -455,13 +473,13 @@ public class TunerTime extends Activity
 		}
 		String s;
 		if (follow_shift == 0) {
-			s = "follow: notes as detected";
+			s = getString(R.string.follow_as_detected);
 		} else {
 			int a = Math.abs(follow_shift);
-			s = "follow: " + ((follow_shift > 0) ? "+" : "-") +
-				((a % 12 == 0) ? ((a/12) + " oct")
-					       : (a + " semitones")) +
-				" from detected (hold auto to clear)";
+			String sign = (follow_shift > 0) ? "+" : "-";
+			s = (a % 12 == 0)
+				? getString(R.string.follow_shift_oct, sign, a/12)
+				: getString(R.string.follow_shift_semi, sign, a);
 		}
 		shift_toast = Toast.makeText(this, s, Toast.LENGTH_SHORT);
 		shift_toast.show();
@@ -597,7 +615,8 @@ public class TunerTime extends Activity
 	/* organ mode: no stretch; the stretch tab becomes mixture mode, and
 	 * a tap on a strobe row focuses its partial instead of pausing */
 	private void organ_resume() {
-		stretch_button.setText(parms.organ_mode ? "mixture" : "stretch");
+		stretch_button.setText(parms.organ_mode ? R.string.tab_mixture
+							: R.string.tab_stretch);
 		if (!parms.organ_mode || (parms.focus_row() < 0)) {
 			/* the focused footage is no longer shown */
 			parms.focus_ratio = 0.0d;
@@ -696,12 +715,14 @@ public class TunerTime extends Activity
 		String f = (parms.focus_row() >= 0) ?
 				parms.footage_str(parms.focus_ratio) : null;
 		if (mix.measuring()) {
-			mixture_status.setText("measuring " + f + " " +
-				Math.round(mix.progress()*100.0d) + "%");
+			mixture_status.setText(getString(
+				R.string.mixture_measuring, f,
+				(int)Math.round(mix.progress()*100.0d)));
 		} else if (f != null) {
-			mixture_status.setText(f + " held");
+			mixture_status.setText(getString(R.string.mixture_held,
+							 f));
 		} else {
-			mixture_status.setText("tap a strobe row");
+			mixture_status.setText(R.string.mixture_tap_row);
 		}
 	}
 	public void preset_clicked(View v) {
@@ -726,13 +747,13 @@ public class TunerTime extends Activity
 	private void do_about() {
 		AlertDialog.Builder b = new AlertDialog.Builder(this);
 		b.setCancelable(true);
-		b.setPositiveButton("OK",
+		b.setPositiveButton(R.string.ok,
 			new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface di, int which) { }
 			});
 		b.setIcon(android.R.drawable.ic_dialog_info);
-		b.setTitle("About");
-		b.setMessage("TunerTime version " + my_version());
+		b.setTitle(R.string.about_title);
+		b.setMessage(getString(R.string.about_message, my_version()));
 		b.show();
 	}
 
@@ -826,15 +847,16 @@ public class TunerTime extends Activity
 		note_cent_display.setText(nn.cents_str);
 		if (!parms.fft_mode && !parms.preset_mode &&
 		    !parms.mixture_mode) {
-			setTitle("TunerTime: strobe" + ((temper_str != null) ?
-					(" (" + temper_str + ")") : ""));
+			setTitle((temper_str != null)
+				? getString(R.string.title_strobe_with, temper_str)
+				: getString(R.string.title_strobe));
 		}
 
 		preset_semi_display.setText(n.name_oct + " " + n.cents_str);
 
 		String center_str = string_int10(parms.A_freq);
-		center_display.setText("A="+center_str);
-		afreq_center_display.setText(center_str + " Hz");
+		center_display.setText(getString(R.string.status_a, center_str));
+		afreq_center_display.setText(getString(R.string.hz, center_str));
 
 		String stretch_str = ((parms.cents_per_octave >= 0) ? "+" : "-") +
 				string_int10(Math.abs(parms.cents_per_octave));
@@ -843,12 +865,14 @@ public class TunerTime extends Activity
 		if (parms.organ_mode) {
 			/* no stretch: the mixture offset, if any */
 			stretch_display.setText(parms.mixture_mode ?
-				("mix" + n.cents_str) : "organ");
+				getString(R.string.status_mix, n.cents_str) :
+				getString(R.string.status_organ));
 			update_mixture_status();
 		}
 
 		N_display.setText(Integer.toString(parms.fft_size));
-		grid_button.setText(parms.fft_grid_freq ? "Hz" : "scale");
+		grid_button.setText(parms.fft_grid_freq ? R.string.fft_hz
+							: R.string.fft_scale);
 
 		/* highlighted while the tone plays */
 		tone_button.setSelected(ToneGenerator.playing);
@@ -857,15 +881,15 @@ public class TunerTime extends Activity
 
 		auto_button.setEnabled(!parms.preset_mode);
 		if (parms.auto_note) {
-			auto_button.setText("follow");
+			auto_button.setText(R.string.auto_follow);
 			auto_button.setTextColor(getResources().getColor(
 					R.color.accent));
 		} else if (auto_locked) {
-			auto_button.setText("locked");
+			auto_button.setText(R.string.auto_locked);
 			auto_button.setTextColor(getResources().getColor(
 					R.color.warn));
 		} else {
-			auto_button.setText("auto");
+			auto_button.setText(R.string.auto);
 			auto_button.setTextColor(getResources().getColor(
 					parms.preset_mode ? R.color.outline
 							  : R.color.text));
@@ -911,13 +935,13 @@ public class TunerTime extends Activity
 		    (results[0] != PackageManager.PERMISSION_GRANTED)) {
 			new AlertDialog.Builder(this)
 			.setCancelable(false)
-			.setPositiveButton("OK",
+			.setPositiveButton(R.string.ok,
 				new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface di,
 						int which) { finish(); } })
 			.setIcon(android.R.drawable.ic_dialog_alert)
-			.setTitle("Oh no!")
-			.setMessage("TunerTime requires access to the microphone for all of its features.  You can override the permission in system settings -> apps & notifications -> advanced -> permission manager.")
+			.setTitle(R.string.perm_title)
+			.setMessage(R.string.perm_message)
 			.show();
 		} else {
 			if (holder != null) {

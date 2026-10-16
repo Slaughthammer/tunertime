@@ -97,7 +97,8 @@ public class pipelength {
 		parms.temperature = Math.max(-20, Math.min(45,
 						parms.temperature));
 		temp_display.setText(parms.temperature + "\u00b0C");
-		kind_button.setText(parms.pipe_stopped ? "stopped" : "open");
+		kind_button.setText(parms.pipe_stopped ? R.string.pipe_stopped
+						       : R.string.pipe_open);
 
 		if ((parms.strobe_cents != last_target) ||
 		    (parms.focus_ratio != last_focus)) {
@@ -124,9 +125,10 @@ public class pipelength {
 			c[n++] = 1200.0d * Math.log(hz[i]/f_base) / Math.log(2.0d);
 		}
 		if (n == 0) {
-			main_display.setText("listening...");
+			main_display.setText(R.string.length_listening);
 			main_display.setTextColor(color(R.color.text_muted));
-			detail_display.setText(fmt("target %.2f Hz", f_base));
+			detail_display.setText(ui.getString(R.string.length_target,
+						fmt("%.2f", f_base)));
 			return;
 		}
 		double med = median(c, n);
@@ -153,15 +155,16 @@ public class pipelength {
 				Math.abs(mm));
 		String s;
 		if (amm.equals("0.0") || amm.equals("0")) {
-			s = "0.0 mm: in tune";
+			s = ui.getString(R.string.length_in_tune);
 		} else {
-			s = amm + " mm " + ((mm > 0.0d) ? "too long" : "too short");
+			s = ui.getString((mm > 0.0d) ? R.string.length_too_long
+						     : R.string.length_too_short, amm);
 		}
 		boolean recent = (System.currentTimeMillis() - when[n_est-1] <
 					WINDOW);
 		boolean stable = (n >= MIN_EST) && (spread < STABLE_CENTS);
 		if (!recent) {
-			s += " (held)";
+			s = ui.getString(R.string.length_held, s);
 		}
 		main_display.setText(s);
 		main_display.setTextColor(color(!recent ? R.color.text_muted :

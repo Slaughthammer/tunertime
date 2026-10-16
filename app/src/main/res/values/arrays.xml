@@ -1,11 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<!-- entries are in strings.xml (translated); values are stored -->
+	<string-array name="language_name">
+		<item>@string/language_system</item>
+		<item>@string/language_english</item>
+		<item>@string/language_german</item>
+	</string-array>
+	<string-array name="language_value">
+		<item>system</item>
+		<item>en</item>
+		<item>de</item>
+	</string-array>
 	<string-array name="audio_source_name">
-		<item>Auto</item>
-		<item>Unprocessed</item>
-		<item>Voice recognition</item>
-		<item>Microphone (may be noise-suppressed)</item>
-		<item>Camcorder</item>
+		<item>@string/source_auto</item>
+		<item>@string/source_unprocessed</item>
+		<item>@string/source_voice</item>
+		<item>@string/source_mic</item>
+		<item>@string/source_camcorder</item>
 	</string-array>
 	<string-array name="audio_source_value">
 		<item>auto</item>
@@ -16,20 +27,20 @@
 	</string-array>
 	<!-- filled at runtime in Settings.java -->
 	<string-array name="microphone_name">
-		<item>Auto (best signal)</item>
-		<item>System default</item>
+		<item>@string/mic_auto</item>
+		<item>@string/mic_default</item>
 	</string-array>
 	<string-array name="microphone_value">
 		<item>auto</item>
 		<item>default</item>
 	</string-array>
 	<string-array name="color_name">
-		<item>Batlow</item>
-		<item>Slate / White</item>
-		<item>Red / Green</item>
-		<item>Black / White</item>
-		<item>Blue / Yellow</item>
-		<item>Red / Blue</item>
+		<item>@string/color_batlow</item>
+		<item>@string/color_slate</item>
+		<item>@string/color_redgreen</item>
+		<item>@string/color_blackwhite</item>
+		<item>@string/color_blueyellow</item>
+		<item>@string/color_redblue</item>
 	</string-array>
 	<string-array name="color_value">
 		<item>batlow</item>

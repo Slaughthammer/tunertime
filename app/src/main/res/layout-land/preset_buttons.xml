@@ -20,14 +20,14 @@
 		android:layout_height="1dp"
 		android:layout_width="fill_parent"
 		android:layout_weight="1"
-		android:text="note-"
+		android:text="@string/note_minus"
 		android:onClick="preset_decr" />
 	    <Button
 		style="@style/Tuner.Button.Panel"
 		android:layout_height="1dp"
 		android:layout_width="fill_parent"
 		android:layout_weight="1"
-		android:text="oct-"
+		android:text="@string/oct_minus"
 		android:onClick="preset_oct_decr" />
 	</LinearLayout>
 	<TextView android:id="@+id/preset_semi_display"
@@ -46,14 +46,14 @@
 		android:layout_height="1dp"
 		android:layout_width="fill_parent"
 		android:layout_weight="1"
-		android:text="note+"
+		android:text="@string/note_plus"
 		android:onClick="preset_incr" />
 	    <Button
 		style="@style/Tuner.Button.Panel"
 		android:layout_height="1dp"
 		android:layout_width="fill_parent"
 		android:layout_weight="1"
-		android:text="oct+"
+		android:text="@string/oct_plus"
 		android:onClick="preset_oct_incr" />
 	</LinearLayout>
     </LinearLayout>
@@ -67,14 +67,14 @@
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="select"
+	    android:text="@string/select"
 	    android:onClick="do_preset_select" />
 	<Button android:id="@+id/preset_edit"
 	    style="@style/Tuner.Button.Panel"
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="edit"
+	    android:text="@string/edit"
 	    android:onClick="do_preset_edit" />
     </LinearLayout>
 </LinearLayout>

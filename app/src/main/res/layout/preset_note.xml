@@ -169,7 +169,7 @@
 	    android:layout_gravity="center_vertical"
 	    android:paddingLeft="12dp"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:text="cents:" />
+	    android:text="@string/cents_label" />
 	<EditText android:id="@+id/pn_cents"
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
@@ -199,28 +199,28 @@
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
-	    android:text="-1c"
+	    android:text="@string/cent_step_minus1"
 	    android:onClick="do_cent_decr" />
 	<Button
 	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
-	    android:text="-0.1c"
+	    android:text="@string/cent_step_minus01"
 	    android:onClick="do_tenth_decr" />
 	<Button
 	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
-	    android:text="+0.1c"
+	    android:text="@string/cent_step_plus01"
 	    android:onClick="do_tenth_incr" />
 	<Button
 	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
-	    android:text="+1c"
+	    android:text="@string/cent_step_plus1"
 	    android:onClick="do_cent_incr" />
     </LinearLayout>
     <LinearLayout
@@ -234,7 +234,7 @@
 	    android:layout_height="wrap_content"
 	    android:layout_weight="1"
 	    android:layout_gravity="bottom"
-	    android:text="delete note"
+	    android:text="@string/delete_note"
 	    android:textColor="@color/warn"
 	    android:onClick="do_delete" />
 	<Button
@@ -243,7 +243,7 @@
 	    android:layout_height="wrap_content"
 	    android:layout_weight="1"
 	    android:layout_gravity="bottom"
-	    android:text="save"
+	    android:text="@string/save"
 	    android:onClick="do_save" />
     </LinearLayout>
 </LinearLayout>

@@ -3,6 +3,6 @@
     style="@style/Tuner.Button.Panel"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:text="strobe"
+    android:text="@string/mode_strobe"
     android:textColor="@color/accent"
     android:onClick="do_mode" />

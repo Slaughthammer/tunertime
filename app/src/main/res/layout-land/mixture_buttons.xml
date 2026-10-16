@@ -9,7 +9,7 @@
 	android:layout_width="fill_parent"
 	android:layout_height="1dp"
 	android:layout_weight="1"
-	android:text="measure"
+	android:text="@string/measure"
 	android:onClick="mixture_measure" />
     <TextView android:id="@+id/mixture_display"
 	style="@style/Tuner.Readout"
@@ -24,7 +24,7 @@
 	android:layout_height="1dp"
 	android:layout_width="fill_parent"
 	android:layout_weight="1"
-	android:text="reset"
+	android:text="@string/reset"
 	android:textColor="@color/warn"
 	android:onClick="mixture_reset" />
 </LinearLayout>

@@ -8,21 +8,21 @@
 	android:layout_width="fill_parent"
 	android:layout_height="1dp"
 	android:layout_weight="1"
-	android:text="auto"
+	android:text="@string/auto"
 	android:onClick="do_auto" />
     <Button android:id="@+id/tone_button"
 	style="@style/Tuner.Button.Panel"
 	android:layout_width="fill_parent"
 	android:layout_height="1dp"
 	android:layout_weight="1"
-	android:text="tone"
+	android:text="@string/tone"
 	android:onClick="do_tone" />
     <Button android:id="@+id/mode_button"
 	style="@style/Tuner.Button.Panel"
 	android:layout_width="fill_parent"
 	android:layout_height="1dp"
 	android:layout_weight="1"
-	android:text="FFT"
+	android:text="@string/mode_fft"
 	android:textColor="@color/accent"
 	android:onClick="do_mode" />
 </LinearLayout>

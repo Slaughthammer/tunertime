@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Deutsche Texte, in der Reihenfolge von values/strings.xml.
+     Umlaute usw. als Entities (README.md, "Traps when editing"). -->
+<resources>
+	<!-- Titel -->
+	<string name="title_settings">Einstellungen</string>
+	<string name="title_preset_select">Preset w&#228;hlen</string>
+	<string name="title_preset_edit">Preset bearbeiten</string>
+	<string name="title_preset_note">Preset-Ton bearbeiten</string>
+	<string name="title_strobe">TunerTime: Strobe</string>
+	<string name="title_strobe_with">TunerTime: Strobe (%1$s)</string>
+	<string name="title_fft">TunerTime: FFT</string>
+	<string name="title_mixture">TunerTime: Mixtur</string>
+
+	<!-- Men&#252;s -->
+	<string name="menu_settings">Einstellungen</string>
+	<string name="menu_help">Hilfe</string>
+	<string name="menu_about">&#220;ber TunerTime</string>
+	<string name="menu_add_temperament">Historische Stimmung hinzuf&#252;gen&#8230;</string>
+	<string name="menu_sort">Nach Namen sortieren</string>
+	<string name="menu_import">Importieren&#8230;</string>
+	<string name="menu_export_all">Alle exportieren&#8230;</string>
+
+	<!-- Reiter unter dem Strobe -->
+	<string name="tab_note">Ton</string>
+	<string name="tab_afreq">Kammerton</string>
+	<string name="tab_stretch">Spreizung</string>
+	<string name="tab_mixture">Mixtur</string>
+	<string name="tab_preset">Preset</string>
+
+	<string name="auto">Auto</string>
+	<string name="auto_follow">Folgen</string>
+	<string name="auto_locked">Fixiert</string>
+	<string name="tone">Signal</string>
+	<string name="mode_fft">FFT</string>
+	<string name="mode_strobe">Strobe</string>
+	<string name="mode_length">L&#228;nge</string>
+
+	<string name="status_a">A=%1$s</string>
+	<string name="status_organ">Orgel</string>
+	<string name="status_mix">Mix%1$s</string>
+
+	<string name="semi_plus">Ton+</string>
+	<string name="semi_minus">Ton-</string>
+	<string name="oct_plus">Okt+</string>
+	<string name="oct_minus">Okt-</string>
+	<string name="cent_plus">Cent+</string>
+	<string name="cent_minus">Cent-</string>
+	<string name="cent">Cent</string>
+	<string name="plus">+</string>
+	<string name="minus">-</string>
+	<string name="reset">Reset</string>
+	<string name="hz">%1$s Hz</string>
+	<string name="stretch_plus">Spreizung+</string>
+	<string name="stretch_minus">Spreizung-</string>
+	<string name="cents_per_octave">Cent/Oktave</string>
+	<string name="note_plus">Ton+</string>
+	<string name="note_minus">Ton-</string>
+	<string name="select">W&#228;hlen</string>
+	<string name="edit">&#196;ndern</string>
+	<string name="fft_n">N</string>
+	<string name="fft_n_plus">N+</string>
+	<string name="fft_n_minus">N-</string>
+	<string name="fft_scale">Skala</string>
+	<string name="fft_hz">Hz</string>
+
+	<!-- Orgelmodus: Mixtur -->
+	<string name="measure">Messen</string>
+	<string name="mixture_measuring">messe %1$s: %2$d %%</string>
+	<string name="mixture_held">%1$s gehalten</string>
+	<string name="mixture_tap_row">Strobe-Zeile antippen</string>
+
+	<!-- Orgelmodus: L&#228;nge (Pfeife zu lang / zu kurz) -->
+	<string name="pipe_open">offen</string>
+	<string name="pipe_stopped">gedackt</string>
+	<string name="temp_minus">T-</string>
+	<string name="temp_plus">T+</string>
+	<string name="temp_colder">Lufttemperatur senken</string>
+	<string name="temp_warmer">Lufttemperatur erh&#246;hen</string>
+	<string name="length_listening">warte auf Ton&#8230;</string>
+	<string name="length_target">Soll %1$s Hz</string>
+	<string name="length_in_tune">0.0 mm: stimmt</string>
+	<string name="length_too_long">%1$s mm zu lang</string>
+	<string name="length_too_short">%1$s mm zu kurz</string>
+	<string name="length_held">%1$s (gehalten)</string>
+
+	<!-- auf dem Strobe -->
+	<string name="paused">Pause</string>
+	<string name="row_too_high">zu hoch</string>
+	<!-- Teiltonzeilen: "2." statt "2nd" -->
+	<string name="ordinal_suffix">.</string>
+
+	<!-- Meldungen und Dialoge -->
+	<string name="toast_auto">Auto: Tippen fixiert, Halten schaltet aus</string>
+	<string name="follow_as_detected">Folgen: T&#246;ne wie erkannt</string>
+	<string name="follow_shift_oct">Folgen: %1$s%2$d Okt. gegen&#252;ber erkannt (Auto halten hebt es auf)</string>
+	<string name="follow_shift_semi">Folgen: %1$s%2$d Halbt&#246;ne gegen&#252;ber erkannt (Auto halten hebt es auf)</string>
+	<string name="ok">OK</string>
+	<string name="cancel">Abbrechen</string>
+	<string name="about_title">&#220;ber TunerTime</string>
+	<string name="about_message">TunerTime Version %1$s</string>
+	<string name="perm_title">Mikrofon erforderlich</string>
+	<string name="perm_message">TunerTime braucht f&#252;r alle Funktionen Zugriff auf das Mikrofon. Erlauben l&#228;sst er sich in den Systemeinstellungen unter Apps &#8594; TunerTime &#8594; Berechtigungen.</string>
+
+	<!-- Presets -->
+	<string name="no_presets">keine Presets</string>
+	<string name="new_preset">Neues Preset</string>
+	<string name="preset_name_hint">Name des Presets</string>
+	<string name="no_notes">keine T&#246;ne</string>
+	<string name="delete_preset">Preset l&#246;schen</string>
+	<string name="add_note">Ton hinzuf&#252;gen</string>
+	<string name="cents_label">Cent:</string>
+	<string name="change_sign">Vorzeichen wechseln</string>
+	<string name="cent_step_minus1">-1c</string>
+	<string name="cent_step_minus01">-0.1c</string>
+	<string name="cent_step_plus01">+0.1c</string>
+	<string name="cent_step_plus1">+1c</string>
+	<string name="delete_note">Ton l&#246;schen</string>
+	<string name="save">Speichern</string>
+	<string name="cm_edit">Bearbeiten</string>
+	<string name="cm_rename">Umbenennen</string>
+	<string name="cm_duplicate">Duplizieren</string>
+	<string name="cm_move_up">Nach oben</string>
+	<string name="cm_move_down">Nach unten</string>
+	<string name="cm_export">Exportieren&#8230;</string>
+	<string name="cm_delete">L&#246;schen</string>
+	<string name="confirm">Bitte best&#228;tigen</string>
+	<string name="really_delete">&#8222;%1$s&#8220; wirklich l&#246;schen?</string>
+	<string name="delete">L&#246;schen</string>
+	<string name="rename">Umbenennen</string>
+	<string name="rename_title">Preset umbenennen</string>
+	<string name="add_temperament_title">Stimmung hinzuf&#252;gen (A = 0 Cent)</string>
+	<string name="added">&#8222;%1$s&#8220; hinzugef&#252;gt</string>
+	<string name="no_file_picker">Keine Dateiauswahl verf&#252;gbar</string>
+	<string name="export_file_name">TunerTime-Presets.txt</string>
+	<plurals name="exported">
+		<item quantity="one">%d Preset exportiert</item>
+		<item quantity="other">%d Presets exportiert</item>
+	</plurals>
+	<plurals name="imported">
+		<item quantity="one">%d Preset importiert</item>
+		<item quantity="other">%d Presets importiert</item>
+	</plurals>
+	<plurals name="imported_renamed">
+		<item quantity="one">, %d wegen gleichen Namens umbenannt</item>
+		<item quantity="other">, %d wegen gleicher Namen umbenannt</item>
+	</plurals>
+	<string name="export_failed">Export fehlgeschlagen</string>
+	<string name="import_failed">Import fehlgeschlagen</string>
+	<string name="nothing_imported">Es wurde nichts importiert.</string>
+	<string name="and_more">&#8230; und %1$d weitere</string>
+
+	<!-- historische Stimmungen, Reihenfolge wie temperaments.java -->
+	<string-array name="temperament_names">
+		<item>Pythagoreisch</item>
+		<item>Mittelt&#246;nig 1/4 Komma</item>
+		<item>Mittelt&#246;nig 1/6 Komma</item>
+		<item>Werckmeister III</item>
+		<item>Kirnberger III</item>
+		<item>Vallotti</item>
+		<item>Young II</item>
+		<item>Kellner (Bach)</item>
+	</string-array>
+	<!-- Tonnamen hier englisch (G#, Eb); mit deutschen Tonnamen werden
+	     sie als Gis, Es angezeigt -->
+	<string-array name="temperament_about">
+		<item>reine Quinten, Wolf G#-Eb</item>
+		<item>reine gro&#223;e Terzen, Wolf G#-Eb; Renaissance/Fr&#252;hbarock</item>
+		<item>Barockorgeln, milder Wolf G#-Eb</item>
+		<item>1691, wohltemperiert, alle Tonarten spielbar</item>
+		<item>1779, reine Terz C-E</item>
+		<item>um 1750, sechs Quinten um 1/6 pyth. Komma verkleinert</item>
+		<item>1800, wie Vallotti, auf C zentriert</item>
+		<item>1977 rekonstruierte Stimmung Bachs</item>
+	</string-array>
+
+	<!-- Mikrofone -->
+	<string name="mic_auto">Automatisch (bestes Signal)</string>
+	<string name="mic_default">Systemstandard</string>
+	<string name="mic_builtin">Eingebautes Mikrofon</string>
+	<string name="mic_builtin_at">Eingebautes Mikrofon (%1$s)</string>
+	<string name="mic_headset">Headset-Mikrofon</string>
+	<string name="mic_usb">USB: %1$s</string>
+	<string name="mic_line">Line-Eingang</string>
+	<string name="mic_place_back">hinten</string>
+	<string name="mic_place_bottom">unten</string>
+	<string name="mic_place_top">oben</string>
+	<string name="mic_place_middle">Mitte</string>
+	<string name="mic_channel">Mikrofon %1$d</string>
+	<string name="mic_channel_at">Mikrofon %1$d (%2$s)</string>
+	<string name="mic_not_found">Gew&#228;hltes Mikrofon nicht gefunden, nehme den Systemstandard</string>
+	<string name="mic_now">Mikrofon: %1$s</string>
+
+	<!-- Einstellungen -->
+	<string name="cat_main">Allgemein</string>
+	<string name="organ_mode">Orgelmodus</string>
+	<string name="organ_mode_summary">F&#252;r Orgelpfeifen: Zeilen nach Fu&#223;tonlage, Mixtur- und L&#228;ngenmodus, keine Spreizung</string>
+	<string name="german_names">Deutsche Tonnamen</string>
+	<string name="german_names_on">Cis, B, H; Oktaven C&#8322; C&#8321; C c c&#185; c&#178; (a&#185; = A4)</string>
+	<string name="german_names_off">C#, A#, B; Oktaven nummeriert (A4)</string>
+	<string name="language_system">Systemsprache</string>
+	<string name="cat_audio">Audio</string>
+	<string name="audio_source">Audioquelle</string>
+	<string name="source_auto">Automatisch</string>
+	<string name="source_auto_is">Automatisch (%1$s)</string>
+	<string name="source_unprocessed">Unbearbeitet</string>
+	<string name="source_voice">Spracherkennung</string>
+	<string name="source_mic">Mikrofon (evtl. mit Rauschunterdr&#252;ckung)</string>
+	<string name="source_camcorder">Camcorder</string>
+	<string name="microphone">Mikrofon</string>
+	<string name="mic_not_connected">%1$s (nicht angeschlossen; der Systemstandard wird verwendet)</string>
+	<string name="cat_strobe">Strobe</string>
+	<string name="strobe_colors">Farben</string>
+	<string name="color_batlow">Batlow</string>
+	<string name="color_slate">Schiefer / Wei&#223;</string>
+	<string name="color_redgreen">Rot / Gr&#252;n</string>
+	<string name="color_blackwhite">Schwarz / Wei&#223;</string>
+	<string name="color_blueyellow">Blau / Gelb</string>
+	<string name="color_redblue">Rot / Blau</string>
+	<string name="harmonics">Angezeigte Teilt&#246;ne</string>
+	<string name="harmonics_summary">%1$s: je eine Strobe-Zeile, der tiefste oben (h&#246;chstens 8)</string>
+	<string name="footages">Angezeigte Fu&#223;tonlagen</string>
+	<string name="footages_summary">%1$s: je eine Strobe-Zeile, 8\' ist der Ton selbst (h&#246;chstens 8)</string>
+	<string name="cat_presets">Presets</string>
+	<string name="note_temper">12-Ton-Preset temperiert den Ton-Modus</string>
+	<string name="note_temper_summary">Hat das gew&#228;hlte Preset je einen Ton f&#252;r die 12 Halbt&#246;ne, stimmt der Ton-Modus nach dessen Abweichungen (Temperatur)</string>
+	<string name="cat_debug">Debug</string>
+	<string name="debug_rec">Debug-Aufnahmen</string>
+	<string name="debug_rec_summary">Wird der verfolgte Ton von Hand korrigiert, 7 s Mikrofonsignal als WAV speichern (zur Verbesserung der Tonerkennung). Abholen mit: adb pull /sdcard/Android/data/&lt;package&gt;/files/recordings</string>
+</resources>

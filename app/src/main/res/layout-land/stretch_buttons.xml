@@ -8,7 +8,7 @@
 	android:layout_width="fill_parent"
 	android:layout_height="1dp"
 	android:layout_weight="1"
-	android:text="stretch+"
+	android:text="@string/stretch_plus"
 	android:onClick="stretch_incr" />
     <TextView android:id="@+id/stretch_display2"
 	style="@style/Tuner.Readout"
@@ -18,20 +18,20 @@
 	style="@style/Tuner.Caption"
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content"
-	android:text="cents/octave" />
+	android:text="@string/cents_per_octave" />
     <Button
 	style="@style/Tuner.Button.Panel"
 	android:layout_width="fill_parent"
 	android:layout_height="1dp"
 	android:layout_weight="1"
-	android:text="stretch-"
+	android:text="@string/stretch_minus"
 	android:onClick="stretch_decr" />
     <Button
 	style="@style/Tuner.Button.Panel"
 	android:layout_height="1dp"
 	android:layout_width="fill_parent"
 	android:layout_weight="1"
-	android:text="reset"
+	android:text="@string/reset"
 	android:textColor="@color/warn"
 	android:onClick="reset_stretch" />
 </LinearLayout>

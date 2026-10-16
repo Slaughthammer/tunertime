@@ -3,7 +3,8 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <application android:label="${appLabel}" android:icon="@drawable/icon"
-		android:theme="@style/Tuner">
+		android:theme="@style/Tuner"
+		android:localeConfig="@xml/locales_config">
         <activity android:name="TunerTime" android:label="${appLabel}"
 		android:exported="true">
             <intent-filter>
@@ -11,12 +12,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="Settings" android:label="Settings" />
+        <activity android:name="Settings"
+		android:label="@string/title_settings" />
 	<activity android:name="PresetSelectActivity"
-		android:label="Select preset" />
+		android:label="@string/title_preset_select" />
 	<activity android:name="PresetEditActivity"
-		android:label="Edit preset" />
+		android:label="@string/title_preset_edit" />
 	<activity android:name="PresetNoteActivity"
-		android:label="Edit preset note" />
+		android:label="@string/title_preset_note" />
     </application>
-</manifest> 
+</manifest>

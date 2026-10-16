@@ -13,7 +13,7 @@
 	android:layout_marginRight="12dp"
 	android:minHeight="56dp"
 	android:textAppearance="?android:attr/textAppearanceLarge"
-	android:hint="preset name"
+	android:hint="@string/preset_name_hint"
 	android:inputType="textCapSentences"
 	android:lines="1"
 	android:singleLine="true"
@@ -27,7 +27,7 @@
 	android:padding="16dp"
 	android:textAppearance="?android:attr/textAppearanceLarge"
 	android:textColor="@color/text_muted"
-	android:text="no notes" />
+	android:text="@string/no_notes" />
     <ListView android:id="@+id/note_list"
 	android:layout_width="fill_parent"
 	android:layout_height="1dp"
@@ -42,7 +42,7 @@
 	    android:layout_height="wrap_content"
 	    android:layout_weight="1"
 	    android:minHeight="56dp"
-	    android:text="delete preset"
+	    android:text="@string/delete_preset"
 	    android:textColor="@color/warn"
 	    android:onClick="do_delete" />
 	<Button
@@ -51,7 +51,7 @@
 	    android:layout_height="wrap_content"
 	    android:layout_weight="1"
 	    android:minHeight="56dp"
-	    android:text="add note"
+	    android:text="@string/add_note"
 	    android:onClick="do_new" />
     </LinearLayout>
 </LinearLayout>

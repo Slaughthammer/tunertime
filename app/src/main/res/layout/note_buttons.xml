@@ -15,7 +15,7 @@
 	    android:layout_width="1dp"
 	    android:layout_height="fill_parent"
 	    android:layout_weight="1"
-	    android:text="semi+"
+	    android:text="@string/semi_plus"
 	    android:longClickable="true"
 	    android:onClick="semi_incr" />
 	<Button
@@ -23,14 +23,14 @@
 	    android:layout_width="1dp"
 	    android:layout_height="fill_parent"
 	    android:layout_weight="1"
-	    android:text="oct+"
+	    android:text="@string/oct_plus"
 	    android:onClick="oct_incr" />
 	<Button
 	    style="@style/Tuner.Button.Panel"
 	    android:layout_width="1dp"
 	    android:layout_height="fill_parent"
 	    android:layout_weight="1"
-	    android:text="cent+"
+	    android:text="@string/cent_plus"
 	    android:onClick="cent_incr" />
     </LinearLayout>
     <LinearLayout
@@ -58,7 +58,7 @@
 	    android:layout_width="1dp"
 	    android:layout_height="fill_parent"
 	    android:layout_weight="1"
-	    android:text="semi-"
+	    android:text="@string/semi_minus"
 	    android:longClickable="true"
 	    android:onClick="semi_decr" />
 	<Button
@@ -66,14 +66,14 @@
 	    android:layout_width="1dp"
 	    android:layout_height="fill_parent"
 	    android:layout_weight="1"
-	    android:text="oct-"
+	    android:text="@string/oct_minus"
 	    android:onClick="oct_decr" />
 	<Button
 	    style="@style/Tuner.Button.Panel"
 	    android:layout_width="1dp"
 	    android:layout_height="fill_parent"
 	    android:layout_weight="1"
-	    android:text="cent-"
+	    android:text="@string/cent_minus"
 	    android:onClick="cent_decr" />
     </LinearLayout>
 </LinearLayout>

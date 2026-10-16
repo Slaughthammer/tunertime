@@ -1,71 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="Main">
+    <PreferenceCategory android:title="@string/cat_main">
 	<CheckBoxPreference
 		android:key="organ_mode"
-		android:title="Organ mode"
-		android:summary="Tuning organ pipes: no stretch, organ-specific displays"
+		android:title="@string/organ_mode"
+		android:summary="@string/organ_mode_summary"
 		android:defaultValue="false" />
 	<CheckBoxPreference
 		android:key="german_names"
-		android:title="German note names"
-		android:summaryOn="Cis, B, H; octaves C&#8322; C&#8321; C c c&#185; c&#178; (a&#185; = A4)"
-		android:summaryOff="C#, A#, B; octaves numbered (A4)"
+		android:title="@string/german_names"
+		android:summaryOn="@string/german_names_on"
+		android:summaryOff="@string/german_names_off"
 		android:defaultValue="false" />
+	<!-- Android 13+ keeps this as the per-app language (Lang.java) -->
+	<ListPreference
+		android:key="language"
+		android:title="@string/language"
+		android:summary="%s"
+		android:entries="@array/language_name"
+		android:entryValues="@array/language_value"
+		android:defaultValue="system" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="Audio">
+    <PreferenceCategory android:title="@string/cat_audio">
 	<ListPreference
 		android:key="audio_source"
-		android:title="Audio source"
+		android:title="@string/audio_source"
 		android:summary="%s"
 		android:entries="@array/audio_source_name"
 		android:entryValues="@array/audio_source_value"
 		android:defaultValue="auto" />
 	<ListPreference
 		android:key="microphone"
-		android:title="Microphone"
+		android:title="@string/microphone"
 		android:summary="%s"
 		android:entries="@array/microphone_name"
 		android:entryValues="@array/microphone_value"
 		android:defaultValue="auto" />
     </PreferenceCategory>
     <PreferenceCategory android:key="strobe_category"
-		android:title="Strobe">
+		android:title="@string/cat_strobe">
 	<ListPreference
 		android:key="strobe_color"
-		android:title="Colors"
+		android:title="@string/strobe_colors"
 		android:summary="%s"
 		android:entries="@array/color_name"
 		android:entryValues="@array/color_value"
 		android:defaultValue="batlow" />
+	<!-- summaries: the rows chosen (Settings.java) -->
 	<MultiSelectListPreference
 		android:key="harmonics"
-		android:title="Harmonics shown"
-		android:summary="One strobe row per checked harmonic, lowest first (up to 8)"
+		android:title="@string/harmonics"
 		android:entries="@array/harmonics"
 		android:entryValues="@array/harmonics"
 		android:defaultValue="@array/harmonics_default" />
 	<!-- shown instead of "harmonics" in organ mode (Settings.java) -->
 	<MultiSelectListPreference
 		android:key="organ_footages"
-		android:title="Footages shown"
-		android:summary="Organ mode: one strobe row per checked footage, 8 ft being the note (up to 8)"
+		android:title="@string/footages"
 		android:entries="@array/footage_name"
 		android:entryValues="@array/footage_value"
 		android:defaultValue="@array/footage_default" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="Presets">
+    <PreferenceCategory android:title="@string/cat_presets">
 	<CheckBoxPreference
 		android:key="note_temper"
-		android:title="12-note preset tempers note mode"
-		android:summary="If the selected preset has one note for each of the 12 semitones, note mode tunes to its offsets"
+		android:title="@string/note_temper"
+		android:summary="@string/note_temper_summary"
 		android:defaultValue="true" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="Debug">
+    <PreferenceCategory android:title="@string/cat_debug">
 	<CheckBoxPreference
 		android:key="debug_rec"
-		android:title="Debug recordings"
-		android:summary="When you correct the followed note by hand, save 7 s of microphone input as WAV (for improving the note detection). Get them with: adb pull /sdcard/Android/data/&lt;package&gt;/files/recordings"
+		android:title="@string/debug_rec"
+		android:summary="@string/debug_rec_summary"
 		android:defaultValue="@bool/debug_rec_default" />
     </PreferenceCategory>
 </PreferenceScreen>

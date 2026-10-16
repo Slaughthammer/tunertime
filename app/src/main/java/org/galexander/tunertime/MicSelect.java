@@ -120,6 +120,15 @@ public class MicSelect {
 		return MediaRecorder.AudioSource.VOICE_RECOGNITION;
 	}
 
+		/* text in the app's language (Lang); ctx is the application
+		 * context, which has no per-activity language override */
+	private static String str(int id, Object... args) {
+		if (ctx == null) {
+			return "";
+		}
+		return Lang.res(ctx).getString(id, args);
+	}
+
 	private static void toast(final String msg) {
 		if (ui == null) {
 			return;
@@ -203,19 +212,19 @@ public class MicSelect {
 		switch (d.getType()) {
 		case AudioDeviceInfo.TYPE_BUILTIN_MIC: {
 			String place = place(d);
-			return "Built-in mic" +
-				((place == null) ? "" : (" (" + place + ")"));
+			return (place == null) ? str(R.string.mic_builtin)
+				: str(R.string.mic_builtin_at, place);
 		}
 		case AudioDeviceInfo.TYPE_WIRED_HEADSET:
-			return "Headset mic";
+			return str(R.string.mic_headset);
 		case AudioDeviceInfo.TYPE_USB_DEVICE:
 		case AudioDeviceInfo.TYPE_USB_ACCESSORY:
 		case AudioDeviceInfo.TYPE_USB_HEADSET:
-			return "USB: " + d.getProductName();
+			return str(R.string.mic_usb, "" + d.getProductName());
 		case AudioDeviceInfo.TYPE_LINE_ANALOG:
 		case AudioDeviceInfo.TYPE_LINE_DIGITAL:
 		case AudioDeviceInfo.TYPE_AUX_LINE:
-			return "Line in";
+			return str(R.string.mic_line);
 		}
 		return "" + d.getProductName();
 	}
@@ -247,7 +256,7 @@ public class MicSelect {
 		MicrophoneInfo.Coordinate3F o = m.getOrientation();
 		if (!MicrophoneInfo.ORIENTATION_UNKNOWN.equals(o) &&
 		    (o.z < -0.5f)) {
-			return "back";
+			return str(R.string.mic_place_back);
 		}
 		MicrophoneInfo.Coordinate3F p = m.getPosition();
 		if (!MicrophoneInfo.POSITION_UNKNOWN.equals(p)) {
@@ -263,11 +272,11 @@ public class MicSelect {
 			}
 			if (hi - lo > 0.02f) {
 				if (p.y - lo < (hi-lo)/3.0f) {
-					return "bottom";
+					return str(R.string.mic_place_bottom);
 				} else if (hi - p.y < (hi-lo)/3.0f) {
-					return "top";
+					return str(R.string.mic_place_top);
 				}
-				return "middle";
+				return str(R.string.mic_place_middle);
 			}
 		}
 		String desc = m.getDescription();
@@ -285,9 +294,9 @@ public class MicSelect {
 	public static String[][] mic_choices() {
 		List<String> names = new ArrayList<String>();
 		List<String> keys = new ArrayList<String>();
-		names.add("Auto (best signal)");
+		names.add(str(R.string.mic_auto));
 		keys.add("auto");
-		names.add("System default");
+		names.add(str(R.string.mic_default));
 		keys.add("default");
 		if (Build.VERSION.SDK_INT >= 23) {
 			List<AudioDeviceInfo> l = inputs();
@@ -447,7 +456,8 @@ public class MicSelect {
 	private short[] sbuf = null;
 	private final Qual[] q = { new Qual(), new Qual() };
 	private int ch = 0;			/* channel in use */
-	private String[] ch_name = { "mic 1", "mic 2" };
+	private String[] ch_name = { str(R.string.mic_channel, 1),
+				     str(R.string.mic_channel, 2) };
 	private int streak = 0;
 	private long last_switch = 0;
 
@@ -476,7 +486,7 @@ public class MicSelect {
 		    (Build.VERSION.SDK_INT >= 23)) {
 			dev = find_device(mic);
 			if (dev == null) {
-				toast("Selected microphone not found, using default");
+				toast(str(R.string.mic_not_found));
 			}
 		}
 		if (mic.equals("auto")) {
@@ -630,7 +640,8 @@ public class MicSelect {
 			}
 			for (int c = 0; c < 2; c++) {
 				if (n[c] != null) {
-					ch_name[c] = "mic " + (c+1) + " (" + n[c] + ")";
+					ch_name[c] = str(R.string.mic_channel_at,
+							 c+1, n[c]);
 				}
 			}
 		} catch (Exception e) {
@@ -723,7 +734,7 @@ public class MicSelect {
 			streak = 0;
 			last_switch = now;
 			active_name = ch_name[ch];
-			toast("Microphone: " + ch_name[ch]);
+			toast(str(R.string.mic_now, ch_name[ch]));
 		}
 	}
 
@@ -748,7 +759,7 @@ public class MicSelect {
 			if (avg > probe_before + MARGIN) {
 				c.ema = avg;
 				last_switch = now;
-				toast("Microphone: " + active_name);
+				toast(str(R.string.mic_now, active_name));
 			} else {
 				reopen(prev_i);
 				c.ema = probe_before;

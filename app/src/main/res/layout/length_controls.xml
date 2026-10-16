@@ -9,14 +9,14 @@
 	android:layout_width="1dp"
 	android:layout_height="wrap_content"
 	android:layout_weight="2"
-	android:text="open" />
+	android:text="@string/pipe_open" />
     <Button android:id="@+id/temp_minus"
 	style="@style/Tuner.Button.Panel"
 	android:layout_width="1dp"
 	android:layout_height="wrap_content"
 	android:layout_weight="1"
-	android:contentDescription="colder"
-	android:text="T-" />
+	android:contentDescription="@string/temp_colder"
+	android:text="@string/temp_minus" />
     <TextView android:id="@+id/temp_display"
 	style="@style/Tuner.Readout"
 	android:layout_width="1dp"
@@ -29,6 +29,6 @@
 	android:layout_width="1dp"
 	android:layout_height="wrap_content"
 	android:layout_weight="1"
-	android:contentDescription="warmer"
-	android:text="T+" />
+	android:contentDescription="@string/temp_warmer"
+	android:text="@string/temp_plus" />
 </LinearLayout>

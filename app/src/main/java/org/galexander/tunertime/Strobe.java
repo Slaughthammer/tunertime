@@ -140,15 +140,46 @@ public class Strobe extends Thread {
 		}
 		int focus = parms.organ_mode ? parms.focus_row() : -1;
 		int y = -(int)label_p.getFontMetrics().ascent;
-		for (int i = 0; i < labels.length; i++) {
+		String[] shown = shown_labels();
+		for (int i = 0; i < shown.length; i++) {
 			if (i == focus) {
 				draw_focus(c, i*strobe_height, strobe_height);
-				c.drawText(labels[i], 0, y, focus_p);
+				c.drawText(shown[i], 0, y, focus_p);
 			} else {
-				c.drawText(labels[i], 0, y, label_p);
+				c.drawText(shown[i], 0, y, label_p);
 			}
 			y += strobe_height;
 		}
+	}
+
+	/* the native side writes the row labels in English: " 2nd  880.0",
+	 * "  2 2/3' too high".  translated here when they change */
+	private String[] labels_src = null, labels_shown = null;
+	private String[] shown_labels() {
+		String[] src = labels;
+		if (src == labels_src) {
+			return labels_shown;
+		}
+		String high = ui.getString(R.string.row_too_high);
+		String suffix = ui.getString(R.string.ordinal_suffix);
+		String[] out = new String[src.length];
+		for (int i = 0; i < src.length; i++) {
+			String s = src[i];
+			if (s.endsWith(" too high")) {
+				s = s.substring(0, s.length()-8) + high;
+			}
+			if (suffix.length() > 0) {
+				/* " 2nd" -> " 2. ", keeping the columns */
+				s = s.replaceFirst("^( *[0-9]+)(st|nd|rd|th) ",
+						"$1" + suffix +
+						("  ".substring(Math.min(2,
+							suffix.length()))) + " ");
+			}
+			out[i] = s;
+		}
+		labels_shown = out;
+		labels_src = src;
+		return out;
 	}
 
 	/* organ mode: frames the focused row, labelled in the accent colour */
@@ -169,6 +200,7 @@ public class Strobe extends Thread {
 		c.drawRect(sw, y+sw, width-sw, y+h-sw, frame_p);
 	}
 
+	private String paused_str = null;
 	private void draw_paused(Canvas c) {
 		if (pause_p == null) {
 			pause_p = new Paint();
@@ -180,7 +212,10 @@ public class Strobe extends Thread {
 			pause_p.setAntiAlias(true);
 			pause_p.setSubpixelText(true);
 		}
-		c.drawText("paused", 0, height/2, pause_p);
+		if (paused_str == null) {
+			paused_str = ui.getString(R.string.paused);
+		}
+		c.drawText(paused_str, 0, height/2, pause_p);
 	}
 
 	/* like "A49" for A-4.  the native side sets pianoname once the

@@ -33,10 +33,15 @@ public class PresetNoteActivity extends Activity {
 	private static final int[] no_sharps = new int[]
 		{ 0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6 };
 
+	protected void attachBaseContext(android.content.Context base) {
+		super.attachBaseContext(Lang.wrap(base));
+	}
+
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		parms.init(this);
+		setTitle(R.string.title_preset_note);
 		setContentView(R.layout.preset_note);
 		pn_text = (TextView)findViewById(R.id.pn_text);
 		pn_cents = (EditText)findViewById(R.id.pn_cents);
@@ -214,11 +219,11 @@ public class PresetNoteActivity extends Activity {
 				}
 			} };
 		new AlertDialog.Builder(this)
-			.setTitle("Confirm")
-			.setMessage("Really delete \"" +
-				new note(notes.get(note_idx)).full_str + "\"?")
-			.setPositiveButton("Delete", listener)
-			.setNegativeButton("Cancel", listener)
+			.setTitle(R.string.confirm)
+			.setMessage(getString(R.string.really_delete,
+				new note(notes.get(note_idx)).full_str))
+			.setPositiveButton(R.string.delete, listener)
+			.setNegativeButton(R.string.cancel, listener)
 			.show();
 	}
 }
