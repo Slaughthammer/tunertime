@@ -22,6 +22,14 @@ public class mixture {
 		/* after a change of microphone, usable seconds ignored: the
 		 * drift blocks (jni/strobe.c) that straddle the change */
 	private static final double SWITCH_SKIP = 0.25d;
+		/* the swing (hi-lo)/(hi+lo) of the drift's amplitude over a
+		 * measurement (jni/strobe.c strobe_drift_amp) above which the
+		 * partial is taken to beat: a second pipe sounds on it
+		 * (celeste, a rank not muted), and the result is the louder
+		 * one's pitch or somewhere between.  tools/sim_organ.c: two
+		 * pipes of equal level flagged 5 of 5, single pipes about 1
+		 * false flag in 210 (the reverberant treble) */
+	public static final double BEAT_SWING = 0.7d;
 
 		/* a measurement has begun to collect.  a change of
 		 * microphone jumps the phase, so MicSelect holds its switches
@@ -36,6 +44,8 @@ public class mixture {
 	private int gen = 0;			/* Listener.buffer_gen() */
 	private double skip = 0.0d;
 	private double need = MEASURE_SECONDS;	/* for the focused row */
+	private double amp_lo = 0.0d, amp_hi = 0.0d;	/* over the measurement */
+	private boolean beating = false;	/* the last result's swing */
 
 		/* the usable seconds a measurement on the row of focus
 		 * ratio r takes */
@@ -53,6 +63,8 @@ public class mixture {
 		gen = Listener.buffer_gen();
 		skip = 0.0d;
 		need = measure_seconds(parms.focus_ratio);
+		amp_lo = amp_hi = 0.0d;
+		beating = false;
 	}
 
 	public synchronized void stop() {
@@ -69,11 +81,18 @@ public class mixture {
 		return Math.min(secs / need, 1.0d);
 	}
 
-		/* one buffer's drift of the focused row (Strobe.focus_drift).
+		/* the last measurement's partial beat (BEAT_SWING); its
+		 * result stands, this only flags it.  false while measuring */
+	public synchronized boolean beating() {
+		return beating;
+	}
+
+		/* one buffer's drift of the focused row (Strobe.focus_drift),
+		 * and the mean amplitude of its usable blocks (0 if none).
 		 * returns the partial's offset in cents once measure_seconds()
 		 * are in, which ends the measurement; NaN until then */
 	public synchronized double feed(double freq_, double cycles_,
-					double secs_) {
+					double secs_, double amp) {
 		if (!active || (freq_ <= 0.0d)) {
 			return Double.NaN;
 		}
@@ -85,6 +104,7 @@ public class mixture {
 			freq = freq_;
 			cycles = 0.0d;
 			secs = 0.0d;
+			amp_lo = amp_hi = 0.0d;
 			skip = SWITCH_SKIP;
 			busy = false;
 			return Double.NaN;
@@ -99,15 +119,26 @@ public class mixture {
 			cycles = 0.0d;
 			secs = 0.0d;
 			need = measure_seconds(parms.focus_ratio);
+			amp_lo = amp_hi = 0.0d;
 		}
 		cycles += cycles_;
 		secs += secs_;
+		if (amp > 0.0d) {
+			if ((amp_lo == 0.0d) || (amp < amp_lo)) {
+				amp_lo = amp;
+			}
+			if (amp > amp_hi) {
+				amp_hi = amp;
+			}
+		}
 		busy = (secs > 0.0d);
 		if (secs < need) {
 			return Double.NaN;
 		}
 		active = false;
 		busy = false;
+		beating = (amp_hi > 0.0d) &&
+			((amp_hi - amp_lo)/(amp_hi + amp_lo) > BEAT_SWING);
 		return 1200.0d * Math.log((freq + cycles/secs)/freq) /
 				Math.log(2.0d);
 	}

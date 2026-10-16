@@ -243,4 +243,8 @@
 	<string name="cat_debug">Debug</string>
 	<string name="debug_rec">Debug recordings</string>
 	<string name="debug_rec_summary">When you correct the followed note by hand, save 7 s of microphone input as WAV (for improving the note detection). Get them with: adb pull /sdcard/Android/data/&lt;package&gt;/files/recordings</string>
+
+	<!-- mixture mode: the measured partial's amplitude swung as when
+	     two pipes beat; shown under "measured on ..." -->
+	<string name="mixture_beating">beating: another pipe on this partial?</string>
 </resources>

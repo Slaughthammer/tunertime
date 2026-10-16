@@ -234,4 +234,7 @@
 	<string name="cat_debug">Debug</string>
 	<string name="debug_rec">Debug-Aufnahmen</string>
 	<string name="debug_rec_summary">Wird der verfolgte Ton von Hand korrigiert, 7 s Mikrofonsignal als WAV speichern (zur Verbesserung der Tonerkennung). Abholen mit: adb pull /sdcard/Android/data/&lt;package&gt;/files/recordings</string>
+
+	<!-- Mixturmodus: Schwebung im gemessenen Teilton -->
+	<string name="mixture_beating">Schwebung: zweite Pfeife auf diesem Teilton?</string>
 </resources>

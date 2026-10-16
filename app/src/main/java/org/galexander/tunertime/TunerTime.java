@@ -747,7 +747,8 @@ public class TunerTime extends Activity
 	}
 
 	/* from the strobe thread, after each buffer while a row is focused */
-	public void focus_drift(double freq, double cycles, double secs) {
+	public void focus_drift(double freq, double cycles, double secs,
+				double amp) {
 		if (parms.length_mode) {
 			/* shown with the next pitch estimate (on_pitch) */
 			length.add_drift(freq, cycles, secs);
@@ -755,7 +756,7 @@ public class TunerTime extends Activity
 		if (!mix.measuring()) {
 			return;
 		}
-		final double cents = mix.feed(freq, cycles, secs);
+		final double cents = mix.feed(freq, cycles, secs, amp);
 		runOnUiThread(new Runnable() {
 			public void run() {
 				if (!parms.mixture_mode) {
@@ -827,9 +828,14 @@ public class TunerTime extends Activity
 		} else if (parms.mixture_ref > 0.0d) {
 			/* the rank the target was taken from, which need not
 			 * be the row focused now (the rank being tuned) */
-			mixture_status.setText(getString(
-				R.string.mixture_measured,
-				parms.footage_str(parms.mixture_ref)));
+			String s = getString(R.string.mixture_measured,
+					parms.footage_str(parms.mixture_ref));
+			if (mix.beating()) {
+				/* the result stands, but may be the louder
+				 * of two pipes or between them */
+				s += "\n" + getString(R.string.mixture_beating);
+			}
+			mixture_status.setText(s);
 		} else if (f != null) {
 			mixture_status.setText(R.string.mixture_tap_measure);
 		} else {

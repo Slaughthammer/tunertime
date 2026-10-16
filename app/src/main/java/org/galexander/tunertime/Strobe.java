@@ -72,8 +72,10 @@ public class Strobe extends Thread {
 	private volatile String focus_str = null;
 	private volatile double focus_str_ratio = 0.0d;	/* focus_str is for */
 
+	/* amp: the mean amplitude of the buffer's usable drift blocks, 0 if
+	 * none (jni strobe_drift_amp), for mixture mode's beat warning */
 	public void focus_drift(double freq, double cycles, double secs,
-				double buf_secs) {
+				double buf_secs, double amp) {
 		if (freq != focus_freq) {
 			focus_freq = freq;
 			focus_cycles = 0.0d;
@@ -94,7 +96,7 @@ public class Strobe extends Thread {
 		}
 		focus_str = s;
 		focus_str_ratio = parms.focus_ratio;
-		ui.focus_drift(freq, cycles, secs);
+		ui.focus_drift(freq, cycles, secs, amp);
 	}
 
 	public void toggle_pause() {
