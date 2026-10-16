@@ -46,6 +46,11 @@ public class parms {
 		 * divided by the note's 8' fundamental, e.g. 2.0 for 4',
 		 * 0.5 for 16'.  0 = none.  pitch detection prefers it */
 	static public volatile double focus_ratio = 0.0d;
+		/* length mode (organ mode, instead of FFT): how much the pipe
+		 * is too long or short.  keeps the detector running natively */
+	static public volatile boolean length_mode = false;
+	static public boolean pipe_stopped = false;	/* gedackt */
+	static public int temperature = 18;		/* degrees C */
 
 		/* stretch in effect, tenths of a cent per octave; organs are
 		 * tuned without stretch */
@@ -102,6 +107,9 @@ public class parms {
 		note_temper = prefs.getBoolean("note_temper", true);
 		auto_note = prefs.getBoolean("auto_note", false);
 		organ_mode = prefs.getBoolean("organ_mode", false);
+		length_mode = prefs.getBoolean("length_mode", false);
+		pipe_stopped = prefs.getBoolean("pipe_stopped", false);
+		temperature = prefs.getInt("temperature", 18);
 		load_harmonics();
 		strobe_color = prefs.getString("strobe_color", "batlow");
 		fft_mode = prefs.getBoolean("fft_mode", false);
@@ -172,6 +180,9 @@ public class parms {
 		editor.putBoolean("fft_grid_freq", fft_grid_freq);
 		editor.putBoolean("preset_mode", preset_mode);
 		editor.putBoolean("auto_note", auto_note);
+		editor.putBoolean("length_mode", length_mode);
+		editor.putBoolean("pipe_stopped", pipe_stopped);
+		editor.putInt("temperature", temperature);
 		editor.putInt("preset_id", preset_id);
 		editor.putInt("preset_note", preset_note);
 		editor.putInt("preset_oct", preset_oct);

@@ -56,6 +56,9 @@ public class TunerTime extends Activity
 	private View fft_mode_buttons;
 	private Button tone_button;
 	private Button auto_button;
+	private Button mode_button;
+	private View length_panel;
+	private pipelength length;
 
 	private PowerManager.WakeLock wakelock = null;
 
@@ -160,8 +163,14 @@ public class TunerTime extends Activity
 				auto_off();
 				return true;
 			} });
+		mode_button = (Button)strobe_mode_buttons.findViewById(
+				R.id.mode_button);
 		fft_mode_buttons = fl8r.inflate(
 				R.layout.fft_mode, mode_holder, false);
+
+		length_panel = fl8r.inflate(
+				R.layout.length_panel, surface_frame, false);
+		length = new pipelength(this, length_panel);
 	}
 
 	public void onStart() {
@@ -172,6 +181,11 @@ public class TunerTime extends Activity
 		wakelock.acquire();
 		stop_strobe();
 		parms.load();
+		if (parms.organ_mode) {
+			parms.fft_mode = false;	/* length mode replaces it */
+		} else {
+			parms.length_mode = false;
+		}
 		if (parms.fft_mode) {
 			set_mode(fft_buttons, true);
 		} else {
@@ -248,10 +262,7 @@ public class TunerTime extends Activity
 		buttons_holder.removeAllViews();
 		buttons_holder.addView(buttons);
 		parms.fft_mode = fft_mode_;
-		surface_frame.removeView(strobe_buttons);
-		if (!parms.fft_mode) {
-			surface_frame.addView(strobe_buttons);
-		}
+		place_strobe_extras();
 		mode_holder.removeAllViews();
 		mode_holder.addView(parms.fft_mode ? fft_mode_buttons
 						   : strobe_mode_buttons);
@@ -263,7 +274,30 @@ public class TunerTime extends Activity
 	}
 
 
+	/* below the strobes: the length readout (length mode), then the
+	 * strobe-mode tab bar */
+	private void place_strobe_extras() {
+		surface_frame.removeView(length_panel);
+		surface_frame.removeView(strobe_buttons);
+		if (!parms.fft_mode) {
+			if (parms.length_mode) {
+				surface_frame.addView(length_panel);
+			}
+			surface_frame.addView(strobe_buttons);
+		}
+		mode_button.setText(!parms.organ_mode ? "FFT" :
+				parms.length_mode ? "strobe" : "length");
+	}
+
 	public void do_mode(View v) {
+		if (parms.organ_mode) {
+			/* organ mode toggles length mode instead of FFT */
+			parms.length_mode = !parms.length_mode;
+			length.clear();
+			place_strobe_extras();
+			update_status();
+			return;
+		}
 		if (parms.fft_mode) {
 			set_mode(note_buttons, false);
 		} else {
@@ -312,6 +346,9 @@ public class TunerTime extends Activity
 	 * row agree; silence holds the current note.  the cents offset set
 	 * by hand carries over to the new note. */
 	private void on_pitch(double hz) {
+		if (parms.length_mode && !ToneGenerator.playing) {
+			length.add(hz);
+		}
 		if (!parms.auto_note || parms.preset_mode || parms.fft_mode ||
 		    ToneGenerator.playing || (hz <= 0.0)) {
 			det_count = 0;
@@ -607,6 +644,9 @@ public class TunerTime extends Activity
 			auto_button.setTextColor(getResources().getColor(
 					parms.preset_mode ? R.color.outline
 							  : R.color.text));
+		}
+		if (parms.length_mode) {
+			length.update();
 		}
 	}
 

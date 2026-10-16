@@ -17,7 +17,7 @@
 	android:text="tone"
 	android:textAppearance="?android:attr/textAppearanceMedium"
 	android:onClick="do_tone" />
-    <Button
+    <Button android:id="@+id/mode_button"
 	android:layout_width="1dp"
 	android:layout_height="fill_parent"
 	android:layout_weight="1"

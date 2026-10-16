@@ -41,6 +41,7 @@ static jfieldID fid_st_paused;
 static jfieldID fid_p_strobe_cents;
 static jfieldID fid_p_num_strobes;
 static jfieldID fid_p_auto_note;
+static jfieldID fid_p_length_mode;
 static jfieldID fid_p_harm_mult;
 static jfieldID fid_p_strobe_color;
 static jfieldID fid_p_fft_mode;
@@ -294,6 +295,7 @@ jni_init(JNIEnv *env_)
 
 	STFIELD(p_strobe_cents, parms, "strobe_cents", "I")
 	STFIELD(p_auto_note, parms, "auto_note", "Z")
+	STFIELD(p_length_mode, parms, "length_mode", "Z")
 	STFIELD(p_num_strobes, parms, "num_strobes", "I")
 	STFIELD(p_harm_mult, parms, "harm_mult", "[I")
 	STFIELD(p_strobe_color, parms, "strobe_color", "Ljava/lang/String;")
@@ -461,10 +463,12 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 			return;
 		}
 
-		/* auto note detection: analysed here, outside the critical
-		 * region below, and handed to the UI as a plain call */
+		/* auto note detection (and length mode, which measures the
+		 * pitch): analysed here, outside the critical region below,
+		 * and handed to the UI as a plain call */
 		if ((snd_buflen > 0) && !fft_mode &&
-		    (*env)->GetStaticBooleanField(env, cl_parms, fid_p_auto_note) &&
+		    ((*env)->GetStaticBooleanField(env, cl_parms, fid_p_auto_note) ||
+		     (*env)->GetStaticBooleanField(env, cl_parms, fid_p_length_mode)) &&
 		    !(*env)->GetBooleanField(env, this, fid_st_paused)) {
 			double hz, conf;
 			if (pitch_feed(snd_buf, snd_buflen, &hz, &conf)) {
