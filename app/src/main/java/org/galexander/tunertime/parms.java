@@ -19,6 +19,8 @@ public class parms {
 	static public boolean note_temper = true;
 		/* auto note detection is following the input (read natively) */
 	static public volatile boolean auto_note = false;
+		/* auto is on but locked to the note (not following) */
+	static public boolean auto_locked = false;
 	static public final int MAX_STROBES = 8;	/* matches jni/interface.h */
 	static public volatile int num_strobes = 5;
 		/* harmonic multiplier per strobe row, ascending.  in organ
@@ -163,6 +165,8 @@ public class parms {
 		note_cents = prefs.getInt("note_cents10", strobe_cents);
 		note_temper = prefs.getBoolean("note_temper", true);
 		auto_note = prefs.getBoolean("auto_note", false);
+		auto_locked = !auto_note &&
+				prefs.getBoolean("auto_locked", false);
 		organ_mode = prefs.getBoolean("organ_mode", false);
 		length_mode = prefs.getBoolean("length_mode", false);
 		pipe_stopped = prefs.getBoolean("pipe_stopped", false);
@@ -172,6 +176,8 @@ public class parms {
 		mixture_mode = organ_mode &&
 				prefs.getBoolean("mixture_mode", false);
 		mixture_cents = prefs.getInt("mixture_cents10", strobe_cents);
+		/* TunerTime.organ_resume() drops it if the row is not shown */
+		focus_ratio = prefs.getFloat("focus_ratio", 0.0f);
 		if (organ_mode) {
 			load_rows("organ_footages", FOOTAGE_DEFAULT,
 					64*FOOTAGE_DIV);	/* 1/8' */
@@ -270,7 +276,12 @@ public class parms {
 		editor.putInt("note_cents10", note_cents);
 		editor.putBoolean("mixture_mode", mixture_mode);
 		editor.putInt("mixture_cents10", mixture_cents);
-		editor.putBoolean("fft_mode", fft_mode);
+		/* FFT mode belongs to the normal tuner and length mode to
+		 * organ mode (TunerTime.onResume): each is kept while the
+		 * other mode is on, for when it is turned back */
+		if (!organ_mode || !prefs.contains("fft_mode")) {
+			editor.putBoolean("fft_mode", fft_mode);
+		}
 		editor.putInt("fft_size", fft_size);
 		editor.putInt("fft_width", fft_width);
 		editor.putInt("fft_height", fft_height);
@@ -279,7 +290,12 @@ public class parms {
 		editor.putBoolean("fft_grid_freq", fft_grid_freq);
 		editor.putBoolean("preset_mode", preset_mode);
 		editor.putBoolean("auto_note", auto_note);
-		editor.putBoolean("length_mode", length_mode);
+		editor.putBoolean("auto_locked", auto_locked);
+		if (organ_mode) {
+			editor.putBoolean("length_mode", length_mode);
+		}
+		/* float holds the footage ratios (multiples of 1/4) exactly */
+		editor.putFloat("focus_ratio", (float)focus_ratio);
 		editor.putBoolean("pipe_stopped", pipe_stopped);
 		editor.putInt("temperature", temperature);
 		editor.putInt("preset_id", preset_id);

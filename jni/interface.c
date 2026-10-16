@@ -457,6 +457,14 @@ check_parms(jobject this)
 	return 1;
 }
 
+/* Strobe.organ_max_freq(): rows above this fraction of the sample rate are
+ * left blank in organ mode, and so can't be focused */
+JNIEXPORT jdouble JNICALL
+Java_org_galexander_tunertime_Strobe_organ_1max_1freq(JNIEnv *env_, jclass cl)
+{
+	return ORGAN_MAX_FREQ;
+}
+
 /* This is the entry point from the Java code...it is a loop that checks for
  * thread state changes, reads audio, then writes to screen. */
 JNIEXPORT void JNICALL

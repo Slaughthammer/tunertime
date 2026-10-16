@@ -78,11 +78,11 @@
 	<string name="temp_colder">Lufttemperatur senken</string>
 	<string name="temp_warmer">Lufttemperatur erh&#246;hen</string>
 	<string name="length_listening">warte auf Ton&#8230;</string>
-	<string name="length_target">Soll %1$s Hz</string>
-	<string name="length_in_tune">0.0 mm: stimmt</string>
-	<string name="length_too_long">%1$s mm zu lang</string>
-	<string name="length_too_short">%1$s mm zu kurz</string>
+	<string name="length_in_tune">0.0 mm\nstimmt</string>
+	<string name="length_too_long">%1$s mm\nzu lang: abschneiden</string>
+	<string name="length_too_short">%1$s mm\nzu kurz: anl&#228;ngen</string>
 	<string name="length_held">%1$s (gehalten)</string>
+	<string name="length_unclear">unklar</string>
 
 	<!-- auf dem Strobe -->
 	<string name="paused">Pause</string>
@@ -92,6 +92,7 @@
 
 	<!-- Meldungen und Dialoge -->
 	<string name="toast_auto">Auto: Tippen fixiert, Halten schaltet aus</string>
+	<string name="toast_row_too_high">Diese Zeile ist f&#252;r die Abtastrate zu hoch</string>
 	<string name="follow_as_detected">Folgen: T&#246;ne wie erkannt</string>
 	<string name="follow_shift_oct">Folgen: %1$s%2$d Okt. gegen&#252;ber erkannt (Auto halten hebt es auf)</string>
 	<string name="follow_shift_semi">Folgen: %1$s%2$d Halbt&#246;ne gegen&#252;ber erkannt (Auto halten hebt es auf)</string>
@@ -190,6 +191,8 @@
 	<string name="mic_channel_at">Mikrofon %1$d (%2$s)</string>
 	<string name="mic_not_found">Gew&#228;hltes Mikrofon nicht gefunden, nehme den Systemstandard</string>
 	<string name="mic_now">Mikrofon: %1$s</string>
+	<string name="mic_reopen_default">Mikrofon lie&#223; sich nicht wieder &#246;ffnen, nehme das Standardmikrofon</string>
+	<string name="mic_reopen_failed">Mikrofon lie&#223; sich nicht wieder &#246;ffnen</string>
 
 	<!-- Einstellungen -->
 	<string name="cat_main">Allgemein</string>

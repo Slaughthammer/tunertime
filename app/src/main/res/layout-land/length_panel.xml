@@ -5,23 +5,13 @@
     android:orientation="horizontal"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
-    <LinearLayout
+    <TextView android:id="@+id/length_display"
+	style="@style/Tuner.Readout"
 	android:layout_width="1dp"
 	android:layout_height="wrap_content"
 	android:layout_weight="1"
 	android:layout_gravity="center_vertical"
-	android:orientation="vertical">
-	<TextView android:id="@+id/length_display"
-	    style="@style/Tuner.Readout"
-	    android:layout_width="fill_parent"
-	    android:layout_height="wrap_content" />
-	<TextView android:id="@+id/length_detail_display"
-	    style="@style/Tuner.Caption"
-	    android:layout_width="fill_parent"
-	    android:layout_height="wrap_content"
-	    android:maxLines="2"
-	    android:fontFamily="monospace" />
-    </LinearLayout>
+	android:maxLines="2" />
     <FrameLayout
 	android:layout_width="1dp"
 	android:layout_height="wrap_content"

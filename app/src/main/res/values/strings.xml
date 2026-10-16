@@ -82,11 +82,11 @@
 	<string name="temp_colder">air temperature down</string>
 	<string name="temp_warmer">air temperature up</string>
 	<string name="length_listening">listening&#8230;</string>
-	<string name="length_target">target %1$s Hz</string>
-	<string name="length_in_tune">0.0 mm: in tune</string>
-	<string name="length_too_long">%1$s mm too long</string>
-	<string name="length_too_short">%1$s mm too short</string>
+	<string name="length_in_tune">0.0 mm\nin tune</string>
+	<string name="length_too_long">%1$s mm\ntoo long: cut off</string>
+	<string name="length_too_short">%1$s mm\ntoo short: lengthen</string>
 	<string name="length_held">%1$s (held)</string>
+	<string name="length_unclear">unclear</string>
 
 	<!-- drawn on the strobe -->
 	<string name="paused">paused</string>
@@ -97,6 +97,7 @@
 
 	<!-- toasts and dialogs on the main screen -->
 	<string name="toast_auto">auto: tap to lock, hold to turn off</string>
+	<string name="toast_row_too_high">This row is too high for the sample rate</string>
 	<string name="follow_as_detected">follow: notes as detected</string>
 	<string name="follow_shift_oct">follow: %1$s%2$d oct from detected (hold auto to clear)</string>
 	<string name="follow_shift_semi">follow: %1$s%2$d semitones from detected (hold auto to clear)</string>
@@ -195,6 +196,8 @@
 	<string name="mic_channel_at">mic %1$d (%2$s)</string>
 	<string name="mic_not_found">Selected microphone not found, using the default</string>
 	<string name="mic_now">Microphone: %1$s</string>
+	<string name="mic_reopen_default">Microphone could not be reopened, using the default microphone</string>
+	<string name="mic_reopen_failed">Microphone could not be reopened</string>
 
 	<!-- Settings -->
 	<string name="cat_main">Main</string>

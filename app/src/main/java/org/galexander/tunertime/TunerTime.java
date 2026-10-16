@@ -339,8 +339,8 @@ public class TunerTime extends Activity
 	}
 
 	/* auto note detection: off -> follow; then tap toggles follow/lock,
-	 * long press turns it off.  only note mode follows. */
-	private boolean auto_locked = false;
+	 * long press turns it off.  only note mode follows.  the state is
+	 * parms.auto_note and parms.auto_locked, kept across rotation */
 	private int det_semi = Integer.MIN_VALUE, det_count = 0;
 	private static final int DET_AGREE = 3;	/* estimates in a row */
 
@@ -367,7 +367,10 @@ public class TunerTime extends Activity
 	private Toast shift_toast = null;
 
 	public void do_auto(View v) {
-		if (!parms.auto_note && !auto_locked) {
+		if (!auto_applies()) {
+			return;
+		}
+		if (!parms.auto_note && !parms.auto_locked) {
 			parms.auto_note = true;
 			follow_shift = 0;
 			det_stable = Integer.MIN_VALUE;
@@ -375,10 +378,10 @@ public class TunerTime extends Activity
 					Toast.LENGTH_SHORT).show();
 		} else if (parms.auto_note) {
 			parms.auto_note = false;	/* lock */
-			auto_locked = true;
+			parms.auto_locked = true;
 		} else {
 			parms.auto_note = true;		/* unlock */
-			auto_locked = false;
+			parms.auto_locked = false;
 			last_heard = SystemClock.uptimeMillis();
 		}
 		det_count = 0;
@@ -387,11 +390,20 @@ public class TunerTime extends Activity
 
 	private void auto_off() {
 		parms.auto_note = false;
-		auto_locked = false;
+		parms.auto_locked = false;
 		det_count = 0;
 		follow_shift = 0;
 		det_stable = Integer.MIN_VALUE;
 		update_status();
+	}
+
+	/* follow moves note_cents, which only note mode shows: preset mode
+	 * steps through its notes, and mixture mode tunes to mixture_cents.
+	 * elsewhere the button is disabled and auto_note is kept as it is,
+	 * so following resumes when going back to note mode */
+	private boolean auto_applies() {
+		return !parms.preset_mode && !parms.mixture_mode &&
+			!parms.fft_mode;
 	}
 
 	/* from the strobe thread */
@@ -418,7 +430,7 @@ public class TunerTime extends Activity
 			follow_shift = 0;
 			show_shift();
 		}
-		if (!parms.auto_note || parms.preset_mode || parms.fft_mode ||
+		if (!parms.auto_note || !auto_applies() ||
 		    ToneGenerator.playing || (hz <= 0.0)) {
 			det_count = 0;
 			return;
@@ -451,7 +463,7 @@ public class TunerTime extends Activity
 
 	/* the user moved the note from semitone 'from' to 'to' by hand */
 	private void user_moved_note(int from, int to) {
-		if (!parms.auto_note || parms.preset_mode || parms.fft_mode) {
+		if (!parms.auto_note || !auto_applies()) {
 			return;
 		}
 		long now = SystemClock.uptimeMillis();
@@ -641,6 +653,12 @@ public class TunerTime extends Activity
 	}
 
 	public void mixture_measure(View v) {
+		int fr = parms.focus_row();
+		if ((fr >= 0) && Strobe.row_too_high(this, fr)) {
+			/* the target moved up since it was focused */
+			too_high_toast();
+			parms.focus_ratio = 0.0d;
+		}
 		if (parms.focus_row() < 0) {
 			/* nothing focused: the 8' row, else the lowest */
 			int i;
@@ -667,6 +685,10 @@ public class TunerTime extends Activity
 
 	/* from the strobe thread, after each buffer while a row is focused */
 	public void focus_drift(double freq, double cycles, double secs) {
+		if (parms.length_mode) {
+			/* shown with the next pitch estimate (on_pitch) */
+			length.add_drift(freq, cycles, secs);
+		}
 		if (!mix.measuring()) {
 			return;
 		}
@@ -699,6 +721,11 @@ public class TunerTime extends Activity
 		}
 		int row = range_limit((y*n)/h, 0, n-1);
 		double r = parms.row_ratio(row);
+		if ((parms.focus_ratio != r) && Strobe.row_too_high(this, row)) {
+			/* a blank row: no drift to show or measure */
+			too_high_toast();
+			return;
+		}
 		parms.focus_ratio = (parms.focus_ratio == r) ? 0.0d : r;
 		if (parms.focus_ratio == 0.0d) {
 			mix.stop();
@@ -706,6 +733,11 @@ public class TunerTime extends Activity
 			mix.start();		/* measure the new row */
 		}
 		update_status();
+	}
+
+	private void too_high_toast() {
+		Toast.makeText(this, R.string.toast_row_too_high,
+				Toast.LENGTH_SHORT).show();
 	}
 
 	private void update_mixture_status() {
@@ -879,20 +911,20 @@ public class TunerTime extends Activity
 		tone_button.setTextColor(getResources().getColor(
 			ToneGenerator.playing ? R.color.accent : R.color.text));
 
-		auto_button.setEnabled(!parms.preset_mode);
+		auto_button.setEnabled(auto_applies());
 		if (parms.auto_note) {
 			auto_button.setText(R.string.auto_follow);
 			auto_button.setTextColor(getResources().getColor(
 					R.color.accent));
-		} else if (auto_locked) {
+		} else if (parms.auto_locked) {
 			auto_button.setText(R.string.auto_locked);
 			auto_button.setTextColor(getResources().getColor(
 					R.color.warn));
 		} else {
 			auto_button.setText(R.string.auto);
 			auto_button.setTextColor(getResources().getColor(
-					parms.preset_mode ? R.color.outline
-							  : R.color.text));
+					!auto_applies() ? R.color.outline
+							: R.color.text));
 		}
 		if (parms.length_mode) {
 			length.update();
