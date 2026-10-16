@@ -6,6 +6,13 @@
 		android:title="Organ mode"
 		android:summary="Tuning organ pipes: no stretch, organ-specific displays"
 		android:defaultValue="false" />
+	<ListPreference
+		android:key="note_names"
+		android:title="Note names"
+		android:summary="%s"
+		android:entries="@array/note_names_name"
+		android:entryValues="@array/note_names_value"
+		android:defaultValue="english" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Strobe">
 	<ListPreference

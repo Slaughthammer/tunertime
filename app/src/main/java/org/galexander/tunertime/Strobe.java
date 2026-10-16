@@ -123,10 +123,22 @@ public class Strobe extends Thread {
 		c.drawText("paused", 0, height/2, pause_p);
 	}
 
-	/* like "A49" for A-4 */
+	/* like "A49" for A-4.  the native side sets pianoname once the
+	 * strobe is set up, but the text is formatted here so that it
+	 * follows the note-names setting */
+	private int pn_cents = -1;
+	private String pn_names = null;
+	private String pn_str = null;
 	private void draw_pianoname(Canvas c) {
 		if (parms.fft_mode || (pianoname == null)) {
 			return;
+		}
+		int cents = parms.strobe_cents;
+		String names = parms.note_names;
+		if ((cents != pn_cents) || !names.equals(pn_names)) {
+			pn_str = note.piano_name(cents);
+			pn_cents = cents;
+			pn_names = names;
 		}
 		if (pianoname_p == null) {
 			pianoname_p = new Paint();
@@ -143,7 +155,7 @@ public class Strobe extends Thread {
 			/* share the baseline of the first label */
 			y = Math.max(y, -(int)label_p.getFontMetrics().ascent);
 		}
-		c.drawText(pianoname, width-1, y, pianoname_p);
+		c.drawText(pn_str, width-1, y, pianoname_p);
 	}
 
 	private void draw_all(Canvas c, int[] bitmap, int w, int h) {
