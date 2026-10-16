@@ -20,6 +20,9 @@ import java.util.Arrays;
  * 0.7 Hz at a = 440, per degree), and the tuner allows for that by
  * hand through the A frequency, as decided with the organ tuner: no
  * automatic temperature compensation anywhere.
+ * Stopped pipes get the same "too long: cut off / too short: lengthen"
+ * wording as open ones (also decided with the tuner): length mode is for
+ * setting up a pipe's range, not for fine tuning at the cap.
  *
  * With a strobe row focused, the estimate is that row's drift over the last
  * WINDOW ms that had sound (Strobe.focus_drift): it follows exactly the
