@@ -3,7 +3,6 @@ package org.galexander.tunertime;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.graphics.LightingColorFilter;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -109,16 +108,9 @@ public class PresetNoteActivity extends Activity {
 		notes = null;
 	}
 
-		/* selected button: surface tinted toward the accent blue;
-		 * the rest keep the plain button surface */
-	private final static LightingColorFilter brightf =
-			new LightingColorFilter(0x888888, 0x1a3a7a);
+		/* selected button: accent outline (drawable/mode_button) */
 	private void set_brightness(View v, boolean bright) {
-		if (bright) {
-			v.getBackground().setColorFilter(brightf);
-		} else {
-			v.getBackground().clearColorFilter();
-		}
+		v.setSelected(bright);
 	}
 
 	private void update() {

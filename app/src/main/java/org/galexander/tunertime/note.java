@@ -7,6 +7,7 @@ public class note {
 	public int cents;		/* tenths of a cent (preset.UNITS_PER_CENT) */
 	public String cents_str;
 	public int octave;
+	public String name_oct;	/* with the octave: "F#4", "fis'" */
 	public String full_str;
 
 	private static final String NOTE_NAMES[] = new String[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
@@ -28,9 +29,11 @@ public class note {
 
 		if (helmholtz()) {
 			note_str = helmholtz(note_idx, octave);
+			name_oct = note_str;
 			full_str = note_str + " " + cents_str;
 		} else {
 			note_str = class_name(note_idx);
+			name_oct = note_str + octave;
 			full_str = note_str + "-" + octave + " " + cents_str;
 		}
 	}

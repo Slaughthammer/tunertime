@@ -4,42 +4,34 @@
     android:layout_height="fill_parent"
     android:layout_width="fill_parent">
     <Button
+	style="@style/Tuner.Button.Panel"
 	android:layout_width="fill_parent"
 	android:layout_height="1dp"
 	android:layout_weight="1"
 	android:text="stretch+"
-	android:textAppearance="?android:attr/textAppearanceMedium"
 	android:onClick="stretch_incr" />
     <TextView android:id="@+id/stretch_display2"
+	style="@style/Tuner.Readout"
 	android:layout_width="fill_parent"
-	android:layout_height="wrap_content"
-	android:gravity="center"
-	android:lines="1"
-	android:singleLine="true"
-	android:textAppearance="?android:attr/textAppearanceLarge"
-	android:textColor="@color/text" />
+	android:layout_height="wrap_content" />
     <TextView
+	style="@style/Tuner.Caption"
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content"
-	android:gravity="center"
-	android:text="cents/octave"
-	android:lines="1"
-	android:singleLine="true"
-	android:textAppearance="?android:attr/textAppearanceSmall"
-	android:textColor="@color/text_muted" />
+	android:text="cents/octave" />
     <Button
+	style="@style/Tuner.Button.Panel"
 	android:layout_width="fill_parent"
 	android:layout_height="1dp"
 	android:layout_weight="1"
 	android:text="stretch-"
-	android:textAppearance="?android:attr/textAppearanceMedium"
 	android:onClick="stretch_decr" />
     <Button
+	style="@style/Tuner.Button.Panel"
 	android:layout_height="1dp"
 	android:layout_width="fill_parent"
 	android:layout_weight="1"
 	android:text="reset"
-	android:textAppearance="?android:attr/textAppearanceMedium"
 	android:textColor="@color/warn"
 	android:onClick="reset_stretch" />
 </LinearLayout>

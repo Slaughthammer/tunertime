@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- length mode readout, added below the strobes in organ mode.  side by
+     side here, to leave the strobes more of the little height there is -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
+    <LinearLayout
+	android:layout_width="1dp"
+	android:layout_height="wrap_content"
+	android:layout_weight="1"
+	android:layout_gravity="center_vertical"
+	android:orientation="vertical">
+	<TextView android:id="@+id/length_display"
+	    style="@style/Tuner.Readout"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content" />
+	<TextView android:id="@+id/length_detail_display"
+	    style="@style/Tuner.Caption"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:maxLines="2"
+	    android:fontFamily="monospace" />
+    </LinearLayout>
+    <FrameLayout
+	android:layout_width="1dp"
+	android:layout_height="wrap_content"
+	android:layout_weight="1"
+	android:layout_gravity="center_vertical">
+	<include layout="@layout/length_controls" />
+    </FrameLayout>
+</LinearLayout>

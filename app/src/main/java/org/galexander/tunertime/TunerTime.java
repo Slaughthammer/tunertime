@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.LightingColorFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -39,7 +38,6 @@ public class TunerTime extends Activity
 	private TextView stretch_display;
 	private View note_buttons;
 	private TextView note_semi_display;
-	private TextView note_oct_display;
 	private TextView note_cent_display;
 	private View afreq_buttons;
 	private TextView afreq_center_display;
@@ -51,7 +49,6 @@ public class TunerTime extends Activity
 	private final mixture mix = new mixture();
 	private View preset_buttons;
 	private TextView preset_semi_display;
-	private TextView preset_oct_display;
 	private View fft_buttons;
 	private TextView N_display;
 	private Button grid_button;
@@ -95,8 +92,6 @@ public class TunerTime extends Activity
 				R.layout.note_buttons, buttons_holder, false);
 		note_semi_display = (TextView)note_buttons.findViewById(
 				R.id.semi_display);
-		note_oct_display = (TextView)note_buttons.findViewById(
-				R.id.oct_display);
 		note_cent_display = (TextView)note_buttons.findViewById(
 				R.id.cent_display);
 		((Button)note_buttons.findViewById(R.id.semi_plus))
@@ -137,8 +132,6 @@ public class TunerTime extends Activity
 				R.layout.preset_buttons, buttons_holder, false);
 		preset_semi_display = (TextView)preset_buttons.findViewById(
 				R.id.preset_semi_display);
-		preset_oct_display = (TextView)preset_buttons.findViewById(
-				R.id.preset_oct_display);
 
 		fft_buttons = fl8r.inflate(
 				R.layout.fft_buttons, buttons_holder, false);
@@ -225,12 +218,12 @@ public class TunerTime extends Activity
 		super.onPause();
 	}
 
+	/* the tab of the current mode is shown selected (underlined) */
 	private void darken_mode(Button b) {
-		b.getBackground().setColorFilter(
-                                new LightingColorFilter(0x88888888, 0));
+		b.setSelected(false);
 	}
 	private void brighten_mode(Button b) {
-		b.getBackground().clearColorFilter();
+		b.setSelected(true);
 	}
 	private void set_mode(View buttons, boolean fft_mode_) {
 		String title = null;
@@ -305,8 +298,10 @@ public class TunerTime extends Activity
 			}
 			surface_frame.addView(strobe_buttons);
 		}
-		mode_button.setText(!parms.organ_mode ? "FFT" :
-				parms.length_mode ? "strobe" : "length");
+		/* in organ mode a toggle, highlighted while the length
+		 * panel is shown */
+		mode_button.setText(parms.organ_mode ? "length" : "FFT");
+		mode_button.setSelected(parms.organ_mode && parms.length_mode);
 	}
 
 	public void do_mode(View v) {
@@ -697,9 +692,7 @@ public class TunerTime extends Activity
 	private void update_mixture_status() {
 		note n = new note(parms.mixture_cents);
 		/* Helmholtz names carry the octave already */
-		mixture_display.setText(n.note_str +
-				(note.helmholtz() ? "" : ("" + n.octave)) +
-				" " + n.cents_str);
+		mixture_display.setText(n.name_oct + " " + n.cents_str);
 		String f = (parms.focus_row() >= 0) ?
 				parms.footage_str(parms.focus_ratio) : null;
 		if (mix.measuring()) {
@@ -825,13 +818,11 @@ public class TunerTime extends Activity
 
 				/* strobe_cents is based on A, adj_cents on C */
 		note n = new note(parms.strobe_cents);
-		String oct_str = Integer.toString(n.octave);
 
 		/* note mode shows the position before the
 		 * temperament, which is shown in the title */
 		note nn = new note(parms.note_cents);
-		note_semi_display.setText(nn.note_str);
-		note_oct_display.setText(Integer.toString(nn.octave));
+		note_semi_display.setText(nn.name_oct);
 		note_cent_display.setText(nn.cents_str);
 		if (!parms.fft_mode && !parms.preset_mode &&
 		    !parms.mixture_mode) {
@@ -839,12 +830,11 @@ public class TunerTime extends Activity
 					(" (" + temper_str + ")") : ""));
 		}
 
-		preset_semi_display.setText(n.note_str+" "+n.cents_str);
-		preset_oct_display.setText(oct_str);
+		preset_semi_display.setText(n.name_oct + " " + n.cents_str);
 
 		String center_str = string_int10(parms.A_freq);
 		center_display.setText("A="+center_str);
-		afreq_center_display.setText(center_str);
+		afreq_center_display.setText(center_str + " Hz");
 
 		String stretch_str = ((parms.cents_per_octave >= 0) ? "+" : "-") +
 				string_int10(Math.abs(parms.cents_per_octave));
@@ -860,12 +850,10 @@ public class TunerTime extends Activity
 		N_display.setText(Integer.toString(parms.fft_size));
 		grid_button.setText(parms.fft_grid_freq ? "Hz" : "scale");
 
-		if (ToneGenerator.playing) {
-			tone_button.getBackground().clearColorFilter();
-		} else {
-			tone_button.getBackground().setColorFilter(
-				new LightingColorFilter(0x404040, 0));
-		}
+		/* highlighted while the tone plays */
+		tone_button.setSelected(ToneGenerator.playing);
+		tone_button.setTextColor(getResources().getColor(
+			ToneGenerator.playing ? R.color.accent : R.color.text));
 
 		auto_button.setEnabled(!parms.preset_mode);
 		if (parms.auto_note) {

@@ -90,7 +90,7 @@ public class Strobe extends Thread {
 			s += note.cents_str((int)Math.round(
 						c*preset.UNITS_PER_CENT));
 		} else {
-			s += "--.-c";
+			s += " --.-c";	/* as wide as "+01.5c" */
 		}
 		focus_str = s;
 		focus_str_ratio = parms.focus_ratio;
@@ -220,12 +220,37 @@ public class Strobe extends Thread {
 			pianoname_p.setAntiAlias(true);
 			pianoname_p.setSubpixelText(true);
 		}
-		int y = -(int)pianoname_p.getFontMetrics().ascent;
+		Paint p = parms.organ_mode ? focus_readout_paint(s) : pianoname_p;
+		int y = -(int)p.getFontMetrics().ascent;
 		if (label_p != null) {
 			/* share the baseline of the first label */
 			y = Math.max(y, -(int)label_p.getFontMetrics().ascent);
 		}
-		c.drawText(s, width-1, y, pianoname_p);
+		c.drawText(s, width-1, y, p);
+	}
+
+	/* the focused partial's offset is what the organ tuner reads, from
+	 * arm's length: in the accent colour, as big as fits beside the
+	 * first row's label (up to a tenth of the height) */
+	private Paint focus_read_p = null;
+	private Paint focus_readout_paint(String s) {
+		if (focus_read_p == null) {
+			focus_read_p = new Paint(pianoname_p);
+			focus_read_p.setColor(
+				ui.getResources().getColor(R.color.accent));
+			focus_read_p.setShadowLayer(4.0f, 0.0f, 0.0f, 0xff000000);
+		}
+		float lo = height/24.0f, hi = height/10.0f;
+		float avail = width - 1.0f;
+		if ((label_p != null) && (labels != null) && (labels.length > 0)) {
+			avail -= label_p.measureText(labels[0]) +
+					label_p.getTextSize();
+		}
+		focus_read_p.setTextSize(hi);
+		float w = focus_read_p.measureText(s);
+		float sz = ((w > avail) && (w > 0.0f)) ? (hi*avail/w) : hi;
+		focus_read_p.setTextSize(Math.max(lo, sz));
+		return focus_read_p;
 	}
 
 	private void draw_all(Canvas c, int[] bitmap, int w, int h) {

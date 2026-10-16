@@ -11,59 +11,63 @@
 	android:layout_height="wrap_content"
 	android:layout_gravity="center_horizontal"
 	android:textAppearance="?android:attr/textAppearanceLarge"
+	android:fontFamily="monospace"
+	android:textStyle="bold"
+	android:paddingTop="8dp"
+	android:paddingBottom="8dp"
 	android:textSize="35sp" />
     <LinearLayout
 	android:orientation="horizontal"
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content">
 	<Button android:id="@+id/pn_note_0"
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="C"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_note" />
 	<Button android:id="@+id/pn_note_1"
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="D"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_note" />
 	<Button android:id="@+id/pn_note_2"
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="E"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_note" />
 	<Button android:id="@+id/pn_note_3"
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="F"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_note" />
 	<Button android:id="@+id/pn_note_4"
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="G"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_note" />
 	<Button android:id="@+id/pn_note_5"
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="A"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_note" />
 	<Button android:id="@+id/pn_note_6"
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="B"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_note" />
     </LinearLayout>
     <LinearLayout
@@ -75,12 +79,12 @@
 	    android:layout_weight="1"
 	    android:layout_height="1dp" />
 	<Button android:id="@+id/pn_sharp"
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:layout_gravity="center_horizontal"
 	    android:text="#"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_sharp" />
 	<View
 	    android:layout_width="1dp"
@@ -92,67 +96,67 @@
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content">
 	<Button android:id="@+id/pn_oct_0"
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="0"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_oct" />
 	<Button android:id="@+id/pn_oct_1"
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="1"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_oct" />
 	<Button android:id="@+id/pn_oct_2"
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="2"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_oct" />
 	<Button android:id="@+id/pn_oct_3"
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="3"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_oct" />
 	<Button android:id="@+id/pn_oct_4"
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="4"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_oct" />
 	<Button android:id="@+id/pn_oct_5"
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="5"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_oct" />
 	<Button android:id="@+id/pn_oct_6"
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="6"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_oct" />
 	<Button android:id="@+id/pn_oct_7"
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="7"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_oct" />
 	<Button android:id="@+id/pn_oct_8"
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="8"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_oct" />
     </LinearLayout>
     <LinearLayout
@@ -162,6 +166,8 @@
 	<TextView
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
+	    android:layout_gravity="center_vertical"
+	    android:paddingLeft="12dp"
 	    android:textAppearance="?android:attr/textAppearanceMedium"
 	    android:text="cents:" />
 	<EditText android:id="@+id/pn_cents"
@@ -177,11 +183,11 @@
 	<!-- Samsung's number pad has a combined ".-" key that types the
 	     point; this flips the sign with any keyboard -->
 	<Button android:id="@+id/pn_negate"
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
 	    android:minEms="3"
 	    android:text="&#177;"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_negate" />
     </LinearLayout>
     <LinearLayout
@@ -189,32 +195,32 @@
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content">
 	<Button
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="-1c"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_cent_decr" />
 	<Button
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="-0.1c"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_tenth_decr" />
 	<Button
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="+0.1c"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_tenth_incr" />
 	<Button
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
 	    android:text="+1c"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_cent_incr" />
     </LinearLayout>
     <LinearLayout
@@ -223,20 +229,21 @@
 	android:layout_height="1dp"
 	android:layout_weight="1">
 	<Button
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_height="wrap_content"
 	    android:layout_weight="1"
 	    android:layout_gravity="bottom"
-	    android:text="delete"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
+	    android:text="delete note"
+	    android:textColor="@color/warn"
 	    android:onClick="do_delete" />
 	<Button
+	style="@style/Tuner.Button.Big"
 	    android:layout_width="1dp"
 	    android:layout_height="wrap_content"
 	    android:layout_weight="1"
 	    android:layout_gravity="bottom"
 	    android:text="save"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    android:onClick="do_save" />
     </LinearLayout>
 </LinearLayout>

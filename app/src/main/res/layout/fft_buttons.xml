@@ -9,40 +9,29 @@
 	android:layout_weight="1"
 	android:orientation="vertical">
 	<Button
+	    style="@style/Tuner.Button.Panel"
 	    android:layout_width="fill_parent"
 	    android:layout_height="1dp"
 	    android:layout_weight="1"
 	    android:text="N+"
-	    android:textAppearance="?android:attr/textAppearanceMedium"
 	    android:onClick="N_incr" />
 	<TextView android:id="@+id/N_display"
+	    style="@style/Tuner.Readout"
 	    android:layout_width="fill_parent"
-	    android:layout_height="wrap_content"
-	    android:gravity="center"
-	    android:lines="1"
-	    android:singleLine="true"
-	    android:textAppearance="?android:attr/textAppearanceLarge" 
-	    android:textColor="@color/text"
-		android:fontFamily="monospace" />
+	    android:layout_height="wrap_content" />
 	<Button
+	    style="@style/Tuner.Button.Panel"
 	    android:layout_width="fill_parent"
 	    android:layout_height="1dp"
 	    android:layout_weight="1"
 	    android:text="N-"
-	    android:textAppearance="?android:attr/textAppearanceMedium"
 	    android:onClick="N_decr" />
     </LinearLayout>
-    <LinearLayout
+    <Button android:id="@+id/grid_button"
+	style="@style/Tuner.Button.Panel"
 	android:layout_width="1dp"
 	android:layout_height="fill_parent"
 	android:layout_weight="1"
-	android:orientation="vertical">
-	<Button android:id="@+id/grid_button"
-	    android:layout_width="fill_parent"
-	    android:layout_height="1dp"
-	    android:layout_weight="1"
-	    android:text="scale"
-	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="grid_toggle" />
-    </LinearLayout>
+	android:text="scale"
+	android:onClick="grid_toggle" />
 </LinearLayout>
