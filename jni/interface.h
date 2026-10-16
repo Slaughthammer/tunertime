@@ -51,6 +51,10 @@ extern int base_cents;
 extern int num_strobes;
 extern int harm_mult[MAX_STROBES];
 extern int organ_mode;
+	/* highest strobe frequency in organ mode, as a fraction of the sample
+	 * rate: four samples per period still make a readable pattern.
+	 * Java asks for it with Strobe.organ_max_freq() */
+#define ORGAN_MAX_FREQ 0.25
 
 void strobe_init(void);
 void strobe_focus(double ratio);
@@ -73,6 +77,11 @@ void fft_init(void);
 void fft_recalculate(jobject this);
 void fft_newdata(jint *bitmap_ptr);
 void fft_redraw(jint *bitmap_ptr);
+
+
+/* record.c: the last few seconds of input, for DebugRecorder.java */
+void record_init(int rate);
+void record_feed(const short *s, int n);
 
 
 #endif /* __INTERFACE_H */

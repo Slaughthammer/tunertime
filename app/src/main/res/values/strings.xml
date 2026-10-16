@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- User-visible text.  German in values-de/strings.xml; keep the two in
+     the same order.  Button labels are lower case, terse.  Non-ASCII is
+     written as entities (see README.md, "Traps when editing"). -->
+<resources>
+	<!-- activity titles -->
+	<string name="title_settings">Settings</string>
+	<string name="title_preset_select">Select preset</string>
+	<string name="title_preset_edit">Edit preset</string>
+	<string name="title_preset_note">Edit preset note</string>
+	<string name="title_strobe">TunerTime: strobe</string>
+	<string name="title_strobe_with">TunerTime: strobe (%1$s)</string>
+	<string name="title_fft">TunerTime: FFT</string>
+	<string name="title_mixture">TunerTime: mixture</string>
+
+	<!-- menus -->
+	<string name="menu_settings">Settings</string>
+	<string name="menu_help">Help</string>
+	<string name="menu_about">About</string>
+	<string name="menu_add_temperament">Add historical temperament&#8230;</string>
+	<string name="menu_sort">Sort by name</string>
+	<string name="menu_import">Import&#8230;</string>
+	<string name="menu_export_all">Export all&#8230;</string>
+
+	<!-- mode tabs below the strobe -->
+	<string name="tab_note">note</string>
+	<string name="tab_afreq">A freq</string>
+	<string name="tab_stretch">stretch</string>
+	<string name="tab_mixture">mixture</string>
+	<string name="tab_preset">preset</string>
+
+	<!-- buttons beside the panels -->
+	<string name="auto">auto</string>
+	<string name="auto_follow">follow</string>
+	<string name="auto_locked">locked</string>
+	<string name="tone">tone</string>
+	<string name="mode_fft">FFT</string>
+	<string name="mode_strobe">strobe</string>
+	<string name="mode_length">length</string>
+
+	<!-- status in the corner: A, stretch -->
+	<string name="status_a">A=%1$s</string>
+	<string name="status_organ">organ</string>
+	<string name="status_mix">mix%1$s</string>
+
+	<!-- panels -->
+	<string name="semi_plus">semi+</string>
+	<string name="semi_minus">semi-</string>
+	<string name="oct_plus">oct+</string>
+	<string name="oct_minus">oct-</string>
+	<string name="cent_plus">cent+</string>
+	<string name="cent_minus">cent-</string>
+	<string name="cent">cent</string>
+	<string name="plus">+</string>
+	<string name="minus">-</string>
+	<string name="reset">reset</string>
+	<string name="hz">%1$s Hz</string>
+	<string name="stretch_plus">stretch+</string>
+	<string name="stretch_minus">stretch-</string>
+	<string name="cents_per_octave">cents/octave</string>
+	<string name="note_plus">note+</string>
+	<string name="note_minus">note-</string>
+	<string name="select">select</string>
+	<string name="edit">edit</string>
+	<string name="fft_n">N</string>
+	<string name="fft_n_plus">N+</string>
+	<string name="fft_n_minus">N-</string>
+	<string name="fft_scale">scale</string>
+	<string name="fft_hz">Hz</string>
+
+	<!-- organ mode: mixture panel -->
+	<string name="measure">measure</string>
+	<string name="mixture_measuring">measuring %1$s: %2$d%%</string>
+	<string name="mixture_held">%1$s held</string>
+	<string name="mixture_tap_row">tap a strobe row</string>
+
+	<!-- organ mode: length panel (pipe too long / too short) -->
+	<string name="pipe_open">open pipe</string>
+	<string name="pipe_stopped">stopped pipe</string>
+	<string name="temp_minus">T-</string>
+	<string name="temp_plus">T+</string>
+	<string name="temp_colder">air temperature down</string>
+	<string name="temp_warmer">air temperature up</string>
+	<string name="length_listening">listening&#8230;</string>
+	<string name="length_in_tune">0.0 mm\nin tune</string>
+	<string name="length_too_long">%1$s mm\ntoo long: cut off</string>
+	<string name="length_too_short">%1$s mm\ntoo short: lengthen</string>
+	<string name="length_held">%1$s (held)</string>
+	<string name="length_unclear">unclear</string>
+
+	<!-- drawn on the strobe -->
+	<string name="paused">paused</string>
+	<string name="row_too_high">too high</string>
+	<!-- harmonic row labels: the native code writes English ordinals
+	     ("2nd"); if this is not empty it replaces the suffix -->
+	<string name="ordinal_suffix"></string>
+
+	<!-- toasts and dialogs on the main screen -->
+	<string name="toast_auto">auto: tap to lock, hold to turn off</string>
+	<string name="toast_row_too_high">This row is too high for the sample rate</string>
+	<string name="follow_as_detected">follow: notes as detected</string>
+	<string name="follow_shift_oct">follow: %1$s%2$d oct from detected (hold auto to clear)</string>
+	<string name="follow_shift_semi">follow: %1$s%2$d semitones from detected (hold auto to clear)</string>
+	<string name="ok">OK</string>
+	<string name="cancel">Cancel</string>
+	<string name="about_title">About</string>
+	<string name="about_message">TunerTime version %1$s</string>
+	<string name="perm_title">Microphone needed</string>
+	<string name="perm_message">TunerTime needs access to the microphone for all of its features. You can allow it in the system settings under Apps &#8594; TunerTime &#8594; Permissions.</string>
+
+	<!-- preset screens -->
+	<string name="no_presets">no presets</string>
+	<string name="new_preset">new preset</string>
+	<string name="preset_name_hint">preset name</string>
+	<string name="no_notes">no notes</string>
+	<string name="delete_preset">delete preset</string>
+	<string name="add_note">add note</string>
+	<string name="cents_label">cents:</string>
+	<string name="change_sign">change sign</string>
+	<string name="cent_step_minus1">-1c</string>
+	<string name="cent_step_minus01">-0.1c</string>
+	<string name="cent_step_plus01">+0.1c</string>
+	<string name="cent_step_plus1">+1c</string>
+	<string name="delete_note">delete note</string>
+	<string name="save">save</string>
+	<string name="cm_edit">Edit</string>
+	<string name="cm_rename">Rename</string>
+	<string name="cm_duplicate">Duplicate</string>
+	<string name="cm_move_up">Move up</string>
+	<string name="cm_move_down">Move down</string>
+	<string name="cm_export">Export&#8230;</string>
+	<string name="cm_delete">Delete</string>
+	<string name="confirm">Confirm</string>
+	<string name="really_delete">Really delete &#8220;%1$s&#8221;?</string>
+	<string name="delete">Delete</string>
+	<string name="rename">Rename</string>
+	<string name="rename_title">Rename preset</string>
+	<string name="add_temperament_title">Add temperament (A = 0)</string>
+	<string name="added">Added &#8220;%1$s&#8221;</string>
+	<string name="no_file_picker">No file picker available</string>
+	<string name="export_file_name">TunerTime presets.txt</string>
+	<plurals name="exported">
+		<item quantity="one">Exported %d preset</item>
+		<item quantity="other">Exported %d presets</item>
+	</plurals>
+	<plurals name="imported">
+		<item quantity="one">Imported %d preset</item>
+		<item quantity="other">Imported %d presets</item>
+	</plurals>
+	<plurals name="imported_renamed">
+		<item quantity="one">, %d renamed to avoid a name clash</item>
+		<item quantity="other">, %d renamed to avoid a name clash</item>
+	</plurals>
+	<string name="export_failed">Export failed</string>
+	<string name="import_failed">Import failed</string>
+	<string name="nothing_imported">Nothing was imported.</string>
+	<string name="and_more">&#8230; and %1$d more</string>
+
+	<!-- historical temperaments, in the order of temperaments.java -->
+	<string-array name="temperament_names">
+		<item>Pythagorean</item>
+		<item>Meantone 1/4 comma</item>
+		<item>Meantone 1/6 comma</item>
+		<item>Werckmeister III</item>
+		<item>Kirnberger III</item>
+		<item>Vallotti</item>
+		<item>Young II</item>
+		<item>Kellner (Bach)</item>
+	</string-array>
+	<!-- note names in these are English (G#, Eb); they are shown in
+	     German if German note names are on -->
+	<string-array name="temperament_about">
+		<item>pure fifths, wolf G#-Eb</item>
+		<item>pure major thirds, wolf G#-Eb; Renaissance/early Baroque</item>
+		<item>Baroque organs, mild wolf G#-Eb</item>
+		<item>1691, well-tempered, all keys usable</item>
+		<item>1779, pure C-E third</item>
+		<item>c. 1750, six 1/6 Pythagorean comma fifths</item>
+		<item>1800, like Vallotti centred on C</item>
+		<item>1977 reconstruction of Bach\'s tuning</item>
+	</string-array>
+
+	<!-- microphones (Settings, toasts) -->
+	<string name="mic_auto">Auto (best signal)</string>
+	<string name="mic_default">System default</string>
+	<string name="mic_builtin">Built-in mic</string>
+	<string name="mic_builtin_at">Built-in mic (%1$s)</string>
+	<string name="mic_headset">Headset mic</string>
+	<string name="mic_usb">USB: %1$s</string>
+	<string name="mic_line">Line in</string>
+	<string name="mic_place_back">back</string>
+	<string name="mic_place_bottom">bottom</string>
+	<string name="mic_place_top">top</string>
+	<string name="mic_place_middle">middle</string>
+	<string name="mic_channel">mic %1$d</string>
+	<string name="mic_channel_at">mic %1$d (%2$s)</string>
+	<string name="mic_not_found">Selected microphone not found, using the default</string>
+	<string name="mic_now">Microphone: %1$s</string>
+	<string name="mic_reopen_default">Microphone could not be reopened, using the default microphone</string>
+	<string name="mic_reopen_failed">Microphone could not be reopened</string>
+
+	<!-- Settings -->
+	<string name="cat_main">Main</string>
+	<string name="organ_mode">Organ mode</string>
+	<string name="organ_mode_summary">For organ pipes: footage rows, mixture and length modes, no stretch</string>
+	<string name="german_names">German note names</string>
+	<string name="german_names_on">Cis, B, H; octaves C&#8322; C&#8321; C c c&#185; c&#178; (a&#185; = A4)</string>
+	<string name="german_names_off">C#, A#, B; octaves numbered (A4)</string>
+	<!-- the same in every language, so it can be found in any -->
+	<string name="language" translatable="false">Language / Sprache</string>
+	<string name="language_system">System default</string>
+	<string name="language_english" translatable="false">English</string>
+	<string name="language_german" translatable="false">Deutsch</string>
+	<string name="cat_audio">Audio</string>
+	<string name="audio_source">Audio source</string>
+	<string name="source_auto">Auto</string>
+	<string name="source_auto_is">Auto (%1$s)</string>
+	<string name="source_unprocessed">Unprocessed</string>
+	<string name="source_voice">Voice recognition</string>
+	<string name="source_mic">Microphone (may be noise-suppressed)</string>
+	<string name="source_camcorder">Camcorder</string>
+	<string name="microphone">Microphone</string>
+	<string name="mic_not_connected">%1$s (not connected; the system default is used)</string>
+	<string name="cat_strobe">Strobe</string>
+	<string name="strobe_colors">Colors</string>
+	<string name="color_batlow">Batlow</string>
+	<string name="color_slate">Slate / White</string>
+	<string name="color_redgreen">Red / Green</string>
+	<string name="color_blackwhite">Black / White</string>
+	<string name="color_blueyellow">Blue / Yellow</string>
+	<string name="color_redblue">Red / Blue</string>
+	<string name="harmonics">Harmonics shown</string>
+	<string name="harmonics_summary">%1$s: one strobe row each, lowest first (up to 8)</string>
+	<string name="footages">Footages shown</string>
+	<string name="footages_summary">%1$s: one strobe row each, 8\' being the note (up to 8)</string>
+	<string name="cat_presets">Presets</string>
+	<string name="note_temper">12-note preset tempers note mode</string>
+	<string name="note_temper_summary">If the selected preset has one note for each of the 12 semitones, note mode tunes to its offsets</string>
+	<string name="cat_debug">Debug</string>
+	<string name="debug_rec">Debug recordings</string>
+	<string name="debug_rec_summary">When you correct the followed note by hand, save 7 s of microphone input as WAV (for improving the note detection). Get them with: adb pull /sdcard/Android/data/&lt;package&gt;/files/recordings</string>
+</resources>

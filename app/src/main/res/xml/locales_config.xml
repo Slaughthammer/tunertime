@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- languages offered for this app in the system settings (Android 13+),
+     the same as Settings -> Language -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+	<locale android:name="en" />
+	<locale android:name="de" />
+</locale-config>

@@ -3,7 +3,6 @@ package org.galexander.tunertime;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.graphics.LightingColorFilter;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -34,10 +33,15 @@ public class PresetNoteActivity extends Activity {
 	private static final int[] no_sharps = new int[]
 		{ 0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6 };
 
+	protected void attachBaseContext(android.content.Context base) {
+		super.attachBaseContext(Lang.wrap(base));
+	}
+
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		parms.init(this);
+		setTitle(R.string.title_preset_note);
 		setContentView(R.layout.preset_note);
 		pn_text = (TextView)findViewById(R.id.pn_text);
 		pn_cents = (EditText)findViewById(R.id.pn_cents);
@@ -92,14 +96,20 @@ public class PresetNoteActivity extends Activity {
 		preset p = preset.find(parms.preset_id);
 		if (p == null) {
 			finish();
+			return;
 		}
 		notes = p.notes;
 		note_idx = parms.preset_note;
 		if ((note_idx < 0) || (note_idx >= notes.size())) {
 			finish();
+			return;
 		}
 		/* "B" or German "H"; with "#" the sharp of A is B or German B */
 		((TextView)pn_notes[6]).setText(note.class_name(11));
+		/* 0..8, or with German names C2 (subscript) .. c5 */
+		for (int i = 0; i < pn_octs.length; i++) {
+			((TextView)pn_octs[i]).setText(note.octave_name(i));
+		}
 		update();
 	}
 
@@ -109,16 +119,9 @@ public class PresetNoteActivity extends Activity {
 		notes = null;
 	}
 
-		/* selected button: surface tinted toward the accent blue;
-		 * the rest keep the plain button surface */
-	private final static LightingColorFilter brightf =
-			new LightingColorFilter(0x888888, 0x1a3a7a);
+		/* selected button: accent outline (drawable/mode_button) */
 	private void set_brightness(View v, boolean bright) {
-		if (bright) {
-			v.getBackground().setColorFilter(brightf);
-		} else {
-			v.getBackground().clearColorFilter();
-		}
+		v.setSelected(bright);
 	}
 
 	private void update() {
@@ -218,11 +221,11 @@ public class PresetNoteActivity extends Activity {
 				}
 			} };
 		new AlertDialog.Builder(this)
-			.setTitle("Confirm")
-			.setMessage("Really delete \"" +
-				new note(notes.get(note_idx)).full_str + "\"?")
-			.setPositiveButton("Delete", listener)
-			.setNegativeButton("Cancel", listener)
+			.setTitle(R.string.confirm)
+			.setMessage(getString(R.string.really_delete,
+				new note(notes.get(note_idx)).full_str))
+			.setPositiveButton(R.string.delete, listener)
+			.setNegativeButton(R.string.cancel, listener)
 			.show();
 	}
 }

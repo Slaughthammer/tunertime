@@ -46,13 +46,16 @@ import java.util.List;
  * 21Hz); it is scaled down when the level is close to the noise floor
  * (a slowly rising minimum of the block RMS), and halved while clipping.
  * Scores are smoothed, and nothing is compared while no mic hears anything
- * above its floor.
+ * above its floor.  The periodicity of the other channel is only worked out
+ * while the one in use is doubtful (below), which halves the cost.
  *
  * A switch needs: the current mic doubtful (smoothed score below DOUBT,
  * clipping, or hearing nothing while the other does), the other better by
  * MARGIN for SWITCH_FRAMES frames in a row, and HOLD_MS since the last
  * switch.  While the current mic has a good signal nothing changes, so a
- * strobe that is being read stays put.  The new mic is shown in a Toast.
+ * strobe that is being read stays put, and nothing changes either while a
+ * mixture measurement is collecting (mixture.busy), whose phase would
+ * jump.  The new mic is shown in a Toast.
  */
 public class MicSelect {
 	public static final int RATE = 44100;
@@ -83,6 +86,8 @@ public class MicSelect {
 
 		/* name of the mic in use, for display */
 	public static volatile String active_name = null;
+		/* counts changes of mic or channel (Listener.buffer_gen) */
+	public static volatile int switches = 0;
 
 	public static void init(Context c) {
 		ctx = c.getApplicationContext();
@@ -118,6 +123,15 @@ public class MicSelect {
 			return MediaRecorder.AudioSource.UNPROCESSED;
 		}
 		return MediaRecorder.AudioSource.VOICE_RECOGNITION;
+	}
+
+		/* text in the app's language (Lang); ctx is the application
+		 * context, which has no per-activity language override */
+	private static String str(int id, Object... args) {
+		if (ctx == null) {
+			return "";
+		}
+		return Lang.res(ctx).getString(id, args);
 	}
 
 	private static void toast(final String msg) {
@@ -203,19 +217,19 @@ public class MicSelect {
 		switch (d.getType()) {
 		case AudioDeviceInfo.TYPE_BUILTIN_MIC: {
 			String place = place(d);
-			return "Built-in mic" +
-				((place == null) ? "" : (" (" + place + ")"));
+			return (place == null) ? str(R.string.mic_builtin)
+				: str(R.string.mic_builtin_at, place);
 		}
 		case AudioDeviceInfo.TYPE_WIRED_HEADSET:
-			return "Headset mic";
+			return str(R.string.mic_headset);
 		case AudioDeviceInfo.TYPE_USB_DEVICE:
 		case AudioDeviceInfo.TYPE_USB_ACCESSORY:
 		case AudioDeviceInfo.TYPE_USB_HEADSET:
-			return "USB: " + d.getProductName();
+			return str(R.string.mic_usb, "" + d.getProductName());
 		case AudioDeviceInfo.TYPE_LINE_ANALOG:
 		case AudioDeviceInfo.TYPE_LINE_DIGITAL:
 		case AudioDeviceInfo.TYPE_AUX_LINE:
-			return "Line in";
+			return str(R.string.mic_line);
 		}
 		return "" + d.getProductName();
 	}
@@ -247,7 +261,7 @@ public class MicSelect {
 		MicrophoneInfo.Coordinate3F o = m.getOrientation();
 		if (!MicrophoneInfo.ORIENTATION_UNKNOWN.equals(o) &&
 		    (o.z < -0.5f)) {
-			return "back";
+			return str(R.string.mic_place_back);
 		}
 		MicrophoneInfo.Coordinate3F p = m.getPosition();
 		if (!MicrophoneInfo.POSITION_UNKNOWN.equals(p)) {
@@ -263,11 +277,11 @@ public class MicSelect {
 			}
 			if (hi - lo > 0.02f) {
 				if (p.y - lo < (hi-lo)/3.0f) {
-					return "bottom";
+					return str(R.string.mic_place_bottom);
 				} else if (hi - p.y < (hi-lo)/3.0f) {
-					return "top";
+					return str(R.string.mic_place_top);
 				}
-				return "middle";
+				return str(R.string.mic_place_middle);
 			}
 		}
 		String desc = m.getDescription();
@@ -285,9 +299,9 @@ public class MicSelect {
 	public static String[][] mic_choices() {
 		List<String> names = new ArrayList<String>();
 		List<String> keys = new ArrayList<String>();
-		names.add("Auto (best signal)");
+		names.add(str(R.string.mic_auto));
 		keys.add("auto");
-		names.add("System default");
+		names.add(str(R.string.mic_default));
 		keys.add("default");
 		if (Build.VERSION.SDK_INT >= 23) {
 			List<AudioDeviceInfo> l = inputs();
@@ -333,6 +347,10 @@ public class MicSelect {
 		boolean sig = false, clip = false;
 		double score = 0.0d;
 		double ema = 0.0d;
+			/* work out the periodicity (else score is not
+			 * updated while there is a signal); and whether it
+			 * was, in the last frame */
+		boolean scoring = true, scored = false;
 
 		void reset_frame() {
 			pos = sub = 0;
@@ -381,12 +399,14 @@ public class MicSelect {
 			double snr = 20.0d*Math.log10(Math.max(rms, 1.0d)/floor);
 			clip = (nclip*500 > nsamp);
 			sig = (rms > MIN_RMS) && (snr > MIN_SNR);
-			if (sig) {
+			scored = false;
+			if (!sig) {
+				score = 0.0d;
+			} else if (scoring) {
 				score = periodicity(d) *
 					Math.min(1.0d, snr/FULL_SNR) *
 					(clip ? 0.5d : 1.0d);
-			} else {
-				score = 0.0d;
+				scored = true;
 			}
 			sumsq = 0.0d;
 			nsamp = nclip = 0;
@@ -447,7 +467,8 @@ public class MicSelect {
 	private short[] sbuf = null;
 	private final Qual[] q = { new Qual(), new Qual() };
 	private int ch = 0;			/* channel in use */
-	private String[] ch_name = { "mic 1", "mic 2" };
+	private String[] ch_name = { str(R.string.mic_channel, 1),
+				     str(R.string.mic_channel, 2) };
 	private int streak = 0;
 	private long last_switch = 0;
 
@@ -476,7 +497,7 @@ public class MicSelect {
 		    (Build.VERSION.SDK_INT >= 23)) {
 			dev = find_device(mic);
 			if (dev == null) {
-				toast("Selected microphone not found, using default");
+				toast(str(R.string.mic_not_found));
 			}
 		}
 		if (mic.equals("auto")) {
@@ -605,6 +626,7 @@ public class MicSelect {
 		if (rec == null) {
 			return;
 		}
+		switches++;
 		try {
 			rec.stop();
 		} catch (IllegalStateException e) { /* whatever */ }
@@ -630,7 +652,8 @@ public class MicSelect {
 			}
 			for (int c = 0; c < 2; c++) {
 				if (n[c] != null) {
-					ch_name[c] = "mic " + (c+1) + " (" + n[c] + ")";
+					ch_name[c] = str(R.string.mic_channel_at,
+							 c+1, n[c]);
 				}
 			}
 		} catch (Exception e) {
@@ -708,22 +731,33 @@ public class MicSelect {
 
 	private void stereo_decide() {
 		Qual cur = q[ch], oth = q[1-ch];
+		cur.scoring = true;
 		if (!cur.sig && !oth.sig) {
 			streak = 0;
+			oth.scoring = true;	/* no signal: costs nothing */
 			return;
 		}
 		cur.smooth();
-		oth.smooth();
+		if (oth.scored || !oth.sig) {
+			oth.smooth();
+		}
 		boolean doubtful = !cur.sig || cur.clip || (cur.ema < DOUBT);
-		boolean better = oth.sig && (oth.ema > cur.ema + MARGIN);
+		boolean better = oth.sig && oth.scored &&
+				 (oth.ema > cur.ema + MARGIN);
 		streak = (doubtful && better) ? (streak+1) : 0;
+		/* the other channel is only of interest while this one is
+		 * doubtful; from the next frame on */
+		oth.scoring = doubtful;
 		long now = SystemClock.elapsedRealtime();
-		if ((streak >= SWITCH_FRAMES) && (now - last_switch >= HOLD_MS)) {
+		if ((streak >= SWITCH_FRAMES) && (now - last_switch >= HOLD_MS) &&
+		    !mixture.busy) {
 			ch = 1-ch;
+			q[ch].scoring = true;
+			switches++;
 			streak = 0;
 			last_switch = now;
 			active_name = ch_name[ch];
-			toast("Microphone: " + ch_name[ch]);
+			toast(str(R.string.mic_now, ch_name[ch]));
 		}
 	}
 
@@ -748,7 +782,7 @@ public class MicSelect {
 			if (avg > probe_before + MARGIN) {
 				c.ema = avg;
 				last_switch = now;
-				toast("Microphone: " + active_name);
+				toast(str(R.string.mic_now, active_name));
 			} else {
 				reopen(prev_i);
 				c.ema = probe_before;
@@ -764,7 +798,7 @@ public class MicSelect {
 		streak = doubtful ? (streak+1) : 0;
 		if ((streak >= PROBE_AFTER) &&
 		    (now - last_probe >= PROBE_GAP_MS) &&
-		    (now - last_switch >= HOLD_MS)) {
+		    (now - last_switch >= HOLD_MS) && !mixture.busy) {
 			probing = true;
 			probe_frames = probe_n = 0;
 			probe_sum = 0.0d;
@@ -773,18 +807,34 @@ public class MicSelect {
 			if (!reopen((dev_i+1) % devs.length)) {
 				probing = false;
 				last_probe = now;
-				reopen(prev_i);
+				if (mode == PROBE) {	/* else it gave up */
+					reopen(prev_i);
+				}
 			}
 		}
 	}
 
 		/* switches the mono recorder to devs[i]; the noise floor is
-		 * carried over, assuming the mics are alike */
+		 * carried over, assuming the mics are alike.  if that fails,
+		 * back to the default route; if that fails as well, to plain
+		 * MIC with no more probing, rather than ending the Listener
+		 * (read() fails without a recorder) without a word */
 	private boolean reopen(int i) {
 		close();
 		q[0].reset_frame();
 		if (!create(source, 1, devs[i])) {
-			create(source, 1, null);
+			if (!create(source, 1, null)) {
+				mode = FIXED;
+				if ((source != MediaRecorder.AudioSource.MIC) &&
+				    create(MediaRecorder.AudioSource.MIC, 1,
+					   null)) {
+					source = MediaRecorder.AudioSource.MIC;
+					toast(str(R.string.mic_reopen_default));
+				} else {
+					toast(str(R.string.mic_reopen_failed));
+				}
+			}
+			active_name = (rec != null) ? routed_name() : null;
 			return false;
 		}
 		dev_i = i;

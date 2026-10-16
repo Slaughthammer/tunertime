@@ -55,6 +55,9 @@ static jfieldID fid_p_fft_xoffset;
 static jfieldID fid_p_fft_yoffset;
 static jfieldID fid_p_fft_grid_freq;
 static jfieldID fid_p_changed;
+static jfieldID fid_p_focus_ratio;
+
+static double pitch_expect;	/* Hz of the note shown, for pitch_hint() */
 
 static jintArray bitmap;
 
@@ -245,6 +248,7 @@ sound_input(jobject this)
 	} else if (num_read > 0) {
 		(*env)->GetShortArrayRegion(env, snd_readbuf, 0, num_read,
 				snd_buf);
+		record_feed(snd_buf, num_read);
 	}
 	snd_buflen = num_read;
 	return 1;
@@ -313,6 +317,7 @@ jni_init(JNIEnv *env_)
 	STFIELD(p_fft_yoffset, parms, "fft_yoffset", "I")
 	STFIELD(p_fft_grid_freq, parms, "fft_grid_freq", "Z")
 	STFIELD(p_changed, parms, "changed", "Z")
+	STFIELD(p_focus_ratio, parms, "focus_ratio", "D")
 
 	return 1;
 }
@@ -420,6 +425,7 @@ check_parms(jobject this)
 	num_strobes = (*env)->GetStaticIntField(env, cl_parms, fid_p_num_strobes);
 	if (num_strobes < 1) num_strobes = 1;
 	if (num_strobes > MAX_STROBES) num_strobes = MAX_STROBES;
+	pitch_expect = cents_to_freq(this, base_cents, 1);
 	{
 		jintArray a = (*env)->GetStaticObjectField(env, cl_parms, fid_p_harm_mult);
 		(*env)->GetIntArrayRegion(env, a, 0, MAX_STROBES, harm_mult);
@@ -451,6 +457,14 @@ check_parms(jobject this)
 	return 1;
 }
 
+/* Strobe.organ_max_freq(): rows above this fraction of the sample rate are
+ * left blank in organ mode, and so can't be focused */
+JNIEXPORT jdouble JNICALL
+Java_org_galexander_tunertime_Strobe_organ_1max_1freq(JNIEnv *env_, jclass cl)
+{
+	return ORGAN_MAX_FREQ;
+}
+
 /* This is the entry point from the Java code...it is a loop that checks for
  * thread state changes, reads audio, then writes to screen. */
 JNIEXPORT void JNICALL
@@ -466,6 +480,8 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 	strobe_init();
 	fft_init();
 	pitch_init(sample_rate);
+	record_init(sample_rate);
+	pitch_expect = 0.0;
 
 	while (1) {
 		check_surface(this);
@@ -487,6 +503,10 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 		     (*env)->GetStaticBooleanField(env, cl_parms, fid_p_length_mode)) &&
 		    !(*env)->GetBooleanField(env, this, fid_st_paused)) {
 			double hz, conf;
+			/* the partial the user focused on (organ mode),
+			 * looked for near where the shown note puts it */
+			pitch_hint((*env)->GetStaticDoubleField(env, cl_parms,
+					fid_p_focus_ratio), pitch_expect);
 			if (pitch_feed(snd_buf, snd_buflen, &hz, &conf)) {
 				(*env)->CallVoidMethod(env, this,
 					mid_st_pitch_detected, hz);

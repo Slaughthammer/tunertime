@@ -10,7 +10,7 @@
 		<item name="android:colorControlNormal">@color/text_muted</item>
 		<item name="android:textColorPrimary">@color/text</item>
 		<item name="android:textColorSecondary">@color/text_muted</item>
-		<item name="android:textColorHint">@color/outline</item>
+		<item name="android:textColorHint">@color/text_muted</item>
 		<item name="android:statusBarColor">@color/bg</item>
 		<item name="android:navigationBarColor">@color/bg</item>
 		<item name="android:buttonStyle">@style/Tuner.Button</item>
@@ -19,5 +19,76 @@
 		<item name="android:textColor">@color/text</item>
 		<item name="android:textAllCaps">false</item>
 		<item name="android:background">@drawable/mode_button</item>
+	</style>
+
+	<!-- The text styles below shrink their text to fit instead of
+	     clipping it (narrow phones, large font scale, longer German
+	     words).  Autosizing needs Android 8+; older versions just use the
+	     maximum size.  It is turned off by android:singleLine (that
+	     scrolls horizontally instead), so these use maxLines. -->
+
+	<!-- buttons in the panels below the strobe -->
+	<style name="Tuner.Button.Panel">
+		<item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
+		<item name="android:maxLines">1</item>
+		<item name="android:paddingLeft">4dp</item>
+		<item name="android:paddingRight">4dp</item>
+		<item name="android:autoSizeTextType">uniform</item>
+		<item name="android:autoSizeMinTextSize">10sp</item>
+		<item name="android:autoSizeMaxTextSize">18sp</item>
+	</style>
+	<!-- buttons on the preset screens -->
+	<style name="Tuner.Button.Big">
+		<item name="android:textAppearance">?android:attr/textAppearanceLarge</item>
+		<item name="android:maxLines">1</item>
+		<item name="android:paddingLeft">4dp</item>
+		<item name="android:paddingRight">4dp</item>
+		<item name="android:autoSizeTextType">uniform</item>
+		<item name="android:autoSizeMinTextSize">12sp</item>
+		<item name="android:autoSizeMaxTextSize">22sp</item>
+	</style>
+	<!-- the mode tabs below the strobe: selected one is underlined -->
+	<style name="Tuner.Button.Tab">
+		<item name="android:background">@drawable/tab_button</item>
+		<item name="android:textColor">@color/tab_text</item>
+		<item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="android:textStyle">bold</item>
+		<item name="android:maxLines">1</item>
+		<item name="android:paddingLeft">2dp</item>
+		<item name="android:paddingRight">2dp</item>
+		<item name="android:minWidth">0dp</item>
+		<item name="android:autoSizeTextType">uniform</item>
+		<item name="android:autoSizeMinTextSize">9sp</item>
+		<item name="android:autoSizeMaxTextSize">15sp</item>
+	</style>
+
+	<!-- values: note, cents, A, stretch, ... -->
+	<style name="Tuner.Readout">
+		<item name="android:textAppearance">?android:attr/textAppearanceLarge</item>
+		<item name="android:textColor">@color/text</item>
+		<item name="android:fontFamily">monospace</item>
+		<item name="android:textStyle">bold</item>
+		<item name="android:gravity">center</item>
+		<item name="android:maxLines">1</item>
+		<item name="android:autoSizeTextType">uniform</item>
+		<item name="android:autoSizeMinTextSize">11sp</item>
+		<item name="android:autoSizeMaxTextSize">24sp</item>
+	</style>
+	<!-- the A and stretch status in the corner -->
+	<style name="Tuner.Readout.Status">
+		<item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
+		<item name="android:textColor">@color/text_muted</item>
+		<item name="android:textStyle">normal</item>
+		<item name="android:autoSizeMaxTextSize">18sp</item>
+	</style>
+	<!-- small captions: units, names of the +/- rows -->
+	<style name="Tuner.Caption">
+		<item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="android:textColor">@color/text_muted</item>
+		<item name="android:gravity">center</item>
+		<item name="android:maxLines">1</item>
+		<item name="android:autoSizeTextType">uniform</item>
+		<item name="android:autoSizeMinTextSize">9sp</item>
+		<item name="android:autoSizeMaxTextSize">14sp</item>
 	</style>
 </resources>

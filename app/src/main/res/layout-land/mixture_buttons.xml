@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- mixture mode (organ mode, in place of stretch) -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_height="fill_parent"
+    android:layout_width="fill_parent">
+    <Button android:id="@+id/mixture_measure"
+	style="@style/Tuner.Button.Panel"
+	android:layout_width="fill_parent"
+	android:layout_height="1dp"
+	android:layout_weight="1"
+	android:text="@string/measure"
+	android:onClick="mixture_measure" />
+    <TextView android:id="@+id/mixture_display"
+	style="@style/Tuner.Readout"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content" />
+    <TextView android:id="@+id/mixture_status"
+	style="@style/Tuner.Caption"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content" />
+    <Button
+	style="@style/Tuner.Button.Panel"
+	android:layout_height="1dp"
+	android:layout_width="fill_parent"
+	android:layout_weight="1"
+	android:text="@string/reset"
+	android:textColor="@color/warn"
+	android:onClick="mixture_reset" />
+</LinearLayout>

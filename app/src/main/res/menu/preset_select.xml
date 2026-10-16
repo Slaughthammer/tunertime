@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 	<item android:id="@+id/action_preset_temperament"
-		android:title="Add historical temperament..."
+		android:title="@string/menu_add_temperament"
 		android:showAsAction="never" />
 	<item android:id="@+id/action_preset_sort"
-		android:title="Sort by name"
+		android:title="@string/menu_sort"
 		android:showAsAction="never" />
 	<item android:id="@+id/action_preset_import"
-		android:title="Import..."
+		android:title="@string/menu_import"
 		android:showAsAction="never" />
 	<item android:id="@+id/action_preset_export"
-		android:title="Export all..."
+		android:title="@string/menu_export_all"
 		android:showAsAction="never" />
 </menu>
