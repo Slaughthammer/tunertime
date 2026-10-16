@@ -139,7 +139,10 @@ struct pipe {
 	double ov, ovd;			/* exp(-dt/(0.7*tau1)), step */
 	double wob;
 	struct bq nbp;
-	double *cyc;		/* fundamental cycles at each buffer start */
+	double *cyc;		/* fundamental cycles at each buffer start,
+				 * without the speech transient's glide (the
+				 * truth: the steady pitch, with wind and
+				 * tremulant) */
 };
 
 struct key {
@@ -447,6 +450,7 @@ static short *render(struct scen *S, int *n_out) {
 				dev += 15.0*p->chiff*exp(-dt/p->tau1);
 			}
 			mult = p->f*pow(2.0, dev/1200.0);
+			p->cyc[nbuf] += p->f*pow(2.0, (S->wobble*p->wob + fm)/1200.0)/sr;
 			{
 				/* partial h turns by h times the fundamental's
 				 * step: phasors, rotated by powers of it */
@@ -475,7 +479,6 @@ static short *render(struct scen *S, int *n_out) {
 					}
 				}
 			}
-			p->cyc[nbuf] += mult/sr;
 			/* breath noise, and the chiff burst */
 			v += 0.004*grand();
 			if (dt > 0.3) {
