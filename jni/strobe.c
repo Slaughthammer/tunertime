@@ -343,6 +343,11 @@ strobe_draw_htic(jint *bitmap_ptr, struct strobe_rec *s)
 #define DRIFT_MIN_AMP 8.0	/* quieter blocks are ignored (16-bit units) */
 #define DRIFT_REL_AMP 0.1	/* ...as are blocks this far below the peak */
 #define DRIFT_PEAK_HALFLIFE 1.0	/* seconds */
+	/* after a reset the band-pass starts from rest and rings at the row
+	 * frequency, which pulls the phase towards "in tune"; blocks are
+	 * ignored for this many filter time constants (filter_recalc: the
+	 * pole radius is 1-3*bw, so tau = 20/(3*freq) seconds) */
+#define DRIFT_SETTLE_TAUS 4.0
 
 static int focus_row = -1;
 static struct {
@@ -354,6 +359,7 @@ static struct {
 	int prev_ok;		/* previous block was loud enough */
 	double peak;		/* recent block amplitude, decaying */
 	double cycles, secs;	/* drift found in the last buffer */
+	int settle;		/* samples still to ignore after a reset */
 } drift;
 
 static void
@@ -376,6 +382,7 @@ drift_reset(void)
 	if (k > DRIFT_MAX_PERIODS) k = DRIFT_MAX_PERIODS;
 	if (k < 1) k = 1;
 	drift.len = k*(double)sample_rate/s->freq + 0.5;
+	drift.settle = DRIFT_SETTLE_TAUS*20.0*sample_rate/(3.0*s->freq);
 }
 
 /* ratio is parms.focus_ratio: the focused partial's frequency over the
@@ -411,6 +418,10 @@ drift_block(void)
 		drift.peak = amp;
 	}
 	ok = (amp >= DRIFT_MIN_AMP) && (amp >= DRIFT_REL_AMP*drift.peak);
+	if (drift.settle > 0) {
+		drift.settle -= drift.n;
+		ok = 0;
+	}
 	if (ok && drift.prev_ok) {
 		/* angle of this block's sum against the previous one's,
 		 * positive when the partial is sharp of the row */
