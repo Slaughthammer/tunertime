@@ -52,7 +52,9 @@ import java.util.List;
  * clipping, or hearing nothing while the other does), the other better by
  * MARGIN for SWITCH_FRAMES frames in a row, and HOLD_MS since the last
  * switch.  While the current mic has a good signal nothing changes, so a
- * strobe that is being read stays put.  The new mic is shown in a Toast.
+ * strobe that is being read stays put, and nothing changes either while a
+ * mixture measurement is collecting (mixture.busy), whose phase would
+ * jump.  The new mic is shown in a Toast.
  */
 public class MicSelect {
 	public static final int RATE = 44100;
@@ -83,6 +85,8 @@ public class MicSelect {
 
 		/* name of the mic in use, for display */
 	public static volatile String active_name = null;
+		/* counts changes of mic or channel (Listener.buffer_gen) */
+	public static volatile int switches = 0;
 
 	public static void init(Context c) {
 		ctx = c.getApplicationContext();
@@ -605,6 +609,7 @@ public class MicSelect {
 		if (rec == null) {
 			return;
 		}
+		switches++;
 		try {
 			rec.stop();
 		} catch (IllegalStateException e) { /* whatever */ }
@@ -718,8 +723,10 @@ public class MicSelect {
 		boolean better = oth.sig && (oth.ema > cur.ema + MARGIN);
 		streak = (doubtful && better) ? (streak+1) : 0;
 		long now = SystemClock.elapsedRealtime();
-		if ((streak >= SWITCH_FRAMES) && (now - last_switch >= HOLD_MS)) {
+		if ((streak >= SWITCH_FRAMES) && (now - last_switch >= HOLD_MS) &&
+		    !mixture.busy) {
 			ch = 1-ch;
+			switches++;
 			streak = 0;
 			last_switch = now;
 			active_name = ch_name[ch];
@@ -764,7 +771,7 @@ public class MicSelect {
 		streak = doubtful ? (streak+1) : 0;
 		if ((streak >= PROBE_AFTER) &&
 		    (now - last_probe >= PROBE_GAP_MS) &&
-		    (now - last_switch >= HOLD_MS)) {
+		    (now - last_switch >= HOLD_MS) && !mixture.busy) {
 			probing = true;
 			probe_frames = probe_n = 0;
 			probe_sum = 0.0d;
