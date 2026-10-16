@@ -434,6 +434,7 @@ final class UiCheck {
 	private static class item {
 		View v;
 		Rect r;		/* in window coordinates */
+		Rect e;		/* r, less what lists scroll away */
 		boolean target;	/* touch target */
 	}
 
@@ -480,7 +481,7 @@ final class UiCheck {
 			Rect r = it.r;
 
 			/* inside the window and not cut by a parent */
-			if (!new Rect(0, 0, w, h).contains(r)) {
+			if (!new Rect(0, 0, w, h).contains(it.e)) {
 				add(screen, "OFFSCREEN", name, "at " +
 					r.toShortString() + ", window " + w +
 					"x" + h);
@@ -499,7 +500,10 @@ final class UiCheck {
 			}
 
 			/* system bars and cutout */
-			Rect shown = any ? vis : r;
+			Rect shown = new Rect(it.e);
+			if (any && !shown.intersect(vis)) {
+				shown.setEmpty();
+			}
 			for (Rect b : bar_rects) {
 				Rect x = new Rect();
 				if (x.setIntersect(shown, b)) {
@@ -544,12 +548,12 @@ final class UiCheck {
 					continue;
 				}
 				Rect x = new Rect();
-				if (x.setIntersect(a.r, b.r) &&
+				if (x.setIntersect(a.e, b.e) &&
 				    (x.width() > 1) && (x.height() > 1)) {
 					add(screen, "OVERLAP", name(a.v) + "~" +
 						name(b.v), px(x, dp) +
-						" shared by " + px(a.r, dp) +
-						" and " + px(b.r, dp));
+						" shared by " + px(a.e, dp) +
+						" and " + px(b.e, dp));
 				}
 			}
 		}
@@ -582,7 +586,7 @@ final class UiCheck {
 				tv.getExtendedPaddingBottom();
 		float lw = 0.0f;
 		for (int i = 0; i < lines; i++) {
-			lw = Math.max(lw, l.getLineWidth(i));
+			lw = Math.max(lw, l.getLineMax(i));
 		}
 		if (lw > aw + 1.0f) {
 			add(screen, "TEXT_CUT_H", name, String.format(Locale.ROOT,
@@ -630,7 +634,10 @@ final class UiCheck {
 			v.getLocationInWindow(p);
 			it.r = new Rect(p[0], p[1], p[0]+v.getWidth(),
 					p[1]+v.getHeight());
-			out.add(it);
+			it.e = scrolled_rect(v, it.r);
+			if (it.e != null) {	/* else scrolled out of view */
+				out.add(it);
+			}
 		}
 		if (v instanceof ViewGroup) {
 			ViewGroup g = (ViewGroup)v;
@@ -640,13 +647,55 @@ final class UiCheck {
 		}
 	}
 
-	/* clickable things; list rows count, the list itself doesn't */
+	/* the part of r that the scrolling lists and scroll views around v
+	 * show (inside their padding), null if none: what is scrolled away
+	 * can be scrolled back, so only the shown part counts */
+	private static Rect scrolled_rect(View v, Rect r) {
+		Rect e = new Rect(r);
+		for (ViewParent p = v.getParent(); p instanceof View;
+		     p = p.getParent()) {
+			View pv = (View)p;
+			if (!is_scroller(pv)) {
+				continue;
+			}
+			int[] q = new int[2];
+			pv.getLocationInWindow(q);
+			Rect s = new Rect(q[0] + pv.getPaddingLeft(),
+				q[1] + pv.getPaddingTop(),
+				q[0] + pv.getWidth() - pv.getPaddingRight(),
+				q[1] + pv.getHeight() - pv.getPaddingBottom());
+			if (!e.intersect(s)) {
+				return null;
+			}
+		}
+		return e;
+	}
+
+	private static boolean is_scroller(View pv) {
+		return ((pv instanceof AbsListView) ||
+			(pv instanceof ScrollView) ||
+			(pv instanceof HorizontalScrollView) ||
+			pv.getClass().getName().contains("RecyclerView")) &&
+		       (pv.canScrollVertically(1) ||
+			pv.canScrollVertically(-1) ||
+			pv.canScrollHorizontally(1) ||
+			pv.canScrollHorizontally(-1));
+	}
+
+	/* clickable things; enabled list rows count (not the headers), the
+	 * list itself doesn't */
 	private static boolean is_target(View v) {
 		if (v instanceof AdapterView) {
 			return false;
 		}
 		if (v.getParent() instanceof AdapterView) {
-			return true;
+			AdapterView<?> a = (AdapterView<?>)v.getParent();
+			int pos = a.getPositionForView(v);
+			return (pos == AdapterView.INVALID_POSITION) ||
+				(a.getAdapter() == null) ||
+				!(a.getAdapter() instanceof android.widget.ListAdapter)
+				|| ((android.widget.ListAdapter)a.getAdapter())
+					.isEnabled(pos);
 		}
 		return v.isClickable() || v.isLongClickable() ||
 			(v instanceof EditText);
@@ -682,17 +731,8 @@ final class UiCheck {
 	private static boolean in_scroller(View v) {
 		for (ViewParent p = v.getParent(); p instanceof View;
 		     p = p.getParent()) {
-			View pv = (View)p;
-			if ((pv instanceof AbsListView) ||
-			    (pv instanceof ScrollView) ||
-			    (pv instanceof HorizontalScrollView) ||
-			    pv.getClass().getName().contains("RecyclerView")) {
-				if (pv.canScrollVertically(1) ||
-				    pv.canScrollVertically(-1) ||
-				    pv.canScrollHorizontally(1) ||
-				    pv.canScrollHorizontally(-1)) {
-					return true;
-				}
+			if (is_scroller((View)p)) {
+				return true;
 			}
 		}
 		return false;
