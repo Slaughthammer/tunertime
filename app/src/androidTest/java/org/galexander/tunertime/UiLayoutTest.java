@@ -92,10 +92,11 @@ public class UiLayoutTest {
 		e.putBoolean("fft_mode", false);	/* no legacy import */
 		e.putBoolean("organ_mode", organ);
 		e.putString("presets", WERCK + "," + LONG + "," + EMPTY);
-		e.putString("preset_" + WERCK + "_name",
-				temperaments.names[3]);
+		int t = java.util.Arrays.asList(temperaments.names)
+				.indexOf("Werckmeister III");
+		e.putString("preset_" + WERCK + "_name", temperaments.names[t]);
 		StringBuilder sb = new StringBuilder();
-		for (int n : temperaments.make_notes(3)) {
+		for (int n : temperaments.make_notes(t)) {
 			sb.append((sb.length() > 0) ? "," : "").append(n);
 		}
 		e.putString("preset_" + WERCK + "_notes10", sb.toString());
