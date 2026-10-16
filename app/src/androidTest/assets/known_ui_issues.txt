@@ -1,0 +1,4 @@
+# Known UI problems, reported by UiLayoutTest but not failing it.
+# One key per line: screen|orientation|fontscale|CHECK|element
+# "*" matches any field, "abc*" any field starting with abc.
+# Remove a line once it is fixed, so that it can't come back unnoticed.
