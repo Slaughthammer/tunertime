@@ -5,8 +5,17 @@
  *   sim_organ                 all scenarios, one line each, and a summary
  *   sim_organ -v [name]       ... with every note's details
  *   sim_organ -w dir [name]   also writes each scenario as dir/<name>.wav
- *   sim_organ -a N            N estimates in a row move the note (4)
  *                             (16-bit mono, replay with test_pitch file.wav)
+ *   sim_organ -a N            N estimates in a row move the note (4)
+ *   sim_organ -f old|new      follow mode with the user's corrections:
+ *                             the note shown should be the key's (8')
+ *                             note; when it is not 1.5 s into the key,
+ *                             the user corrects it by hand.  old: the
+ *                             correction's interval is added to every
+ *                             later detection (follow_shift, v18.1);
+ *                             new: later detections are taken in the
+ *                             octave nearest the note shown, within a
+ *                             fourth (TunerTime.on_pitch, continuity)
  *   name                      only scenarios whose name contains it
  *
  * Build (plain C, any compiler):
@@ -95,6 +104,16 @@ static int det_agree = 4;	/* TunerTime.DET_AGREE; -a N */
 				 * measurement that means a second pipe of
 				 * about the same level */
 #define RECALC_BEFORE	0.4	/* target set this long before the key */
+/* follow mode with corrections (-f): TunerTime constants */
+#define FOLLOW_NONE	0
+#define FOLLOW_OLD	1	/* follow_shift, v18.1 */
+#define FOLLOW_NEW	2	/* continuity */
+static int follow_mode = FOLLOW_NONE;
+#define CORR_RECENT	4.0	/* TunerTime.CORR_RECENT */
+#define NEAR_SILENCE	10.0	/* TunerTime.NEAR_SILENCE */
+#define NEAR_SEMIS	5	/* TunerTime.NEAR_SEMIS */
+#define CORR_AFTER	1.5	/* the user corrects a wrong note this long
+				 * into the key */
 /* organ rows, in multiples of the 32' pitch: 32' 16' 8' 4' 2 2/3' 2' 1 1/3' 1' */
 static const int rows[] = { 1, 2, 4, 8, 12, 16, 24, 32 };
 #define NROWS 8
@@ -568,7 +587,7 @@ static double true_hz(struct scen *S, int j, int b0, int b1) {
 
 /* ---- evaluation ---- */
 #define MAXEST 4096
-struct est { double t, hz; int buf; };
+struct est { double t, hz; int buf, shown; };
 
 /* what length mode shows over a key, pipelength.update() */
 struct lenres {
@@ -638,7 +657,11 @@ static void len_score(struct lenres *L, const double *c, int m, int stopped,
 }
 
 struct keyres {
-	double lat;		/* key to right note shown, <0 never */
+	double lat;		/* key to right note shown, <0 never (with
+				 * -f: shown by the detector, before any
+				 * correction) */
+	int corrected;		/* -f: the user corrected the note */
+	double corr_t;
 	int wrong_oct, wrong_other;	/* shown note moved to a wrong one */
 	int est_n, est_none, est_oct, est_other;	/* sustain estimates */
 	struct lenres ld;	/* length mode, no row focused */
@@ -655,6 +678,7 @@ struct scenres {
 	int wrong_oct, wrong_other;
 	int est_n, est_bad, est_oct, est_none;
 	int false_trig;		/* noise-only: notes shown */
+	int corrections;	/* -f: by hand */
 	double false_est;	/* noise-only: share of estimates */
 	struct lensum {
 		double frac, bad, unclear;	/* mean shares */
@@ -725,6 +749,9 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 	static int dbuf[MAXEST*4];
 	int ne = 0, nd = 0, nbuf = n/BUFLEN, b, ki = -1, i;
 	int det_semi = -999, det_count = 0, shown = -999;
+	/* -f: follow_shift (old), continuity (new), the last agreed note */
+	int shift = 0, cont = 0, det_stable = -999;
+	double det_stable_t = -1e9, last_heard = 0.0;
 	double hz, conf;
 	double lat[MAXK];
 	int nl = 0;
@@ -751,6 +778,12 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 	base_cents = 48000;
 	strobe_recalculate(0);
 	strobe_focus(0.0);
+	if (follow_mode && (S->nk == 0)) {
+		/* noise alone: following at A4, corrected there (new:
+		 * continuity on), to see what the noise moves it to */
+		shown = 0;
+		cont = (follow_mode == FOLLOW_NEW);
+	}
 
 	for (b = 0; b < nbuf; b++) {
 		double t0 = (double)b*BUFLEN/S->sr;
@@ -770,7 +803,10 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 			base_cents = 48000 + 1000*k->semi;
 			strobe_recalculate(0);
 			strobe_focus(row_for(r) >= 0 ? r : 0.0);
-			if (S->hint) pitch_hint(r, key_hz(k->semi));
+			/* the app hints the note shown; without -f that is
+			 * taken to be the key's */
+			if (S->hint) pitch_hint(r, key_hz((follow_mode &&
+					(shown != -999)) ? shown : k->semi));
 			nd = 0;
 			mx_on = 0;
 			mx_c = mx_s = mx_lo = mx_hi = 0.0;
@@ -780,18 +816,39 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 		snd_buflen = BUFLEN;
 		if (pitch_feed(snd_buf, BUFLEN, &hz, &conf)) {
 			int g = (hz > 0.0) ? semis(hz) : -999;
-			if (ne < MAXEST) {
-				est[ne].t = t; est[ne].hz = hz; est[ne].buf = b;
-				ne++;
+			if (hz > 0.0) {
+				last_heard = t;
+			} else if (t - last_heard > NEAR_SILENCE) {
+				shift = 0;
+				cont = 0;
 			}
 			if (hz > 0.0) {
 				if (g == det_semi) det_count++;
 				else { det_semi = g; det_count = 1; }
-				if ((det_count >= det_agree) && (g != shown)) {
-					shown = g;
+			} else {
+				det_count = 0;
+			}
+			if ((hz > 0.0) && (det_count >= det_agree)) {
+				/* where TunerTime.on_pitch moves the note */
+				int to = g;
+				det_stable = g;
+				det_stable_t = t;
+				if (follow_mode == FOLLOW_OLD) {
+					to = g + shift;
+				} else if (cont && (shown != -999)) {
+					to = g + 12*(int)floor((shown - g)/12.0
+								+ 0.5);
+					if (abs(to - shown) > NEAR_SEMIS)
+						to = shown;
+				}
+				if (to != shown) {
+					shown = to;
+					if (S->hint && follow_mode && (ki >= 0))
+						pitch_hint(key_focus(S,
+							&S->k[ki]), key_hz(to));
 					if (verbose > 1) {
 						char nm[8];
-						note_name(g, nm);
+						note_name(to, nm);
 						printf("    %6.2fs shown %s\n", t, nm);
 					}
 					if (S->nk == 0) {
@@ -801,17 +858,50 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 						struct key *k = &S->k[ki];
 						int ex = semis(key_hz(k->semi) *
 							S->p[k->truth].ratio);
-						if (S->hint) ex = k->semi;
-						if (!is_ok(k, ex, g)) {
-							if (((g-ex)%12) == 0)
+						if (S->hint || follow_mode)
+							ex = k->semi;
+						if (!is_ok(k, ex, to)) {
+							if (((to-ex)%12) == 0)
 								kr[ki].wrong_oct++;
 							else
 								kr[ki].wrong_other++;
 						}
 					}
 				}
-			} else {
-				det_count = 0;
+			}
+			/* -f: the user sees a wrong note while holding the
+			 * key and corrects it to the key's note by hand
+			 * (TunerTime.user_moved_note) */
+			if (follow_mode && (ki >= 0) &&
+			    (t >= S->k[ki].on + CORR_AFTER) &&
+			    (t <= S->k[ki].off) && !kr[ki].corrected &&
+			    !is_ok(&S->k[ki], S->k[ki].semi, shown)) {
+				int to = S->k[ki].semi;
+				kr[ki].corrected = 1;
+				kr[ki].corr_t = t;
+				R->corrections++;
+				if (verbose > 1) {
+					char nm[8];
+					note_name(to, nm);
+					printf("    %6.2fs corrected to %s\n", t,
+						nm);
+				}
+				if (follow_mode == FOLLOW_OLD) {
+					if ((det_stable != -999) &&
+					    (t - det_stable_t < CORR_RECENT))
+						shift = to - det_stable;
+				} else {
+					cont = 1;
+				}
+				shown = to;
+				if (S->hint)
+					pitch_hint(key_focus(S, &S->k[ki]),
+						key_hz(to));
+			}
+			if (ne < MAXEST) {
+				est[ne].t = t; est[ne].hz = hz; est[ne].buf = b;
+				est[ne].shown = shown;
+				ne++;
 			}
 		}
 		strobe_newdata(bitmap);
@@ -932,20 +1022,19 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 		struct key *k = &S->k[i];
 		double end = (i+1 < S->nk) ? S->k[i+1].on : S->secs;
 		int ex = semis(key_hz(k->semi)*S->p[k->truth].ratio);
-		int e, ds = -999, dc = 0, sh = -999;
+		int e, sh;
 		if (S->hint) ex = k->semi;
 		kr[i].focus = key_focus(S, k);
-		/* replay the shown note */
+		/* the shown note, as it went */
 		for (e = 0; e < ne; e++) {
 			int g = (est[e].hz > 0.0) ? semis(est[e].hz) : -999;
-			if (g == -999) { dc = 0; }
-			else if (g == ds) dc++;
-			else { ds = g; dc = 1; }
-			if ((g != -999) && (dc >= det_agree)) sh = g;
+			sh = est[e].shown;
 			if (est[e].t < k->on) continue;
 			if (est[e].t >= end) break;
 			if ((kr[i].lat < 0.0) && (sh != -999) &&
-			    is_ok(k, ex, sh) && (est[e].t <= k->off + 0.5)) {
+			    is_ok(k, follow_mode ? k->semi : ex, sh) &&
+			    (est[e].t <= k->off + 0.5) &&
+			    (!kr[i].corrected || (est[e].t < kr[i].corr_t))) {
 				kr[i].lat = est[e].t - k->on;
 			}
 			if ((est[e].t >= k->on + 0.6) && (est[e].t <= k->off)) {
@@ -1347,6 +1436,49 @@ static void sc_steps_over(void) {
 	S->steps = 600.0; S->steps_on = 0.0; S->steps_off = 1e9;
 	run_keys(pedal, 7, 0.5, STOPPED, 4000, 0.3, PEDAL_HOLD, 0.8);
 }
+/* chromatic runs, the way a stop is tuned key by key: what follow mode's
+ * continuity (-f new) is for */
+static void chromatic(const char *nm, int from, int dir, double ratio,
+			int kind, double level, double chiff) {
+	int n[16], i;
+	church(nm);
+	for (i = 0; i < 16; i++) n[i] = from + dir*i;
+	/* held long enough for a mixture measurement */
+	run_keys(n, 16, ratio, kind, level, chiff,
+		(ratio < 1.0) ? PEDAL_HOLD : 3.0, 0.3);
+}
+static void sc_chr_prin(void) {
+	chromatic("Chromatic Principal 8'", C3, 1, 1.0, OPEN, 3000, 0.5);
+}
+static void sc_chr_ged(void) {
+	chromatic("Chromatic Gedackt 8'", C4, 1, 1.0, STOPPED, 3000, 0.4);
+}
+static void sc_chr_flute4(void) {
+	chromatic("Chromatic Flute 4'", C3, 1, 2.0, FLUTE, 3000, 0.3);
+}
+static void sc_chr_quint(void) {
+	chromatic("Chromatic Quinte 2 2/3'", C3, 1, 3.0, OPEN, 2000, 0.4);
+}
+/* the same with its row focused: the detector divides the partial out
+ * and reports the key (pitch_hint), as the app does in organ mode */
+static void sc_chr_quint_row(void) {
+	int i;
+	chromatic("Chromatic Quinte, row", C3, 1, 3.0, OPEN, 2000, 0.4);
+	S->hint = 1;
+	for (i = 0; i < S->nk; i++) S->k[i].focus = 3.0;
+}
+static void sc_chr_sub(void) {
+	chromatic("Chromatic Subbass 16'", C2, 1, 0.5, STOPPED, 4000, 0.3);
+}
+static void sc_chr_down(void) {
+	chromatic("Chromatic down, 6 s reverb", C5, -1, 1.0, STOPPED, 3000,
+		0.4);
+	S->rt60 = 6.0; S->wet = 0.7;
+}
+static void sc_chr_speech(void) {
+	chromatic("Chromatic + speech", C3, 1, 1.0, OPEN, 3000, 0.5);
+	S->speech = 600.0; S->speech_on = 0.0; S->speech_off = 1e9;
+}
 static void sc_noise(void) {
 	church("noise: blower+wind");
 	S->hum = 60.0; S->rumble = 60.0; S->wind = 80.0;
@@ -1371,8 +1503,10 @@ static const builder builders[] = {
 	sc_prin16, sc_32, sc_prin32, sc_posaune, sc_high2, sc_high1,
 	sc_trem_flute, sc_trem_prin, sc_wobble, sc_celeste, sc_unda,
 	sc_leak, sc_neighbour, sc_mix_all, sc_mix_muted, sc_sesq, sc_octaves,
-	sc_fifths, sc_longtail, sc_speech_over, sc_steps_over, sc_noise,
-	sc_speech, sc_steps,
+	sc_fifths, sc_longtail, sc_speech_over, sc_steps_over,
+	sc_chr_prin, sc_chr_ged, sc_chr_flute4, sc_chr_quint,
+	sc_chr_quint_row, sc_chr_sub,
+	sc_chr_down, sc_chr_speech, sc_noise, sc_speech, sc_steps,
 };
 
 int main(int argc, char **argv) {
@@ -1380,6 +1514,7 @@ int main(int argc, char **argv) {
 	int a, c, nb = sizeof builders / sizeof builders[0];
 	int t_keys = 0, t_shown = 0, t_woct = 0, t_woth = 0, t_false = 0;
 	int t_est = 0, t_bad = 0, t_mxn = 0, t_mxfail = 0, t_lk = 0;
+	int t_corr = 0;
 	double t_ldst = 0, t_ldbad = 0, t_lrst = 0, t_lrbad = 0, t_mxsum = 0;
 
 	for (a = 1; a < argc; a++) {
@@ -1387,6 +1522,12 @@ int main(int argc, char **argv) {
 		else if (!strcmp(argv[a], "-w") && (a+1 < argc)) wavdir = argv[++a];
 		else if (!strcmp(argv[a], "-a") && (a+1 < argc))
 			det_agree = atoi(argv[++a]);
+		else if (!strcmp(argv[a], "-f") && (a+1 < argc)) {
+			a++;
+			follow_mode = !strcmp(argv[a], "old") ? FOLLOW_OLD :
+				!strcmp(argv[a], "new") ? FOLLOW_NEW :
+							  FOLLOW_NONE;
+		}
 		else only = argv[a];
 	}
 	S = calloc(1, sizeof *S);
@@ -1445,7 +1586,9 @@ int main(int argc, char **argv) {
 				R.mx_mean, R.mx_max);
 			printf(" beat %d/%d %.2f", R.beat, R.mx_n, R.swing);
 			if (R.mx_fail) printf(" (%d unfinished)", R.mx_fail);
+			if (follow_mode) printf(" | corrected %d", R.corrections);
 			printf("\n");
+			t_corr += R.corrections;
 			t_keys += R.keys; t_shown += R.shown;
 			t_woct += R.wrong_oct; t_woth += R.wrong_other;
 			t_est += R.est_n; t_bad += R.est_bad;
@@ -1467,5 +1610,11 @@ int main(int argc, char **argv) {
 		t_lk ? 100*t_ldst/t_lk : 0, t_lk ? 100*t_ldbad/t_lk : 0,
 		t_lk ? 100*t_lrst/t_lk : 0, t_lk ? 100*t_lrbad/t_lk : 0,
 		t_mxn ? t_mxsum/t_mxn : 0, t_mxfail, t_mxn + t_mxfail);
+	if (follow_mode) {
+		printf("FOLLOW %s: corrected by hand %d of %d keys (shown "
+			"counts keys shown right before any correction)\n",
+			(follow_mode == FOLLOW_OLD) ? "old (follow_shift)" :
+			"new (continuity)", t_corr, t_keys);
+	}
 	return 0;
 }

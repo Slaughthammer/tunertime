@@ -42,7 +42,8 @@ public class DebugRecorder {
 				new Handler(Looper.getMainLooper());
 	private static boolean pending = false;
 	private static Date when;
-	private static int det_cents, from_cents, user_cents, shift;
+	private static int det_cents, from_cents, user_cents;
+	private static boolean near;
 	private static double det_hz;
 
 	/* copies the newest samples, oldest first; returns how many */
@@ -60,12 +61,12 @@ public class DebugRecorder {
 	 * 48000 = A4.  UI thread only */
 	public static void intervention(Context ctx, int det_cents_,
 			double det_hz_, int from_cents_, int user_cents_,
-			int shift_) {
+			boolean near_) {
 		if (!enabled(ctx)) {
 			return;
 		}
 		user_cents = user_cents_;	/* the latest change wins */
-		shift = shift_;
+		near = near_;
 		if (pending) {
 			return;
 		}
@@ -117,7 +118,8 @@ public class DebugRecorder {
 				 " Hz")) + "\n" +
 			"note_before " + name(from_cents) + "\n" +
 			"user_note " + name(user_cents) + "\n" +
-			"follow_shift " + shift + " semitones\n" +
+			"follow_near " + near + " (continuity: detections " +
+				"taken within a fourth of the note shown)\n" +
 			"A_freq " + (parms.A_freq/10.0) + "\n" +
 			"stretch " + (parms.stretch()/10.0) + " c/oct\n" +
 			"organ_mode " + parms.organ_mode + "\n" +

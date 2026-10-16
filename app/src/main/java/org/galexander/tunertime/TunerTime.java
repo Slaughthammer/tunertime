@@ -403,27 +403,37 @@ public class TunerTime extends Activity
 	 * note (3 before), for about 0.09 s more latency */
 	private static final int DET_AGREE = 4;
 
-	/* Corrections while following.  If the user moves the note by hand
-	 * (semitone or octave buttons) while follow is on, within
-	 * CORR_RECENT ms of a stable detection, the interval from the
-	 * detected note to the note chosen (follow_shift, semitones) is
-	 * remembered and added to every later detection.  So correcting a
-	 * 4' stop down an octave once makes the whole stop follow an octave
-	 * lower, a Quint 2 2/3' corrected a twelfth down follows a twelfth
-	 * lower, and the corrected note is not snatched back by the next
-	 * estimate.  A toast shows the shift whenever it is set.  It is
-	 * cleared, and detections are taken as heard again, when
+	/* Corrections while following: continuity.  Decided with the organ
+	 * tuner: a correction by hand applies to the current note only, and
+	 * as a stop is tuned key by key, without big jumps, the notes heard
+	 * after it are looked for near the current note.  So once the user
+	 * moves the note by hand (semitone, octave or fifth buttons) while
+	 * follow is on, continuity is on: each detection is taken in the
+	 * octave that puts it nearest the note now shown, and only moves
+	 * the note if that is within NEAR_SEMIS (a fourth, 500 cents)
+	 * either way; a tritone off is ignored.  Corrected a 4' stop down
+	 * an octave, the next keys follow in the 8' octave; a note that
+	 * was slow to be detected and set by hand does not shift the
+	 * following ones (v18.1 remembered the interval to the last
+	 * detection and added it to all later ones).
+	 * Not carried over: the detected note's partial.  A mutation (a
+	 * Quinte 2 2/3' sounds a twelfth above the key) is folded into the
+	 * octave around the note shown, not divided by 3: focus its row in
+	 * organ mode, then the detector itself reports the key (pitch.c
+	 * focus()).  Both together do not add up, as folding a note already
+	 * near the current one changes nothing.
+	 * Continuity ends, and detections are taken as heard again, when
 	 *  - auto is turned off (long press) or turned on afresh,
-	 *  - nothing clear was heard for SHIFT_SILENCE ms (a new stop),
-	 *  - the user corrects back to the note as detected.
-	 * Lock and unlock keep it. */
-	private int follow_shift = 0;
+	 *  - nothing clear was heard for NEAR_SILENCE ms (a new stop).
+	 * Lock and unlock keep it.  tools/sim_organ.c -f new emulates it. */
+	private boolean near = false;		/* continuity on */
+	private static final int NEAR_SEMIS = 5;
 	private int det_stable = Integer.MIN_VALUE;	/* last agreed note */
 	private double det_stable_hz = 0.0;
 	private long det_stable_time = 0, last_heard = 0;
 	private static final long CORR_RECENT = 4000;
-	private static final long SHIFT_SILENCE = 10000;
-	private Toast shift_toast = null;
+	private static final long NEAR_SILENCE = 10000;
+	private Toast near_toast = null;
 
 	public void do_auto(View v) {
 		if (!auto_applies()) {
@@ -431,7 +441,7 @@ public class TunerTime extends Activity
 		}
 		if (!parms.auto_note && !parms.auto_locked) {
 			parms.auto_note = true;
-			follow_shift = 0;
+			near = false;
 			det_stable = Integer.MIN_VALUE;
 			Toast.makeText(this, R.string.toast_auto,
 					Toast.LENGTH_SHORT).show();
@@ -451,7 +461,7 @@ public class TunerTime extends Activity
 		parms.auto_note = false;
 		parms.auto_locked = false;
 		det_count = 0;
-		follow_shift = 0;
+		near = false;
 		det_stable = Integer.MIN_VALUE;
 		update_status();
 	}
@@ -475,8 +485,8 @@ public class TunerTime extends Activity
 
 	/* moves note mode to the nearest note once DET_AGREE estimates in a
 	 * row agree; silence holds the current note.  the cents offset set
-	 * by hand carries over to the new note, and so does a correction
-	 * (follow_shift, above). */
+	 * by hand carries over to the new note.  after a correction, only
+	 * near the current note (continuity, above). */
 	private void on_pitch(double hz) {
 		if (parms.length_mode && !ToneGenerator.playing) {
 			length.add(hz);
@@ -484,10 +494,9 @@ public class TunerTime extends Activity
 		long now = SystemClock.uptimeMillis();
 		if (hz > 0.0) {
 			last_heard = now;
-		} else if ((follow_shift != 0) &&
-			   (now - last_heard > SHIFT_SILENCE)) {
-			follow_shift = 0;
-			show_shift();
+		} else if (near && (now - last_heard > NEAR_SILENCE)) {
+			near = false;
+			show_near();
 		}
 		if (!parms.auto_note || !auto_applies() ||
 		    ToneGenerator.playing || (hz <= 0.0)) {
@@ -513,7 +522,14 @@ public class TunerTime extends Activity
 		det_stable = k;
 		det_stable_hz = hz;
 		det_stable_time = now;
-		int t = k + follow_shift;
+		int t = k;
+		if (near) {
+			/* the octave nearest the current note */
+			t = k + 12*(int)Math.floor((cur - k)/12.0d + 0.5d);
+			if (Math.abs(t - cur) > NEAR_SEMIS) {
+				return;
+			}
+		}
 		if ((t != cur) && (t >= 0) && (t*semi + off <= 9600*U)) {
 			parms.note_cents = t*semi + off;
 			update_status();
@@ -528,32 +544,24 @@ public class TunerTime extends Activity
 		long now = SystemClock.uptimeMillis();
 		boolean recent = (det_stable != Integer.MIN_VALUE) &&
 				 (now - det_stable_time < CORR_RECENT);
-		if (recent) {
-			follow_shift = to - det_stable;
-			show_shift();
+		if (!near) {
+			near = true;
+			show_near();
 		}
 		DebugRecorder.intervention(this,
 			recent ? det_stable*100*U : DebugRecorder.NONE,
 			recent ? det_stable_hz : 0.0,
-			from*100*U, to*100*U, follow_shift);
+			from*100*U, to*100*U, near);
 	}
 
-	private void show_shift() {
-		if (shift_toast != null) {
-			shift_toast.cancel();
+	private void show_near() {
+		if (near_toast != null) {
+			near_toast.cancel();
 		}
-		String s;
-		if (follow_shift == 0) {
-			s = getString(R.string.follow_as_detected);
-		} else {
-			int a = Math.abs(follow_shift);
-			String sign = (follow_shift > 0) ? "+" : "-";
-			s = (a % 12 == 0)
-				? getString(R.string.follow_shift_oct, sign, a/12)
-				: getString(R.string.follow_shift_semi, sign, a);
-		}
-		shift_toast = Toast.makeText(this, s, Toast.LENGTH_SHORT);
-		shift_toast.show();
+		near_toast = Toast.makeText(this, near ? R.string.follow_near
+						: R.string.follow_as_detected,
+					Toast.LENGTH_SHORT);
+		near_toast.show();
 	}
 
 	/* inverse of cents_to_freq() for the fundamental */

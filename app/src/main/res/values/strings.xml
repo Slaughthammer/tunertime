@@ -99,8 +99,7 @@
 	<string name="toast_auto">auto: tap to lock, hold to turn off</string>
 	<string name="toast_row_too_high">This row is too high for the sample rate</string>
 	<string name="follow_as_detected">follow: notes as detected</string>
-	<string name="follow_shift_oct">follow: %1$s%2$d oct from detected (hold auto to clear)</string>
-	<string name="follow_shift_semi">follow: %1$s%2$d semitones from detected (hold auto to clear)</string>
+	<string name="follow_near">follow: only within a fourth of this note (hold auto to clear)</string>
 	<string name="ok">OK</string>
 	<string name="cancel">Cancel</string>
 	<string name="about_title">About</string>

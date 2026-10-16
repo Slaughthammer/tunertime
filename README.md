@@ -23,9 +23,13 @@ this fork.
   off. In organ mode a focused partial (`parms.focus_ratio`) makes the note
   that partial's peak / ratio. Tested in the field with a ukulele only.
 - **Corrections while following** (`TunerTime.on_pitch`): moving the note by
-  hand while following remembers the interval from the detected note (e.g.
-  an octave for a 4' stop) and applies it to later detections, until auto is
-  turned off, 10 s of silence, or the correction is undone.
+  hand while following applies to that note only, and turns on continuity:
+  later detections are taken in the octave nearest the note shown, and move
+  it only within a fourth (500 cents) either way, as a stop is tuned key by
+  key. So a 4' stop corrected down an octave once follows in the 8' octave.
+  It ends when auto is turned off or on afresh, or after 10 s of silence.
+  Mutations (Quinte, Terz) are followed by focusing their row instead.
+  `tools/sim_organ -f old|new` compares the v18.1 rule with this one.
 - **Debug recordings** (`DebugRecorder.java`, `jni/record.c`; Settings →
   "Debug recordings", on in the dev build): each hand correction while
   following saves 5 s before and 2 s after as a 16-bit mono WAV plus a .txt
