@@ -94,6 +94,11 @@ Traps when editing:
 
 - Files mix LF and CRLF line endings, and some contain Latin-1 bytes. Keep
   each file's existing line endings and encoding.
-- Write non-ASCII characters in XML as entities (e.g. `&#177;`).
+- Write non-ASCII characters in XML as entities (e.g. `&#177;`), also
+  in the German `res/values-de/strings.xml` (`&#228;` for a-umlaut).
+- User-visible text belongs in `res/values/strings.xml` with its German
+  in `res/values-de/strings.xml` (same keys, same order); none in
+  layouts or Java.  The native code's English row labels are translated
+  in `Strobe.shown_labels()`.
 - Do not `git add app/src/main` wholesale, because it would commit the built
   `.so` files.

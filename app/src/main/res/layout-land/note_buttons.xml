@@ -1,122 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- note mode.  the note with its octave is one display, centred between
+     the semitone and octave buttons -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_height="fill_parent"
     android:layout_width="fill_parent">
-    <TextView
-	android:layout_height="wrap_content"
-	android:layout_width="fill_parent"
-	android:gravity="center"
-	android:lines="1"
-	android:singleLine="true"
-	android:textAppearance="?android:attr/textAppearanceMedium"
-	android:text="semi" />
     <LinearLayout
 	android:layout_height="1dp"
 	android:layout_width="fill_parent"
-	android:layout_weight="1"
+	android:layout_weight="2"
 	android:orientation="horizontal">
-	<Button android:id="@+id/semi_minus"
+	<LinearLayout
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="-"
-	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:longClickable="true"
-	    android:onClick="semi_decr" />
+	    android:orientation="vertical">
+	    <Button android:id="@+id/semi_minus"
+		style="@style/Tuner.Button.Panel"
+		android:layout_height="1dp"
+		android:layout_width="fill_parent"
+		android:layout_weight="1"
+		android:text="@string/semi_minus"
+		android:longClickable="true"
+		android:onClick="semi_decr" />
+	    <Button
+		style="@style/Tuner.Button.Panel"
+		android:layout_height="1dp"
+		android:layout_width="fill_parent"
+		android:layout_weight="1"
+		android:text="@string/oct_minus"
+		android:onClick="oct_decr" />
+	</LinearLayout>
 	<TextView android:id="@+id/semi_display"
+	    style="@style/Tuner.Readout"
+	    android:layout_height="fill_parent"
+	    android:layout_width="1dp"
+	    android:layout_weight="1" />
+	<LinearLayout
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:gravity="center"
-	    android:lines="1"
-	    android:singleLine="true"
-	    android:textAppearance="?android:attr/textAppearanceLarge" 
-	    android:textColor="@color/text"
-		android:fontFamily="monospace" />
-	<Button android:id="@+id/semi_plus"
-	    android:layout_height="fill_parent"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:text="+"
-	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:longClickable="true"
-	    android:onClick="semi_incr" />
+	    android:orientation="vertical">
+	    <Button android:id="@+id/semi_plus"
+		style="@style/Tuner.Button.Panel"
+		android:layout_height="1dp"
+		android:layout_width="fill_parent"
+		android:layout_weight="1"
+		android:text="@string/semi_plus"
+		android:longClickable="true"
+		android:onClick="semi_incr" />
+	    <Button
+		style="@style/Tuner.Button.Panel"
+		android:layout_height="1dp"
+		android:layout_width="fill_parent"
+		android:layout_weight="1"
+		android:text="@string/oct_plus"
+		android:onClick="oct_incr" />
+	</LinearLayout>
     </LinearLayout>
     <TextView
+	style="@style/Tuner.Caption"
 	android:layout_height="wrap_content"
 	android:layout_width="fill_parent"
-	android:gravity="center"
-	android:lines="1"
-	android:singleLine="true"
-	android:textAppearance="?android:attr/textAppearanceMedium"
-	android:text="oct" />
+	android:text="@string/cent" />
     <LinearLayout
 	android:layout_height="1dp"
 	android:layout_width="fill_parent"
 	android:layout_weight="1"
 	android:orientation="horizontal">
 	<Button
+	    style="@style/Tuner.Button.Panel"
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="-"
-	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="oct_decr" />
-	<TextView android:id="@+id/oct_display"
-	    android:layout_height="fill_parent"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:gravity="center"
-	    android:lines="1"
-	    android:singleLine="true"
-	    android:textAppearance="?android:attr/textAppearanceLarge" 
-	    android:textColor="@color/text"
-		android:fontFamily="monospace" />
-	<Button
-	    android:layout_height="fill_parent"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:text="+"
-	    android:textAppearance="?android:attr/textAppearanceMedium"
-	    android:onClick="oct_incr" />
-    </LinearLayout>
-    <TextView
-	android:layout_height="wrap_content"
-	android:layout_width="fill_parent"
-	android:gravity="center"
-	android:lines="1"
-	android:singleLine="true"
-	android:textAppearance="?android:attr/textAppearanceMedium"
-	android:text="cent" />
-    <LinearLayout
-	android:layout_height="1dp"
-	android:layout_width="fill_parent"
-	android:layout_weight="1"
-	android:orientation="horizontal">
-	<Button
-	    android:layout_height="fill_parent"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:text="-"
-	    android:textAppearance="?android:attr/textAppearanceMedium"
+	    android:text="@string/minus"
 	    android:onClick="cent_decr" />
 	<TextView android:id="@+id/cent_display"
+	    style="@style/Tuner.Readout"
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:gravity="center"
-	    android:lines="1"
-	    android:singleLine="true"
-	    android:textAppearance="?android:attr/textAppearanceLarge" 
-	    android:textColor="@color/text"
-		android:fontFamily="monospace" />
+	    android:layout_weight="1" />
 	<Button
+	    style="@style/Tuner.Button.Panel"
 	    android:layout_height="fill_parent"
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
-	    android:text="+"
-	    android:textAppearance="?android:attr/textAppearanceMedium"
+	    android:text="@string/plus"
 	    android:onClick="cent_incr" />
     </LinearLayout>
 </LinearLayout>

@@ -14,8 +14,7 @@ import java.util.Arrays;
  *	dL = c/(n*f_actual) - c/(n*f_target),   n = 2 open, 4 stopped
  * whatever e is; positive means too long (flat).  c follows the
  * temperature, c = 331.3*sqrt(1+T/273.15) m/s; a degree off moves dL by
- * less than 0.2%.  The percentage is relative to the acoustic length
- * c/(n*f_target), i.e. f_target/f_actual - 1.
+ * less than 0.2%.  Only dL is shown, as the length to cut off or to add.
  *
  * With a strobe row focused, the estimate is that row's drift over the last
  * WINDOW ms that had sound (Strobe.focus_drift): it follows exactly the
@@ -48,7 +47,7 @@ public class pipelength {
 	private static final int[] STOPPED_PARTIALS = { 1, 3, 5 };
 
 	private final TunerTime ui;
-	private final TextView main_display, detail_display, temp_display;
+	private final TextView main_display, temp_display;
 	private final Button kind_button;
 
 	private final double[] hz = new double[MAX_EST];
@@ -60,8 +59,6 @@ public class pipelength {
 	pipelength(TunerTime ui_, View panel) {
 		ui = ui_;
 		main_display = (TextView)panel.findViewById(R.id.length_display);
-		detail_display = (TextView)panel.findViewById(
-				R.id.length_detail_display);
 		temp_display = (TextView)panel.findViewById(R.id.temp_display);
 		kind_button = (Button)panel.findViewById(R.id.pipe_kind_button);
 		kind_button.setOnClickListener(new View.OnClickListener() {
@@ -188,7 +185,8 @@ public class pipelength {
 		parms.temperature = Math.max(-20, Math.min(45,
 						parms.temperature));
 		temp_display.setText(parms.temperature + "\u00b0C");
-		kind_button.setText(parms.pipe_stopped ? "stopped" : "open");
+		kind_button.setText(parms.pipe_stopped ? R.string.pipe_stopped
+						       : R.string.pipe_open);
 
 		if ((parms.strobe_cents != last_target) ||
 		    (parms.focus_ratio != last_focus)) {
@@ -274,9 +272,8 @@ public class pipelength {
 			stable = false;
 			unclear = true;
 		} else {
-			main_display.setText("listening...");
+			main_display.setText(R.string.length_listening);
 			main_display.setTextColor(color(R.color.text_muted));
-			detail_display.setText(fmt("target %.2f Hz", f_base));
 			return;
 		}
 		boolean recent = (System.currentTimeMillis() - t < WINDOW);
@@ -284,12 +281,12 @@ public class pipelength {
 		if (unclear) {
 			/* the detector heard something that is no partial
 			 * of the target: no length for that */
-			main_display.setText("unclear" +
-					(recent ? "" : " (held)"));
+			main_display.setText(recent
+				? ui.getString(R.string.length_unclear)
+				: ui.getString(R.string.length_held,
+					ui.getString(R.string.length_unclear)));
 			main_display.setTextColor(color(!recent ?
 					R.color.text_muted : R.color.warn));
-			detail_display.setText(fmt("%+.0f ct", cents) +
-					fmt("  target %.2f Hz", f_base));
 			return;
 		}
 
@@ -302,29 +299,25 @@ public class pipelength {
 		double cs = speed_of_sound(parms.temperature);
 		double len_ref = 1000.0d * cs/(div*f_ref);	/* mm */
 		double mm = 1000.0d * cs/(div*f_act) - len_ref;
-		double pct = 100.0d * (f_ref/f_act - 1.0d);
 
 		String amm = fmt((Math.abs(mm) >= 100.0d) ? "%.0f" : "%.1f",
 				Math.abs(mm));
 		String s;
 		if (amm.equals("0.0") || amm.equals("0")) {
-			s = "0.0 mm: in tune";
+			s = ui.getString(R.string.length_in_tune);
 		} else {
-			s = amm + " mm " + ((mm > 0.0d) ? "too long" : "too short");
+			s = ui.getString((mm > 0.0d) ? R.string.length_too_long
+						     : R.string.length_too_short, amm);
 		}
 		if (!recent) {
-			s += " (held)";
+			s = ui.getString(R.string.length_held, s);
 		}
+		/* only the length to cut off or to add (percentage, cents,
+		 * spread and acoustic length are left out on purpose); the
+		 * colour says whether it has settled */
 		main_display.setText(s);
 		main_display.setTextColor(color(!recent ? R.color.text_muted :
 				stable ? R.color.accent : R.color.warn));
-		detail_display.setText(fmt("%+.2f %%", pct) +
-				fmt("  %+.1f ct", cents) +
-				(Double.isInfinite(spread) ? "  \u00b1--" :
-					fmt("  \u00b1%.1f ct", spread)) +
-				fmt("  L\u2248%.0f mm", len_ref) +
-				((oct != 0) ? fmt("  (%.0f Hz)", f_ref) : "") +
-				((part != 1) ? ("  (partial " + part + ")") : ""));
 	}
 
 	private int color(int id) {

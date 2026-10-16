@@ -2,12 +2,14 @@ package org.galexander.tunertime;
 
 public class note {
 	public int note_idx;
-	public String note_str;	/* in the note-names setting: "F#", "Fis",
-				 * or Helmholtz "fis'" (includes the octave) */
+	public String note_str;	/* pitch class in the note-names setting:
+				 * "F#", or German "Fis" */
 	public int cents;		/* tenths of a cent (preset.UNITS_PER_CENT) */
 	public String cents_str;
 	public int octave;
-	public String full_str;
+	public String name_oct;	/* with the octave: "F#4", German "fis1"
+				 * (superscript 1) */
+	public String full_str;	/* "F#4 +01.5c" */
 
 	private static final String NOTE_NAMES[] = new String[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
 		/* German: B is English Bb, H is English B */
@@ -26,55 +28,66 @@ public class note {
 
 		octave = (adj_cents+50*U)/(1200*U);
 
-		if (helmholtz()) {
-			note_str = helmholtz(note_idx, octave);
-			full_str = note_str + " " + cents_str;
-		} else {
-			note_str = class_name(note_idx);
-			full_str = note_str + "-" + octave + " " + cents_str;
-		}
+		note_str = class_name(note_idx);
+		name_oct = german() ? german(note_idx, octave)
+				    : (note_str + octave);
+		full_str = name_oct + " " + cents_str;
 	}
 
-		/* the note-names setting asks for Helmholtz octaves */
-	public static boolean helmholtz() {
-		return parms.note_names.equals("helmholtz");
+		/* the "German note names" setting */
+	public static boolean german() {
+		return parms.german_names;
 	}
 
 		/* name of pitch class idx (0 = C), without octave */
 	public static String class_name(int idx) {
-		return (parms.note_names.equals("english") ? NOTE_NAMES
-						: GERMAN_NAMES)[idx];
+		return (german() ? GERMAN_NAMES : NOTE_NAMES)[idx];
 	}
 
-		/* Helmholtz notation as German organ builders use it, written
-		 * in ASCII: lower case from the small octave up with one prime
-		 * per octave higher; upper case for the great octave with one
-		 * comma per octave lower (commas after the name, as in English
-		 * Helmholtz; German print puts a subscript first, e.g. 1C).
-		 *   C,, = C0 (Subkontra-C)    C, = C1 (Kontra-C, 32')
-		 *   C   = C2 (grosses C, 8')  c  = C3 (kleines c)
-		 *   c'  = C4 (middle C)       c'' = C5, a' = A4 */
-	public static String helmholtz(int idx, int oct) {
+		/* superscript and subscript digits 0-9 */
+	private static final String SUPER = "⁰¹²³⁴" +
+					    "⁵⁶⁷⁸⁹";
+	private static final String SUB = "₀₁₂₃₄" +
+					  "₅₆₇₈₉";
+
+		/* German notation as organ builders write it: capitals up to
+		 * the great octave, with a subscript digit counting the
+		 * octaves below it; lower case from the small octave up, with
+		 * a superscript digit counting the octaves above it.  (_n is
+		 * subscript n, ^n superscript n here.)
+		 *   C0 = C_2 (Subkontra-C)    C1 = C_1 (Kontra-C, 32')
+		 *   C2 = C   (grosses C, 8')  C3 = c   (kleines c)
+		 *   C4 = c^1 (middle C)       C5 = c^2, ... C8 = c^5
+		 *   A4 = a^1, A#4 = b^1, B3 = h, F#2 = Fis, C#1 = Cis_1 */
+	public static String german(int idx, int oct) {
 		String s = GERMAN_NAMES[idx];
 		if (oct <= 2) {
-			for (int i = oct; i < 2; i++) {
-				s += ",";
-			}
-		} else {
-			s = s.toLowerCase();
-			for (int i = 3; i < oct; i++) {
-				s += "'";
-			}
+			return (oct == 2) ? s : (s + digits(2-oct, SUB));
 		}
-		return s;
+		s = s.toLowerCase();
+		return (oct == 3) ? s : (s + digits(oct-3, SUPER));
+	}
+	private static String digits(int n, String set) {
+		String d = Integer.toString(n);
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < d.length(); i++) {
+			sb.append(set.charAt(d.charAt(i) - '0'));
+		}
+		return sb.toString();
+	}
+
+		/* label for octave oct (scientific numbering): "4", or with
+		 * German names the C of that octave, c^1 */
+	public static String octave_name(int oct) {
+		return german() ? german(0, oct) : Integer.toString(oct);
 	}
 
 		/* the strobe's corner label: "A49" (piano key 49 = A4), or with
-		 * Helmholtz names just the name, e.g. "a'" */
+		 * German names just the note, a^1 */
 	public static String piano_name(int cents_) {
 		note n = new note(cents_);
-		if (helmholtz()) {
-			return n.note_str;
+		if (german()) {
+			return n.name_oct;
 		}
 		int key = (cents_+50*U)/(100*U)+1;
 		return n.note_str + (((key < 1) || (key > 88)) ? "__"
@@ -85,7 +98,7 @@ public class note {
 		 * optional # or b, not part of a longer word, e.g. "wolf G#-Eb")
 		 * to the German names ("wolf Gis-Es") if those are selected */
 	public static String names_in(String s) {
-		if (parms.note_names.equals("english")) {
+		if (!german()) {
 			return s;
 		}
 		StringBuilder sb = new StringBuilder();
