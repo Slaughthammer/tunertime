@@ -339,6 +339,9 @@ public class TunerTime extends Activity
 		if (parms.organ_mode) {
 			/* organ mode toggles length mode instead of FFT */
 			parms.length_mode = !parms.length_mode;
+			if (parms.length_mode) {
+				length_focus();
+			}
 			length.clear();
 			place_strobe_extras();
 			update_status();
@@ -348,6 +351,27 @@ public class TunerTime extends Activity
 			set_mode(note_buttons, false);
 		} else {
 			set_mode(fft_buttons, true);
+		}
+	}
+
+	/* entering length mode with no row focused focuses the 8' row (the
+	 * pipe's own fundamental), if it is shown and not too high: the
+	 * detector alone reads up to 1.5 c low below 8' C while showing
+	 * stable (about 4.5 mm on a 32' stopped C), the row's strobe drift
+	 * holds to a few hundredths of a cent.  shown by the focus frame;
+	 * a row the user focused is left as it is, and tapping the row
+	 * releases it as usual */
+	private void length_focus() {
+		if (parms.focus_row() >= 0) {
+			return;
+		}
+		for (int i = 0; i < parms.num_strobes; i++) {
+			if (parms.row_ratio(i) == 1.0d) {
+				if (!Strobe.row_too_high(this, i)) {
+					parms.focus_ratio = 1.0d;
+				}
+				return;
+			}
 		}
 	}
 
