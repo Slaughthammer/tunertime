@@ -343,8 +343,18 @@ strobe_draw_htic(jint *bitmap_ptr, struct strobe_rec *s)
 	/* after a reset the band-pass starts from rest and rings at the row
 	 * frequency, which pulls the phase towards "in tune"; blocks are
 	 * ignored for this many filter time constants (filter_recalc: the
-	 * pole radius is 1-3*bw, so tau = 20/(3*freq) seconds) */
+	 * pole radius is 1-3*bw, so tau = 20/(3*freq) seconds).  The same
+	 * after an onset: a block more than DRIFT_ONSET times louder than
+	 * the one before, or, after a block below the gate, the first one
+	 * DRIFT_ONSET times above it (the key played after the row was set,
+	 * the usual order with mixture mode's Measure; a weak row merely
+	 * flickering about the gate is no onset).  The pipe's attack rings
+	 * the filter just the same, and the pipe's own speech (chiff, its
+	 * pitch settling) is off for some 10-50 ms in the treble, a few
+	 * dozen periods in the bass: so at least DRIFT_ONSET_SECS */
 #define DRIFT_SETTLE_TAUS 4.0
+#define DRIFT_ONSET 2.0
+#define DRIFT_ONSET_SECS 0.2
 
 static int focus_row = -1;
 static struct {
@@ -357,6 +367,10 @@ static struct {
 	double peak;		/* recent block amplitude, decaying */
 	double cycles, secs;	/* drift found in the last buffer */
 	int settle;		/* samples still to ignore after a reset */
+	int settle_len;		/* ... and after an onset */
+	double prev_amp;	/* the previous block's amplitude */
+	int quiet;		/* a block was below the gate since the
+				 * last onset */
 } drift;
 
 static void
@@ -380,6 +394,10 @@ drift_reset(void)
 	if (k < 1) k = 1;
 	drift.len = k*(double)sample_rate/s->freq + 0.5;
 	drift.settle = DRIFT_SETTLE_TAUS*20.0*sample_rate/(3.0*s->freq);
+	drift.settle_len = drift.settle;
+	if (drift.settle_len < DRIFT_ONSET_SECS*sample_rate) {
+		drift.settle_len = DRIFT_ONSET_SECS*sample_rate;
+	}
 }
 
 /* ratio is parms.focus_ratio: the focused partial's frequency over the
@@ -407,14 +425,24 @@ static void
 drift_block(void)
 {
 	double amp = 2.0*hypot(drift.re, drift.im)/drift.n;
-	double secs = drift.n/(double)sample_rate;
+	double secs = drift.n/(double)sample_rate, gate;
 	int ok;
 
 	drift.peak *= pow(0.5, secs/DRIFT_PEAK_HALFLIFE);
 	if (amp > drift.peak) {
 		drift.peak = amp;
 	}
-	ok = (amp >= DRIFT_MIN_AMP) && (amp >= DRIFT_REL_AMP*drift.peak);
+	gate = fmax(DRIFT_MIN_AMP, DRIFT_REL_AMP*drift.peak);
+	ok = (amp >= gate);
+	if (!ok) {
+		drift.quiet = 1;
+	}
+	if (ok && ((amp > DRIFT_ONSET*drift.prev_amp) ||
+		   (drift.quiet && (amp > DRIFT_ONSET*gate)))) {
+		drift.settle = drift.settle_len;
+		drift.quiet = 0;
+	}
+	drift.prev_amp = amp;
 	if (drift.settle > 0) {
 		drift.settle -= drift.n;
 		ok = 0;
