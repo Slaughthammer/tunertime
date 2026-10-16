@@ -43,7 +43,7 @@ double cents_to_freq(jobject this, jint cents, jint mult);
 void set_labels(jobject this, char *labels[MAX_STROBES]);
 void set_pianoname(jobject this, char *pianoname);
 void focus_drift(jobject this, double freq, double cycles, double secs,
-		double buf_secs);
+		double buf_secs, double amp);
 
 
 /* strobe.c: */

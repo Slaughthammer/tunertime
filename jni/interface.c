@@ -290,7 +290,7 @@ jni_init(JNIEnv *env_)
 	METHOD(st_time_to_die, strobe, "time_to_die", "()Z")
 	METHOD(st_check_surface, strobe, "check_surface", "()[I")
 	METHOD(st_pitch_detected, strobe, "pitch_detected", "(D)V")
-	METHOD(st_focus_drift, strobe, "focus_drift", "(DDDD)V")
+	METHOD(st_focus_drift, strobe, "focus_drift", "(DDDDD)V")
 	METHOD(tt_cents_to_freq, tunertime, "cents_to_freq", "(II)D")
 	STMETHOD(li_read, listener, "read", "([SI)I")
 	STMETHOD(li_get_samplerate, listener, "get_samplerate", "()I")
@@ -373,13 +373,14 @@ set_pianoname(jobject this, char *pianoname)
 	(*env)->DeleteLocalRef(env, j_pianoname);
 }
 
-/* hands the drift of the focused row in the last buffer to the UI */
+/* hands the drift of the focused row in the last buffer to the UI, with
+ * the mean amplitude of its usable blocks (strobe_drift_amp) */
 void
 focus_drift(jobject this, double freq, double cycles, double secs,
-		double buf_secs)
+		double buf_secs, double amp)
 {
 	(*env)->CallVoidMethod(env, this, mid_st_focus_drift,
-			freq, cycles, secs, buf_secs);
+			freq, cycles, secs, buf_secs, amp);
 }
 
 
@@ -540,8 +541,10 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 			 * focused row's drift is reported only now */
 			if (!fft_mode && !paused && (snd_buflen > 0) &&
 			    strobe_drift(&freq, &cycles, &secs)) {
+				double amp = 0.0;
+				strobe_drift_amp(&amp);
 				focus_drift(this, freq, cycles, secs,
-					snd_buflen/(double)sample_rate);
+					snd_buflen/(double)sample_rate, amp);
 			}
 			/* send bitmap to surface */
 			if ((*env)->CallBooleanMethod(env, this, mid_st_do_draw, bitmap, width, height)) {

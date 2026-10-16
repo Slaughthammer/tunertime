@@ -5,7 +5,7 @@
  *   sim_organ                 all scenarios, one line each, and a summary
  *   sim_organ -v [name]       ... with every note's details
  *   sim_organ -w dir [name]   also writes each scenario as dir/<name>.wav
- *   sim_organ -a N            N estimates in a row move the note (3)
+ *   sim_organ -a N            N estimates in a row move the note (4)
  *                             (16-bit mono, replay with test_pitch file.wav)
  *   name                      only scenarios whose name contains it
  *
@@ -38,7 +38,7 @@
  *  - the strobe drift of the row of the key's pipe (strobe.c, as fed to
  *    pipelength.drift_reading: 1 s window, stable when the halves agree
  *    within 1 c) and the mixture measurement (mixture.java: 2 s of usable
- *    drift, started MSTART after the key): error against the true mean
+ *    drift, 3 s on a row below 8', started MSTART after the key): error against the true mean
  *    pitch of the focused partial over the time it took.
  */
 #include <math.h>
@@ -65,18 +65,32 @@ double cents_to_freq(jobject t, jint cents, jint mult) {
 }
 void set_labels(jobject t, char *l[MAX_STROBES]) {}
 void set_pianoname(jobject t, char *p) {}
-void focus_drift(jobject t, double f, double c, double s, double b) {}
+void focus_drift(jobject t, double f, double c, double s, double b,
+		double a) {}
 static jint bitmap[400*700];
 
 /* ---- app constants emulated (Java side) ---- */
 #define BUFLEN		1024	/* samples per audio buffer */
-static int det_agree = 3;	/* TunerTime.DET_AGREE; -a N */
+static int det_agree = 4;	/* TunerTime.DET_AGREE; -a N */
 #define LEN_WINDOW	1.0	/* pipelength.WINDOW */
 #define LEN_MIN_EST	5	/* pipelength.MIN_EST */
 #define STABLE_CENTS	1.0	/* pipelength.STABLE_CENTS */
 #define DRIFT_MIN_SECS	0.3	/* pipelength.DRIFT_MIN_SECS */
 #define MEASURE_SECONDS	2.0	/* mixture.MEASURE_SECONDS */
+#ifndef MEASURE_SECONDS_LOW
+#define MEASURE_SECONDS_LOW 3.0	/* mixture.MEASURE_SECONDS_LOW, rows
+				 * below 8' (focus ratio < 1) */
+#endif
 #define MSTART		0.5	/* measure pressed this long after the key */
+/* how long 16' and 32' keys are held: long enough for MSTART, the
+ * settling after the onset and MEASURE_SECONDS_LOW, as the tuner holds
+ * the key until the measurement is done */
+#ifndef PEDAL_HOLD
+#define PEDAL_HOLD	4.5
+#endif
+#ifndef HOLD_32
+#define HOLD_32		5.0
+#endif
 #define BEAT_SWING	0.7	/* strobe_drift_amp(): (hi-lo)/(hi+lo) over a
 				 * measurement that means a second pipe of
 				 * about the same level */
@@ -827,7 +841,9 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 						if (a > mx_hi) mx_hi = a;
 					}
 				}
-				if (mx_s >= MEASURE_SECONDS) {
+				if (mx_s >= ((key_focus(S, &S->k[ki]) <
+					      1.0 - 1e-6) ? MEASURE_SECONDS_LOW
+							  : MEASURE_SECONDS)) {
 					struct key *k = &S->k[ki];
 					int j = focus_pipe(S, ki);
 					double f_row = cents_to_freq(0,
@@ -1138,7 +1154,7 @@ static void sc_early(void) {
 static void sc_early16(void) {
 	church("Subbass measure early");
 	S->mstart = -0.3;
-	run_keys(pedal, 7, 0.5, STOPPED, 4000, 0.3, 3.5, 0.8);
+	run_keys(pedal, 7, 0.5, STOPPED, 4000, 0.3, PEDAL_HOLD, 0.8);
 }
 static void sc_hot(void) {
 	church("Principal hot+AGC+clip");
@@ -1172,35 +1188,35 @@ static void sc_krumm(void) {
 }
 static void sc_subbass(void) {
 	church("Subbass 16' phone");
-	run_keys(pedal, 7, 0.5, STOPPED, 4000, 0.3, 3.5, 0.8);
+	run_keys(pedal, 7, 0.5, STOPPED, 4000, 0.3, PEDAL_HOLD, 0.8);
 }
 static void sc_subbass4(void) {
 	church("Subbass 16' 4th-ord 200Hz");
 	S->mic_hp = 200.0; S->mic_ord = 4;
-	run_keys(pedal, 7, 0.5, STOPPED, 4000, 0.3, 3.5, 0.8);
+	run_keys(pedal, 7, 0.5, STOPPED, 4000, 0.3, PEDAL_HOLD, 0.8);
 }
 static void sc_subhum(void) {
 	church("Subbass 16' strong hum");
 	S->hum = 150.0; S->rumble = 40.0;
-	run_keys(pedal, 7, 0.5, STOPPED, 4000, 0.3, 3.5, 0.8);
+	run_keys(pedal, 7, 0.5, STOPPED, 4000, 0.3, PEDAL_HOLD, 0.8);
 }
 static void sc_prin16(void) {
 	church("Principal 16' phone");
-	run_keys(pedal, 7, 0.5, OPEN, 4000, 0.3, 3.5, 0.8);
+	run_keys(pedal, 7, 0.5, OPEN, 4000, 0.3, PEDAL_HOLD, 0.8);
 }
 static void sc_32(void) {
 	static const int n[] = { C2, C2+2, C2+4, C2+7, C2+9 };
 	church("Untersatz 32' phone");
-	run_keys(n, 5, 0.25, STOPPED, 6000, 0.2, 4.0, 1.0);
+	run_keys(n, 5, 0.25, STOPPED, 6000, 0.2, HOLD_32, 1.0);
 }
 static void sc_prin32(void) {
 	static const int n[] = { C2, C2+2, C2+4, C2+7, C2+9 };
 	church("Principal 32' phone");
-	run_keys(n, 5, 0.25, OPEN, 6000, 0.2, 4.0, 1.0);
+	run_keys(n, 5, 0.25, OPEN, 6000, 0.2, HOLD_32, 1.0);
 }
 static void sc_posaune(void) {
 	church("Posaune 16' phone");
-	run_keys(pedal, 7, 0.5, REED, 4000, 0.0, 3.5, 0.8);
+	run_keys(pedal, 7, 0.5, REED, 4000, 0.0, PEDAL_HOLD, 0.8);
 }
 static void sc_high2(void) {
 	static const int n[] = { C5, C5+5, C6, C6+4, C6+7, C7 };
@@ -1329,7 +1345,7 @@ static void sc_speech_over(void) {
 static void sc_steps_over(void) {
 	church("Subbass + footsteps");
 	S->steps = 600.0; S->steps_on = 0.0; S->steps_off = 1e9;
-	run_keys(pedal, 7, 0.5, STOPPED, 4000, 0.3, 3.5, 0.8);
+	run_keys(pedal, 7, 0.5, STOPPED, 4000, 0.3, PEDAL_HOLD, 0.8);
 }
 static void sc_noise(void) {
 	church("noise: blower+wind");

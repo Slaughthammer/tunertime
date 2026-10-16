@@ -45,7 +45,8 @@ double cents_to_freq(jobject t, jint cents, jint mult) {
 }
 void set_labels(jobject t, char *l[MAX_STROBES]) {}
 void set_pianoname(jobject t, char *p) {}
-void focus_drift(jobject t, double f, double c, double s, double b) {}
+void focus_drift(jobject t, double f, double c, double s, double b,
+		double a) {}
 
 static jint *bitmap;
 

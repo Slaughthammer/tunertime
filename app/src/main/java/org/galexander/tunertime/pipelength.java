@@ -36,6 +36,15 @@ public class pipelength {
 	private static final double STABLE_CENTS = 1.0;
 	private static final int MIN_EST = 5;
 	private static final double UNCLEAR_CENTS = 150.0;
+		/* the length is shown in 0.01 mm when a cent is less than
+		 * MM_PER_CENT_FINE mm of the pipe (about C6 open, C5 stopped
+		 * and up), in 1 mm when it is MM_PER_CENT_COARSE or more
+		 * (about D2 open, D1 stopped and down), in 0.1 mm between
+		 * (tools/measure/FINDINGS.md Q4) */
+	private static final double MM_PER_CENT_FINE = 0.1;
+	private static final double MM_PER_CENT_COARSE = 1.0;
+		/* "in tune" within this, whatever the length rounds to */
+	private static final double IN_TUNE_CENTS = 0.2;
 		/* drift: the strobe pattern steps by up to half a stripe per
 		 * block of 8 periods (jni/strobe.c DRIFT_MAX_PERIODS), i.e.
 		 * up to freq/16 Hz or 105 cents; trusted a bit inside that */
@@ -307,11 +316,22 @@ public class pipelength {
 		double len_ref = 1000.0d * cs/(div*f_ref);	/* mm */
 		double mm = 1000.0d * cs/(div*f_act) - len_ref;
 
-		String amm = fmt((Math.abs(mm) >= 100.0d) ? "%.0f" : "%.1f",
-				Math.abs(mm));
+		/* the step shown follows the pipe: a cent is
+		 * len_ref*ln2/1200 mm (6 mm on a 32' C, 0.01 mm at the top),
+		 * and "in tune" is a pitch, not a rounded length */
+		double mm_per_cent = len_ref * Math.log(2.0d)/1200.0d;
+		int dec = (mm_per_cent < MM_PER_CENT_FINE) ? 2 :
+			  (mm_per_cent < MM_PER_CENT_COARSE) ? 1 : 0;
+		boolean in_tune = (Math.abs(cents) < IN_TUNE_CENTS);
+		String amm = fmt("%." + dec + "f", in_tune ? 0.0d : Math.abs(mm));
+		while (!in_tune && (dec < 3) && (Double.parseDouble(amm) == 0.0d)) {
+			/* out of tune but below the step: one more digit */
+			dec++;
+			amm = fmt("%." + dec + "f", Math.abs(mm));
+		}
 		String s;
-		if (amm.equals("0.0") || amm.equals("0")) {
-			s = ui.getString(R.string.length_in_tune);
+		if (in_tune) {
+			s = ui.getString(R.string.length_in_tune_mm, amm);
 		} else {
 			s = ui.getString((mm > 0.0d) ? R.string.length_too_long
 						     : R.string.length_too_short, amm);

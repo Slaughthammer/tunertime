@@ -357,6 +357,9 @@ public class TunerTime extends Activity
 		if (parms.organ_mode) {
 			/* organ mode toggles length mode instead of FFT */
 			parms.length_mode = !parms.length_mode;
+			if (parms.length_mode) {
+				length_focus();
+			}
 			length.clear();
 			place_strobe_extras();
 			update_status();
@@ -369,11 +372,36 @@ public class TunerTime extends Activity
 		}
 	}
 
+	/* entering length mode with no row focused focuses the 8' row (the
+	 * pipe's own fundamental), if it is shown and not too high: the
+	 * detector alone reads up to 1.5 c low below 8' C while showing
+	 * stable (about 4.5 mm on a 32' stopped C), the row's strobe drift
+	 * holds to a few hundredths of a cent.  shown by the focus frame;
+	 * a row the user focused is left as it is, and tapping the row
+	 * releases it as usual */
+	private void length_focus() {
+		if (parms.focus_row() >= 0) {
+			return;
+		}
+		for (int i = 0; i < parms.num_strobes; i++) {
+			if (parms.row_ratio(i) == 1.0d) {
+				if (!Strobe.row_too_high(this, i)) {
+					parms.focus_ratio = 1.0d;
+				}
+				return;
+			}
+		}
+	}
+
 	/* auto note detection: off -> follow; then tap toggles follow/lock,
 	 * long press turns it off.  only note mode follows.  the state is
 	 * parms.auto_note and parms.auto_locked, kept across rotation */
 	private int det_semi = Integer.MIN_VALUE, det_count = 0;
-	private static final int DET_AGREE = 3;	/* estimates in a row */
+	/* estimates in a row.  4 rather than 3 (tools/sim_organ.c -a):
+	 * loud speech near the phone moves the note 3 times in 40 s
+	 * instead of 6, a Principal with speech around it never to a wrong
+	 * note (3 before), for about 0.09 s more latency */
+	private static final int DET_AGREE = 4;
 
 	/* Corrections while following.  If the user moves the note by hand
 	 * (semitone or octave buttons) while follow is on, within
@@ -761,7 +789,8 @@ public class TunerTime extends Activity
 	}
 
 	/* from the strobe thread, after each buffer while a row is focused */
-	public void focus_drift(double freq, double cycles, double secs) {
+	public void focus_drift(double freq, double cycles, double secs,
+				double amp) {
 		if (parms.length_mode) {
 			/* shown with the next pitch estimate (on_pitch) */
 			length.add_drift(freq, cycles, secs);
@@ -769,7 +798,7 @@ public class TunerTime extends Activity
 		if (!mix.measuring()) {
 			return;
 		}
-		final double cents = mix.feed(freq, cycles, secs);
+		final double cents = mix.feed(freq, cycles, secs, amp);
 		runOnUiThread(new Runnable() {
 			public void run() {
 				if (!parms.mixture_mode) {
@@ -841,9 +870,14 @@ public class TunerTime extends Activity
 		} else if (parms.mixture_ref > 0.0d) {
 			/* the rank the target was taken from, which need not
 			 * be the row focused now (the rank being tuned) */
-			mixture_status.setText(getString(
-				R.string.mixture_measured,
-				parms.footage_str(parms.mixture_ref)));
+			String s = getString(R.string.mixture_measured,
+					parms.footage_str(parms.mixture_ref));
+			if (mix.beating()) {
+				/* the result stands, but may be the louder
+				 * of two pipes or between them */
+				s += "\n" + getString(R.string.mixture_beating);
+			}
+			mixture_status.setText(s);
 		} else if (f != null) {
 			mixture_status.setText(R.string.mixture_tap_measure);
 		} else {
