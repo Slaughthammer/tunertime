@@ -36,7 +36,12 @@ android {
         versionCode = 17
         versionName = "17.0"
         manifestPlaceholders["appLabel"] = "TunerTime"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+    // UI layout tests (app/src/androidTest) run against the dev build,
+    // so they install next to the Play Store app on a real phone:
+    // ./gradlew connectedDevAndroidTest
+    testBuildType = "dev"
 
     buildTypes {
         getByName("release") {
@@ -69,6 +74,13 @@ android {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.uiautomator)
+    androidTestImplementation(libs.accessibility.test.framework)
+    androidTestImplementation(libs.guava)
 /*
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
