@@ -25,7 +25,8 @@
  *
  * pitch_hint() passes the partial the user focused on (organ mode): then
  * the note is that partial's peak / focus ratio, the peak being looked for
- * within half an octave of where the shown note puts it.
+ * within half an octave of where the shown note puts it (see focus() for
+ * which of the partials in reach is taken).
  */
 #include <math.h>
 #include <string.h>
@@ -272,28 +273,66 @@ try_f0(struct peak *pk, int n, double f0, double *best, double *best_f)
 	}
 }
 
-/* with a focus hint: the strongest partial of the heard tone near where
- * the shown note puts the focused partial, divided back down; or, with
- * the note unknown or the partial not in reach, the heard fundamental is
- * taken as the focused partial */
+/* is f within tolerance of a harmonic 1..MAX_EXPL of f0 */
+static int
+harmonic(double f, double f0)
+{
+	int h = (int)floor(f/f0 + 0.5);
+	return (h >= 1) && (h <= MAX_EXPL) &&
+		(fabs(f - h*f0) < tolerance(h, f0));
+}
+
+/* with a focus hint: the partial of the heard tone near where the shown
+ * note puts the focused partial, divided back down; or, with the note
+ * unknown or the partial not in reach, the heard fundamental is taken as
+ * the focused partial.
+ *
+ * The span reaches the neighbouring ranks of a mixture (the 1 1/3' is 6
+ * times the 8', the 1' 8 times, 498 cents apart), and the loudest partial
+ * in it need not be the focused one.  A mixture's ranks are all harmonics
+ * of the key, so the note a candidate stands for (its frequency / focus
+ * ratio) should be
+ *  - plausible: the heard fundamental f0, the ranks' common divisor, is a
+ *    whole multiple or fraction of it (2', 1 1/3', 1' = 4, 6, 8 times the
+ *    8': f0 = 2 times), and
+ *  - explain the partials up to the candidate: the 1' as "1 1/3'" stands
+ *    for F3 on a C3 key, and leaves the real 1 1/3' (G5) unexplained.
+ * Ties go to the stronger partial.  Candidates are harmonics of f0, f0/2
+ * or f0/3, as f0 may be one rank when the common divisor is weak */
 static double
 focus(struct peak *pk, int n, double f0)
 {
 	if (expect_hz > 0.0) {
-		double t = focus_ratio*expect_hz, best = 0.0, bestf = 0.0;
-		double lim = pow(2.0, FOCUS_SPAN/1200.0);
-		int i;
+		double t = focus_ratio*expect_hz, lim, bestf = 0.0;
+		double best_m = 0.0, best_x = -1.0;
+		int best_pl = -1, i, j;
+		lim = pow(2.0, FOCUS_SPAN/1200.0);
 		for (i = 0; i < n; i++) {
-			int h = (int)floor(pk[i].f/f0 + 0.5);
-			if ((pk[i].f < t*lim) && (pk[i].f > t/lim) &&
-			    (h >= 1) && (h <= MAX_EXPL) &&
-			    (fabs(pk[i].f - h*f0) < tolerance(h, f0)) &&
-			    (pk[i].m > best)) {
-				best = pk[i].m;
+			double note = pk[i].f/focus_ratio, r, x, e = 0.0, all = 0.0;
+			int pl;
+			if ((pk[i].f >= t*lim) || (pk[i].f <= t/lim) ||
+			    !(harmonic(pk[i].f, f0) || harmonic(pk[i].f, f0/2.0) ||
+			      harmonic(pk[i].f, f0/3.0))) {
+				continue;
+			}
+			r = (f0 > note) ? f0/note : note/f0;
+			pl = (fabs(r - floor(r + 0.5)) < 0.02*r);
+			for (j = 0; j < n; j++) {
+				if (pk[j].f > pk[i].f*1.01) continue;
+				all += pk[j].m;
+				if (harmonic(pk[j].f, note)) e += pk[j].m;
+			}
+			x = e/all;
+			if ((pl > best_pl) ||
+			    ((pl == best_pl) && ((x > best_x + 0.05) ||
+			      ((x > best_x - 0.05) && (pk[i].m > best_m))))) {
+				best_pl = pl;
+				best_x = x;
+				best_m = pk[i].m;
 				bestf = pk[i].f;
 			}
 		}
-		if (best > 0.0) {
+		if (bestf > 0.0) {
 			return bestf/focus_ratio;
 		}
 	}
