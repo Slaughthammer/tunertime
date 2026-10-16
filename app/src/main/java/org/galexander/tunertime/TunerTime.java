@@ -609,8 +609,10 @@ public class TunerTime extends Activity
 
 	private void update_mixture_status() {
 		note n = new note(parms.mixture_cents);
-		mixture_display.setText(n.note_str + n.octave + " " +
-					n.cents_str);
+		/* Helmholtz names carry the octave already */
+		mixture_display.setText(n.note_str +
+				(note.helmholtz() ? "" : ("" + n.octave)) +
+				" " + n.cents_str);
 		String f = (parms.focus_row() >= 0) ?
 				parms.footage_str(parms.focus_ratio) : null;
 		if (mix.measuring()) {
