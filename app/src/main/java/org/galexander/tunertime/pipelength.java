@@ -199,19 +199,26 @@ public class pipelength {
 		}
 		/* the note's pipe; a focused partial (4', 2 2/3', ...)
 		 * stands for its own rank */
-		double f_base = ui.cents_to_freq(parms.strobe_cents, 1);
+		double f_note = ui.cents_to_freq(parms.strobe_cents, 1);
+		double f_base = f_note;
 		if (parms.focus_ratio > 0.0d) {
 			f_base *= parms.focus_ratio;
 		}
 
-		/* pitches in the WINDOW up to the latest, as cents off f_base */
+		/* pitches in the WINDOW up to the latest, as cents off f_base.
+		 * with a row focused the detector gives the focused
+		 * partial divided by its ratio (jni/pitch.h), i.e. the note
+		 * it stands for, so that is compared with the note: hz/f_note
+		 * is the focused pipe's pitch over f_base.  (Compared with
+		 * f_base itself, a 4' rank came out as the 8' pipe an octave
+		 * down, twice the length, and a quint rank as "unclear".) */
 		double[] c = new double[MAX_EST];
 		int n = 0;
 		for (int i = n_est-1; i >= 0; i--) {
 			if (when[n_est-1] - when[i] > WINDOW) {
 				break;
 			}
-			c[n++] = 1200.0d * Math.log(hz[i]/f_base) / Math.log(2.0d);
+			c[n++] = 1200.0d * Math.log(hz[i]/f_note) / Math.log(2.0d);
 		}
 		double det = Double.NaN, det_spread = 0.0d;
 		int det_oct = 0, det_part = 1;
