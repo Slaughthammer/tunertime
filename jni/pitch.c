@@ -6,12 +6,25 @@
  * samples an N-point FFT is taken over the last N.  At 44.1kHz that is a
  * 0.37s window with 2.7Hz bins, analysed about 11 times a second.
  *
- * Peaks are picked from the magnitude spectrum, then every peak divided by
- * 1..MAX_DIV is scored as a fundamental by how much peak energy lies on its
- * harmonics 1..MAX_HARM.  Lower harmonics weigh more, which keeps the octave
- * below from winning on even harmonics alone, while a missing fundamental
- * (low piano and organ pipes) is still found from its upper partials.  The
- * per-partial tolerance is wide enough for piano inharmonicity.
+ * Peaks are picked from the magnitude spectrum.  Candidate fundamentals
+ * are every peak divided by 1..MAX_DIV, plus the spacing between strong
+ * neighbouring peaks (a missing or weak fundamental: the low organ pipe
+ * through a phone mic, a reed whose 3rd-5th partials dominate).  Each is
+ * scored by how much peak energy lies on its harmonics 1..MAX_HARM.  Lower
+ * harmonics weigh more, which keeps the octave below from winning on even
+ * harmonics alone.  A spacing candidate alone would be an octave high on a
+ * stopped pipe (Gedackt, Subbass: odd partials 1,3,5.. only, spaced 2*f0),
+ * but there it matches nothing at odd multiples, while peak/3 or peak/5
+ * does, so the score sorts that out.  The per-partial tolerance is wide
+ * enough for piano inharmonicity.
+ *
+ * Confidence is the share of all peak energy that lies on harmonics of the
+ * winner (up to MAX_EXPL), so reeds with 20 partials and mixtures count as
+ * clear tones, while noise, whose peaks fall anywhere, does not.
+ *
+ * pitch_hint() passes the partial the user focused on (organ mode): then
+ * the note is that partial's peak / focus ratio, the peak being looked for
+ * within half an octave of where the shown note puts it.
  */
 #include <math.h>
 #include <string.h>
@@ -20,18 +33,26 @@
 #define N		8192
 #define LGN		13
 #define HOP		(N/4)
-#define MAX_PK		16
-#define MAX_DIV		4
-#define MAX_HARM	8
+#define MAX_PK		32
+#define MAX_DIV		6
+#define MAX_GAP		8	/* strongest peaks whose spacings are tried */
+#define MAX_HARM	12
+#define MAX_EXPL	32	/* harmonics counted for the confidence */
 #define TOL_CENTS	40.0
-#define MIN_F0		26.0	/* a bit under A0 */
+#define TOL_SPACING	0.2	/* ... but never more than this * f0 */
+#define MIN_F0		15.0	/* a bit under C0, the 32' organ C */
 #define MAX_F0		4300.0	/* a bit over C8 */
 #define MAX_PARTIAL	9000.0
 #define MIN_RMS		60.0	/* 16-bit units; quieter input is ignored */
-#define MIN_CONF	0.65	/* share of peak energy the winner explains;
-				 * plucked strings on the phone mic score
-				 * 0.7-0.98, decaying tails ~0.55-0.6 */
+#define MIN_CONF	0.7	/* share of peak energy on the winner's
+				 * harmonics; synthetic tones score
+				 * 0.74-1, the lowest at the top end,
+				 * where aliases from the 2:1 decimation
+				 * add stray peaks */
 #define SINE_CONF	0.8	/* share a lone partial needs to stand alone */
+#define FOCUS_SPAN	550.0	/* cents either side of the expected partial,
+				 * under half an octave so that only one
+				 * octave of it can be in reach */
 
 static double fs;		/* sample rate after decimation */
 static float ring[N];		/* decimated input, circular */
@@ -39,6 +60,7 @@ static int ring_pos;
 static int fresh;		/* decimated samples since the last analysis */
 static int odd;			/* waiting for the second sample of a pair */
 static float pair;
+static double focus_ratio, expect_hz;	/* pitch_hint() */
 
 static double re[N], im[N], win[N], mag[N/2];
 static double tw_r[N/2], tw_i[N/2];
@@ -63,6 +85,13 @@ pitch_init(int sample_rate)
 		tw_r[i] = cos(2.0*M_PI*i/N);
 		tw_i[i] = -sin(2.0*M_PI*i/N);
 	}
+}
+
+void
+pitch_hint(double focus, double expect)
+{
+	focus_ratio = (focus > 0.0) ? focus : 0.0;
+	expect_hz = (expect > 0.0) ? expect : 0.0;
 }
 
 static void
@@ -128,20 +157,29 @@ find_peaks(struct peak *pk)
 	return n;
 }
 
+/* how far (Hz) partial h of f0 may lie from h*f0 */
+static double
+tolerance(int h, double f0)
+{
+	static double lim = 0.0;
+	if (lim == 0.0) lim = pow(2.0, TOL_CENTS/1200.0) - 1.0;
+	double t = h*f0*lim;
+	return (t < TOL_SPACING*f0) ? t : TOL_SPACING*f0;
+}
+
 /* scores f0 against the peaks; *f0 is refined from the matched partials */
 static double
 score(struct peak *pk, int n, double *f0)
 {
 	double s = 0.0, w = 1.0, fsum = 0.0, fwt = 0.0;
 	int h, i, matched = 0;
-	double lim = pow(2.0, TOL_CENTS/1200.0);
 
 	for (h = 1; h <= MAX_HARM; h++, w *= 0.85) {
-		double t = h * *f0, best = 0.0, bestf = 0.0;
+		double t = h * *f0, tol = tolerance(h, *f0);
+		double best = 0.0, bestf = 0.0;
 		if (t > MAX_PARTIAL) break;
 		for (i = 0; i < n; i++) {
-			double r = pk[i].f / t;
-			if ((r < lim) && (r > 1.0/lim) && (pk[i].m > best)) {
+			if ((fabs(pk[i].f - t) < tol) && (pk[i].m > best)) {
 				best = pk[i].m;
 				bestf = pk[i].f;
 			}
@@ -160,10 +198,65 @@ score(struct peak *pk, int n, double *f0)
 	return s;
 }
 
+/* peak energy on harmonics 1..MAX_EXPL of f0 */
+static double
+explained(struct peak *pk, int n, double f0)
+{
+	double e = 0.0;
+	int i;
+	for (i = 0; i < n; i++) {
+		int h = (int)floor(pk[i].f/f0 + 0.5);
+		if ((h >= 1) && (h <= MAX_EXPL) &&
+		    (fabs(pk[i].f - h*f0) < tolerance(h, f0))) {
+			e += pk[i].m;
+		}
+	}
+	return e;
+}
+
+static void
+try_f0(struct peak *pk, int n, double f0, double *best, double *best_f)
+{
+	if ((f0 < MIN_F0) || (f0 > MAX_F0)) return;
+	double s = score(pk, n, &f0);
+	if (s > *best*1.0001) {
+		*best = s;
+		*best_f = f0;
+	}
+}
+
+/* with a focus hint: the strongest partial of the heard tone near where
+ * the shown note puts the focused partial, divided back down; or, with
+ * the note unknown or the partial not in reach, the heard fundamental is
+ * taken as the focused partial */
+static double
+focus(struct peak *pk, int n, double f0)
+{
+	if (expect_hz > 0.0) {
+		double t = focus_ratio*expect_hz, best = 0.0, bestf = 0.0;
+		double lim = pow(2.0, FOCUS_SPAN/1200.0);
+		int i;
+		for (i = 0; i < n; i++) {
+			int h = (int)floor(pk[i].f/f0 + 0.5);
+			if ((pk[i].f < t*lim) && (pk[i].f > t/lim) &&
+			    (h >= 1) && (h <= MAX_EXPL) &&
+			    (fabs(pk[i].f - h*f0) < tolerance(h, f0)) &&
+			    (pk[i].m > best)) {
+				best = pk[i].m;
+				bestf = pk[i].f;
+			}
+		}
+		if (best > 0.0) {
+			return bestf/focus_ratio;
+		}
+	}
+	return f0/focus_ratio;
+}
+
 static double
 analyse(double *conf)
 {
-	int i, n, d;
+	int i, j, n, d;
 	double mean = 0.0, rms = 0.0, total = 0.0, best = 0.0, best_f = 0.0;
 	struct peak pk[MAX_PK];
 
@@ -190,29 +283,41 @@ analyse(double *conf)
 	for (i = 0; i < n; i++) {
 		total += pk[i].m;
 	}
-	for (i = 0; i < n; i++) {
-		for (d = 1; d <= MAX_DIV; d++) {
-			double f0 = pk[i].f/d;
-			if ((f0 < MIN_F0) || (f0 > MAX_F0)) continue;
-			double s = score(pk, n, &f0);
-			if (s > best*1.0001) {
-				best = s;
-				best_f = f0;
-			}
-		}
-	}
 	if (total <= 0.0) {
 		return 0.0;
+	}
+	for (i = 0; i < n; i++) {
+		for (d = 1; d <= MAX_DIV; d++) {
+			try_f0(pk, n, pk[i].f/d, &best, &best_f);
+		}
+	}
+	/* spacings: of the strongest few, the gap from each to the next
+	 * one above it in frequency */
+	for (i = 0; (i < n) && (i < MAX_GAP); i++) {
+		double next = 0.0;
+		for (j = 0; (j < n) && (j < MAX_GAP); j++) {
+			if ((pk[j].f > pk[i].f*1.02) &&
+			    ((next == 0.0) || (pk[j].f < next))) {
+				next = pk[j].f;
+			}
+		}
+		if (next > 0.0) {
+			try_f0(pk, n, next-pk[i].f, &best, &best_f);
+		}
 	}
 	if ((best == 0.0) && (pk[0].f >= MIN_F0) && (pk[0].f <= MAX_F0)) {
 		/* no harmonic series: a lone strong partial (flute stop,
 		 * tuning fork, top octave) is the fundamental itself */
 		*conf = pk[0].m/total;
-		return (*conf >= SINE_CONF) ? pk[0].f : 0.0;
+		best_f = pk[0].f;
+		if (*conf < SINE_CONF) return 0.0;
+	} else if (best > 0.0) {
+		*conf = explained(pk, n, best_f)/total;
+		if (*conf < MIN_CONF) return 0.0;
+	} else {
+		return 0.0;
 	}
-	/* best is weighted, so this undercounts a little; that's fine */
-	*conf = best/total;
-	return (*conf >= MIN_CONF) ? best_f : 0.0;
+	return (focus_ratio > 0.0) ? focus(pk, n, best_f) : best_f;
 }
 
 int

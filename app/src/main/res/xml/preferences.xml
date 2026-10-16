@@ -62,4 +62,11 @@
 		android:summary="If the selected preset has one note for each of the 12 semitones, note mode tunes to its offsets"
 		android:defaultValue="true" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="Debug">
+	<CheckBoxPreference
+		android:key="debug_rec"
+		android:title="Debug recordings"
+		android:summary="When you correct the followed note by hand, save 7 s of microphone input as WAV (for improving the note detection). Get them with: adb pull /sdcard/Android/data/&lt;package&gt;/files/recordings"
+		android:defaultValue="@bool/debug_rec_default" />
+    </PreferenceCategory>
 </PreferenceScreen>

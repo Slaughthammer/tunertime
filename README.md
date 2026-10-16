@@ -13,15 +13,30 @@ this fork.
 
 - **Auto note detection** (`jni/pitch.c`). A separate detector runs next to
   the strobes: 2:1 decimation, an 8192-point Hann FFT every 2048 samples, and
-  a harmonic-sum search over the spectral peaks, gated on level and
-  confidence. Note mode follows after 3 agreeing estimates, holds on silence
-  and keeps the cent offset set by hand. The "auto" button cycles
-  off → follow → lock → follow; a long press turns it off. Tested in the field
-  with a ukulele only; piano, organ pipes (mixtures) and low bass strings are
-  the likely octave-error cases.
+  a harmonic-sum search over the spectral peaks (candidates: each peak / 1..6
+  and the spacing of neighbouring peaks, so a missing or weak fundamental is
+  found, and stopped pipes with odd partials only do not come out an octave
+  high), gated on level and on the share of peak energy that lies on the
+  winner's harmonics. Down to C0 (32' C). Note mode follows after 3 agreeing
+  estimates, holds on silence and keeps the cent offset set by hand. The
+  "auto" button cycles off → follow → lock → follow; a long press turns it
+  off. In organ mode a focused partial (`parms.focus_ratio`) makes the note
+  that partial's peak / ratio. Tested in the field with a ukulele only.
+- **Corrections while following** (`TunerTime.on_pitch`): moving the note by
+  hand while following remembers the interval from the detected note (e.g.
+  an octave for a 4' stop) and applies it to later detections, until auto is
+  turned off, 10 s of silence, or the correction is undone.
+- **Debug recordings** (`DebugRecorder.java`, `jni/record.c`; Settings →
+  "Debug recordings", on in the dev build): each hand correction while
+  following saves 5 s before and 2 s after as a 16-bit mono WAV plus a .txt
+  with the detected and the corrected note. Get them with
+  `adb pull /sdcard/Android/data/org.galexander.tunertime.dev/files/recordings`.
 - **Bench test for the detector** (`tools/test_pitch.c`): synthetic tones from
-  A0 to C8 (harmonic, missing fundamental, piano inharmonicity, sine, noisy).
-  It is plain C, so build it with any compiler, together with `jni/pitch.c`.
+  A0 to C8 (harmonic, missing fundamental, piano inharmonicity, sine, noisy)
+  and organ pipes (Gedackt, Quintadena, Principal, reeds, 16'/32' through a
+  phone mic, mixtures, focused partials). `test_pitch file.wav [focus_ratio
+  [expect_hz]]` replays a recording and prints the estimates over time. It
+  is plain C, so build it with any compiler, together with `jni/pitch.c`.
 - **Selectable harmonic rows**: Settings → "Harmonics shown", any of 1..20,
   up to 8 strobe rows.
 - **Presets in tenths of a cent** (`preset.UNITS_PER_CENT`, 48000 = A4), with
