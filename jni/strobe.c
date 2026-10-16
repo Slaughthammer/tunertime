@@ -343,8 +343,18 @@ strobe_draw_htic(jint *bitmap_ptr, struct strobe_rec *s)
 	/* after a reset the band-pass starts from rest and rings at the row
 	 * frequency, which pulls the phase towards "in tune"; blocks are
 	 * ignored for this many filter time constants (filter_recalc: the
-	 * pole radius is 1-3*bw, so tau = 20/(3*freq) seconds) */
+	 * pole radius is 1-3*bw, so tau = 20/(3*freq) seconds).  The same
+	 * after an onset: a block more than DRIFT_ONSET times louder than
+	 * the one before, or, after a block below the gate, the first one
+	 * DRIFT_ONSET times above it (the key played after the row was set,
+	 * the usual order with mixture mode's Measure; a weak row merely
+	 * flickering about the gate is no onset).  The pipe's attack rings
+	 * the filter just the same, and the pipe's own speech (chiff, its
+	 * pitch settling) is off for some 10-50 ms in the treble, a few
+	 * dozen periods in the bass: so at least DRIFT_ONSET_SECS */
 #define DRIFT_SETTLE_TAUS 4.0
+#define DRIFT_ONSET 2.0
+#define DRIFT_ONSET_SECS 0.2
 
 static int focus_row = -1;
 static struct {
@@ -356,7 +366,13 @@ static struct {
 	int prev_ok;		/* previous block was loud enough */
 	double peak;		/* recent block amplitude, decaying */
 	double cycles, secs;	/* drift found in the last buffer */
+	double amp_sum;		/* ... and its blocks' amplitudes, summed */
+	int amp_n;
 	int settle;		/* samples still to ignore after a reset */
+	int settle_len;		/* ... and after an onset */
+	double prev_amp;	/* the previous block's amplitude */
+	int quiet;		/* a block was below the gate since the
+				 * last onset */
 } drift;
 
 static void
@@ -380,6 +396,10 @@ drift_reset(void)
 	if (k < 1) k = 1;
 	drift.len = k*(double)sample_rate/s->freq + 0.5;
 	drift.settle = DRIFT_SETTLE_TAUS*20.0*sample_rate/(3.0*s->freq);
+	drift.settle_len = drift.settle;
+	if (drift.settle_len < DRIFT_ONSET_SECS*sample_rate) {
+		drift.settle_len = DRIFT_ONSET_SECS*sample_rate;
+	}
 }
 
 /* ratio is parms.focus_ratio: the focused partial's frequency over the
@@ -407,14 +427,24 @@ static void
 drift_block(void)
 {
 	double amp = 2.0*hypot(drift.re, drift.im)/drift.n;
-	double secs = drift.n/(double)sample_rate;
+	double secs = drift.n/(double)sample_rate, gate;
 	int ok;
 
 	drift.peak *= pow(0.5, secs/DRIFT_PEAK_HALFLIFE);
 	if (amp > drift.peak) {
 		drift.peak = amp;
 	}
-	ok = (amp >= DRIFT_MIN_AMP) && (amp >= DRIFT_REL_AMP*drift.peak);
+	gate = fmax(DRIFT_MIN_AMP, DRIFT_REL_AMP*drift.peak);
+	ok = (amp >= gate);
+	if (!ok) {
+		drift.quiet = 1;
+	}
+	if (ok && ((amp > DRIFT_ONSET*drift.prev_amp) ||
+		   (drift.quiet && (amp > DRIFT_ONSET*gate)))) {
+		drift.settle = drift.settle_len;
+		drift.quiet = 0;
+	}
+	drift.prev_amp = amp;
 	if (drift.settle > 0) {
 		drift.settle -= drift.n;
 		ok = 0;
@@ -428,6 +458,8 @@ drift_block(void)
 					drift.im*drift.prev_im);
 		drift.cycles += dph/(2.0*M_PI);
 		drift.secs += secs;
+		drift.amp_sum += amp;
+		drift.amp_n++;
 	}
 	drift.prev_re = drift.re;
 	drift.prev_im = drift.im;
@@ -442,6 +474,8 @@ drift_feed(struct strobe_rec *s)
 	int i;
 
 	drift.cycles = drift.secs = 0.0;
+	drift.amp_sum = 0.0;
+	drift.amp_n = 0;
 	if (drift.len <= 0) {
 		return;
 	}
@@ -471,6 +505,26 @@ strobe_drift(double *freq, double *cycles, double *secs)
 	*freq = strobes[focus_row].freq;
 	*cycles = drift.cycles;
 	*secs = drift.secs;
+	return 1;
+}
+
+
+/* the mean amplitude (16-bit units) of the blocks that went into the last
+ * buffer's drift, 0 if none.  over a measurement, the swing of these,
+ * (hi-lo)/(hi+lo), shows the partial beating: a second pipe sounds on it
+ * (celeste, a rank not muted), and the drift then follows the louder one
+ * or lands between them.  in tools/sim_organ.c two pipes of equal level
+ * swing 0.7-0.85 (the measurement up to 8 c off), a second one at half
+ * level 0.3-0.6 (up to 1.3 c off); a single pipe stays below 0.3 up to
+ * C6, but in the reverberant treble the room alone swings it up to 0.5,
+ * rarely 0.8, and a tremulant 0.2-0.65.  returns 0 if no row is focused */
+int
+strobe_drift_amp(double *amp)
+{
+	if ((focus_row < 0) || (drift.len <= 0)) {
+		return 0;
+	}
+	*amp = (drift.amp_n > 0) ? drift.amp_sum/drift.amp_n : 0.0;
 	return 1;
 }
 

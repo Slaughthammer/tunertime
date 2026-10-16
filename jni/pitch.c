@@ -2,7 +2,8 @@
  *
  * Runs on the strobe thread alongside the strobes, so it has to be cheap
  * and must not touch the FFT-mode state in fft.c.  The input is decimated
- * 2:1 (the partials we care about are well below 11kHz), and every HOP new
+ * 2:1 (the partials we care about are below 9kHz) behind a half-band
+ * low-pass, and every HOP new
  * samples an N-point FFT is taken over the last N.  At 44.1kHz that is a
  * 0.37s window with 2.7Hz bins, analysed about 11 times a second.
  *
@@ -24,7 +25,8 @@
  *
  * pitch_hint() passes the partial the user focused on (organ mode): then
  * the note is that partial's peak / focus ratio, the peak being looked for
- * within half an octave of where the shown note puts it.
+ * within half an octave of where the shown note puts it (see focus() for
+ * which of the partials in reach is taken).
  */
 #include <math.h>
 #include <string.h>
@@ -42,14 +44,20 @@
 #define TOL_SPACING	0.2	/* ... but never more than this * f0 */
 #define MIN_F0		15.0	/* a bit under C0, the 32' organ C */
 #define MAX_F0		4300.0	/* a bit over C8 */
+#define MAX_SINE_F0	8000.0	/* a lone partial: the top of a 1' rank */
 #define MAX_PARTIAL	9000.0
 #define MIN_RMS		60.0	/* 16-bit units; quieter input is ignored */
 #define MIN_CONF	0.7	/* share of peak energy on the winner's
-				 * harmonics; synthetic tones score
-				 * 0.74-1, the lowest at the top end,
-				 * where aliases from the 2:1 decimation
-				 * add stray peaks */
+				 * harmonics; the synthetic tones of
+				 * tools/test_pitch.c score 0.84-1,
+				 * the lowest with mains hum */
 #define SINE_CONF	0.8	/* share a lone partial needs to stand alone */
+#define SUB_SCORE	0.85	/* f0/2 or f0/3 replaces f0 if it scores at
+				 * least this share of f0's score.. */
+#define SUB_GAIN	0.1	/* ..and explains this much more */
+#define SUB_MIN_F0	30.0	/* ..and is not below this: under 30 Hz the
+				 * harmonics are so dense that mains hum
+				 * (50, 100, 150 Hz) falls on them */
 #define FOCUS_SPAN	550.0	/* cents either side of the expected partial,
 				 * under half an octave so that only one
 				 * octave of it can be in reach */
@@ -58,13 +66,35 @@ static double fs;		/* sample rate after decimation */
 static float ring[N];		/* decimated input, circular */
 static int ring_pos;
 static int fresh;		/* decimated samples since the last analysis */
-static int odd;			/* waiting for the second sample of a pair */
-static float pair;
+/* the 2:1 decimation's low-pass: a half-band FIR, 2*HB_M+1 taps of a
+ * Kaiser-windowed sinc, every other one zero.  The partials of a top pipe
+ * (a 2' or 1' rank at 5-8 kHz) lie at 10-24 kHz; a plain average of two
+ * samples let them fold back at -7 dB and fake a harmonic series below
+ * (E8 heard as C6), this keeps them 50 dB down above 13 kHz */
+#define HB_M		19
+#define HB_BETA		5.0
+static double hb_c[HB_M+1];	/* by distance from the centre tap */
+static float hb_x[2*HB_M+1];	/* input history, circular */
+static int hb_pos;
+static int odd;			/* the next input sample makes no output */
 static double focus_ratio, expect_hz;	/* pitch_hint() */
 
 static double re[N], im[N], win[N], mag[N/2];
 static double tw_r[N/2], tw_i[N/2];
 static int bitrev[N];
+
+/* modified Bessel function of order 0, for the Kaiser window */
+static double
+bessel_i0(double x)
+{
+	double s = 1.0, t = 1.0;
+	int k;
+	for (k = 1; k < 30; k++) {
+		t *= (x/(2.0*k))*(x/(2.0*k));
+		s += t;
+	}
+	return s;
+}
 
 void
 pitch_init(int sample_rate)
@@ -73,7 +103,22 @@ pitch_init(int sample_rate)
 
 	fs = sample_rate / 2.0;
 	memset(ring, 0, sizeof ring);
-	ring_pos = fresh = odd = 0;
+	memset(hb_x, 0, sizeof hb_x);
+	ring_pos = fresh = odd = hb_pos = 0;
+	{
+		double sum = 0.0;
+		for (i = 0; i <= HB_M; i++) {
+			double x = (double)i/HB_M;
+			hb_c[i] = (i == 0) ? 0.5 : (i % 2) ?
+				sin(M_PI*i/2.0)/(M_PI*i) *
+				bessel_i0(HB_BETA*sqrt(1.0 - x*x)) /
+				bessel_i0(HB_BETA) : 0.0;
+			sum += (i == 0) ? hb_c[i] : 2.0*hb_c[i];
+		}
+		for (i = 0; i <= HB_M; i++) {
+			hb_c[i] /= sum;		/* unity gain at DC */
+		}
+	}
 	for (i = 0; i < N; i++) {
 		win[i] = 0.5 - 0.5*cos(2.0*M_PI*i/N);	/* Hann */
 		for (j = 0, b = 0; b < LGN; b++) {
@@ -172,7 +217,7 @@ static double
 score(struct peak *pk, int n, double *f0)
 {
 	double s = 0.0, w = 1.0, fsum = 0.0, fwt = 0.0;
-	int h, i, matched = 0;
+	int h, i, matched = 0, lowest = 0;
 
 	for (h = 1; h <= MAX_HARM; h++, w *= 0.85) {
 		double t = h * *f0, tol = tolerance(h, *f0);
@@ -186,12 +231,15 @@ score(struct peak *pk, int n, double *f0)
 		}
 		if (best > 0.0) {
 			s += w*best;
-			matched++;
+			if (!matched++) lowest = h;
 			fsum += h*best * (bestf/h);	/* high partials resolve */
 			fwt += h*best;			/* f0 more finely */
 		}
 	}
-	if (matched < 2) {
+	/* two partials alone, the lowest of them the 3rd or above, are no
+	 * evidence of a tone: any two partials are the 4th and 5th of
+	 * something, like the tail of C8 and a new E8 (C6) */
+	if ((matched < 2) || ((matched == 2) && (lowest > 2))) {
 		return 0.0;
 	}
 	*f0 = fsum/fwt;
@@ -225,28 +273,66 @@ try_f0(struct peak *pk, int n, double f0, double *best, double *best_f)
 	}
 }
 
-/* with a focus hint: the strongest partial of the heard tone near where
- * the shown note puts the focused partial, divided back down; or, with
- * the note unknown or the partial not in reach, the heard fundamental is
- * taken as the focused partial */
+/* is f within tolerance of a harmonic 1..MAX_EXPL of f0 */
+static int
+harmonic(double f, double f0)
+{
+	int h = (int)floor(f/f0 + 0.5);
+	return (h >= 1) && (h <= MAX_EXPL) &&
+		(fabs(f - h*f0) < tolerance(h, f0));
+}
+
+/* with a focus hint: the partial of the heard tone near where the shown
+ * note puts the focused partial, divided back down; or, with the note
+ * unknown or the partial not in reach, the heard fundamental is taken as
+ * the focused partial.
+ *
+ * The span reaches the neighbouring ranks of a mixture (the 1 1/3' is 6
+ * times the 8', the 1' 8 times, 498 cents apart), and the loudest partial
+ * in it need not be the focused one.  A mixture's ranks are all harmonics
+ * of the key, so the note a candidate stands for (its frequency / focus
+ * ratio) should be
+ *  - plausible: the heard fundamental f0, the ranks' common divisor, is a
+ *    whole multiple or fraction of it (2', 1 1/3', 1' = 4, 6, 8 times the
+ *    8': f0 = 2 times), and
+ *  - explain the partials up to the candidate: the 1' as "1 1/3'" stands
+ *    for F3 on a C3 key, and leaves the real 1 1/3' (G5) unexplained.
+ * Ties go to the stronger partial.  Candidates are harmonics of f0, f0/2
+ * or f0/3, as f0 may be one rank when the common divisor is weak */
 static double
 focus(struct peak *pk, int n, double f0)
 {
 	if (expect_hz > 0.0) {
-		double t = focus_ratio*expect_hz, best = 0.0, bestf = 0.0;
-		double lim = pow(2.0, FOCUS_SPAN/1200.0);
-		int i;
+		double t = focus_ratio*expect_hz, lim, bestf = 0.0;
+		double best_m = 0.0, best_x = -1.0;
+		int best_pl = -1, i, j;
+		lim = pow(2.0, FOCUS_SPAN/1200.0);
 		for (i = 0; i < n; i++) {
-			int h = (int)floor(pk[i].f/f0 + 0.5);
-			if ((pk[i].f < t*lim) && (pk[i].f > t/lim) &&
-			    (h >= 1) && (h <= MAX_EXPL) &&
-			    (fabs(pk[i].f - h*f0) < tolerance(h, f0)) &&
-			    (pk[i].m > best)) {
-				best = pk[i].m;
+			double note = pk[i].f/focus_ratio, r, x, e = 0.0, all = 0.0;
+			int pl;
+			if ((pk[i].f >= t*lim) || (pk[i].f <= t/lim) ||
+			    !(harmonic(pk[i].f, f0) || harmonic(pk[i].f, f0/2.0) ||
+			      harmonic(pk[i].f, f0/3.0))) {
+				continue;
+			}
+			r = (f0 > note) ? f0/note : note/f0;
+			pl = (fabs(r - floor(r + 0.5)) < 0.02*r);
+			for (j = 0; j < n; j++) {
+				if (pk[j].f > pk[i].f*1.01) continue;
+				all += pk[j].m;
+				if (harmonic(pk[j].f, note)) e += pk[j].m;
+			}
+			x = e/all;
+			if ((pl > best_pl) ||
+			    ((pl == best_pl) && ((x > best_x + 0.05) ||
+			      ((x > best_x - 0.05) && (pk[i].m > best_m))))) {
+				best_pl = pl;
+				best_x = x;
+				best_m = pk[i].m;
 				bestf = pk[i].f;
 			}
 		}
-		if (best > 0.0) {
+		if (bestf > 0.0) {
 			return bestf/focus_ratio;
 		}
 	}
@@ -305,7 +391,7 @@ analyse(double *conf)
 			try_f0(pk, n, next-pk[i].f, &best, &best_f);
 		}
 	}
-	if ((best == 0.0) && (pk[0].f >= MIN_F0) && (pk[0].f <= MAX_F0)) {
+	if ((best == 0.0) && (pk[0].f >= MIN_F0) && (pk[0].f <= MAX_SINE_F0)) {
 		/* no harmonic series: a lone strong partial (flute stop,
 		 * tuning fork, top octave) is the fundamental itself */
 		*conf = pk[0].m/total;
@@ -313,6 +399,26 @@ analyse(double *conf)
 		if (*conf < SINE_CONF) return 0.0;
 	} else if (best > 0.0) {
 		*conf = explained(pk, n, best_f)/total;
+		/* the octave or twelfth below, if it scores nearly as well
+		 * and explains clearly more: the winner was a strong upper
+		 * partial (Krummhorn through a phone mic: the 3rd beats the
+		 * weak 1st on score, but leaves the 5th, 7th.. unexplained)
+		 * or one rank of a mixture (its 2' rather than the 4', the
+		 * common divisor of its 2', 1 1/3' and 1' ranks) */
+		double f = best_f, c = *conf;
+		for (d = 2; d <= 3; d++) {
+			double fd = best_f/d, sd, cd;
+			if (fd < SUB_MIN_F0) break;
+			sd = score(pk, n, &fd);
+			cd = explained(pk, n, fd)/total;
+			if ((sd >= SUB_SCORE*best) && (cd >= *conf + SUB_GAIN) &&
+			    (cd > c)) {
+				f = fd;
+				c = cd;
+			}
+		}
+		best_f = f;
+		*conf = c;
 		if (*conf < MIN_CONF) return 0.0;
 	} else {
 		return 0.0;
@@ -325,13 +431,22 @@ pitch_feed(const short *s, int len, double *hz, double *conf)
 {
 	int i, ret = 0;
 	for (i = 0; i < len; i++) {
-		if (!odd) {
-			pair = s[i];
-			odd = 1;
+		int k, c;
+		double y;
+		hb_x[hb_pos] = s[i];
+		hb_pos = (hb_pos+1) % (2*HB_M+1);
+		odd = !odd;
+		if (odd) {
 			continue;
 		}
-		odd = 0;
-		ring[ring_pos] = 0.5f*(pair + s[i]);	/* crude low-pass */
+		/* hb_pos is now the oldest sample; the centre is HB_M on */
+		c = (hb_pos + HB_M) % (2*HB_M+1);
+		y = hb_c[0]*hb_x[c];
+		for (k = 1; k <= HB_M; k += 2) {
+			y += hb_c[k]*(hb_x[(c+k) % (2*HB_M+1)] +
+				hb_x[(c+2*HB_M+1-k) % (2*HB_M+1)]);
+		}
+		ring[ring_pos] = (float)y;
 		ring_pos = (ring_pos+1) % N;
 		if (++fresh >= HOP) {
 			fresh = 0;

@@ -37,6 +37,15 @@ this fork.
   phone mic, mixtures, focused partials). `test_pitch file.wav [focus_ratio
   [expect_hz]]` replays a recording and prints the estimates over time. It
   is plain C, so build it with any compiler, together with `jni/pitch.c`.
+- **Realistic organ bench** (`tools/sim_organ.c`): simulated pipes (speech
+  transients, chiff, reed onset, wind, tremulant, celeste, mixtures, 32'
+  to 1') in a reverberant church through a phone (high-pass mic, AGC,
+  clipping), with blower hum, speech and footsteps; runs them through
+  `jni/pitch.c` and `jni/strobe.c` the way the app does and reports
+  detection latency and errors, length-mode stability and the mixture
+  measurement's error. `-w dir` writes the scenarios as WAV files for
+  `test_pitch`. Build: `gcc -O2 -Ijni -Itools/hostjni -o sim_organ
+  tools/sim_organ.c jni/pitch.c jni/strobe.c -lm`.
 - **Selectable harmonic rows**: Settings → "Harmonics shown", any of 1..20,
   up to 8 strobe rows.
 - **Presets in tenths of a cent** (`preset.UNITS_PER_CENT`, 48000 = A4), with
