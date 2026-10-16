@@ -120,11 +120,24 @@ public class UiLayoutTest {
 		ui.settle(800);
 	}
 
-	private List<String> font_scales() {
-		return UiCheck.arg_list("fontScales", "1.0,1.3");
-	}
-	private List<String> orientations() {
-		return UiCheck.arg_list("orientations", "port,land");
+	/* runs per() in every language, font scale and orientation */
+	private void matrix(Runnable per) {
+		List<String> langs = UiCheck.arg_list("languages", "en,de");
+		if (Build.VERSION.SDK_INT < 33) {
+			langs = UiCheck.arg_list("", "system");
+		}
+		for (String l : langs) {
+			ui.set_language(l);
+			for (String fs : UiCheck.arg_list("fontScales",
+							"1.0,1.3")) {
+				ui.set_font_scale(fs);
+				for (String o : UiCheck.arg_list("orientations",
+							"port,land")) {
+					ui.set_orientation(o);
+					per.run();
+				}
+			}
+		}
 	}
 
 	private void click(final Activity a, final int id) {
@@ -175,13 +188,10 @@ public class UiLayoutTest {
 	public void main_normal() {
 		prefs(false);
 		launch(TunerTime.class);
-		for (String fs : font_scales()) {
-			ui.set_font_scale(fs);
-			for (String o : orientations()) {
-				ui.set_orientation(o);
+		matrix(new Runnable() {
+			public void run() {
 				main_normal_states(ui.current_activity());
-			}
-		}
+			} });
 		ui.finish("main_normal");
 	}
 
@@ -220,13 +230,10 @@ public class UiLayoutTest {
 	public void main_organ() {
 		prefs(true);
 		launch(TunerTime.class);
-		for (String fs : font_scales()) {
-			ui.set_font_scale(fs);
-			for (String o : orientations()) {
-				ui.set_orientation(o);
+		matrix(new Runnable() {
+			public void run() {
 				main_organ_states(ui.current_activity());
-			}
-		}
+			} });
 		ui.finish("main_organ");
 	}
 
@@ -266,15 +273,12 @@ public class UiLayoutTest {
 	private void settings(boolean organ) {
 		prefs(organ);
 		launch(Settings.class);
-		String s = organ ? "settings.organ" : "settings";
-		for (String fs : font_scales()) {
-			ui.set_font_scale(fs);
-			for (String o : orientations()) {
-				ui.set_orientation(o);
+		final String s = organ ? "settings.organ" : "settings";
+		matrix(new Runnable() {
+			public void run() {
 				settings_states(s, (PreferenceActivity)
 						ui.current_activity());
-			}
-		}
+			} });
 		ui.finish(s);
 	}
 
@@ -324,13 +328,10 @@ public class UiLayoutTest {
 	public void preset_select() {
 		prefs(false);
 		launch(PresetSelectActivity.class);
-		for (String fs : font_scales()) {
-			ui.set_font_scale(fs);
-			for (String o : orientations()) {
-				ui.set_orientation(o);
+		matrix(new Runnable() {
+			public void run() {
 				preset_select_states(ui.current_activity());
-			}
-		}
+			} });
 		ui.finish("preset_select");
 	}
 
@@ -390,56 +391,56 @@ public class UiLayoutTest {
 	@Test
 	public void preset_edit() {
 		prefs(false);
-		for (String fs : font_scales()) {
-			ui.set_font_scale(fs);
-			for (String o : orientations()) {
-				ui.set_orientation(o);
-				set_pref("preset_id", LONG);
-				launch(PresetEditActivity.class);
-				final Activity a = ui.current_activity();
-				ui.check("preset_edit");
-				ui.on_main(new Runnable() {
-					public void run() {
-						((PresetEditActivity)a)
-							.do_delete(null);
-					} });
-				ui.check("preset_edit.delete");
-				ui.back();
-				scenario.close();
-
-				set_pref("preset_id", EMPTY);
-				launch(PresetEditActivity.class);
-				ui.check("preset_edit.empty");
-				scenario.close();
-				scenario = null;
-			}
-		}
+		matrix(new Runnable() {
+			public void run() {
+				preset_edit_states();
+			} });
 		ui.finish("preset_edit");
+	}
+
+	private void preset_edit_states() {
+		set_pref("preset_id", LONG);
+		launch(PresetEditActivity.class);
+		final Activity a = ui.current_activity();
+		ui.check("preset_edit");
+		ui.on_main(new Runnable() {
+			public void run() {
+				((PresetEditActivity)a).do_delete(null);
+			} });
+		ui.check("preset_edit.delete");
+		ui.back();
+		scenario.close();
+
+		set_pref("preset_id", EMPTY);
+		launch(PresetEditActivity.class);
+		ui.check("preset_edit.empty");
+		scenario.close();
+		scenario = null;
 	}
 
 	@Test
 	public void preset_note() {
 		prefs(false);
-		for (String fs : font_scales()) {
-			ui.set_font_scale(fs);
-			for (String o : orientations()) {
-				ui.set_orientation(o);
-				set_pref("preset_id", LONG);
-				set_pref("preset_note", 2);
-				launch(PresetNoteActivity.class);
-				final Activity a = ui.current_activity();
-				ui.check("preset_note");
-				ui.on_main(new Runnable() {
-					public void run() {
-						((PresetNoteActivity)a)
-							.do_delete(null);
-					} });
-				ui.check("preset_note.delete");
-				ui.back();
-				scenario.close();
-				scenario = null;
-			}
-		}
+		matrix(new Runnable() {
+			public void run() {
+				preset_note_states();
+			} });
 		ui.finish("preset_note");
+	}
+
+	private void preset_note_states() {
+		set_pref("preset_id", LONG);
+		set_pref("preset_note", 2);
+		launch(PresetNoteActivity.class);
+		final Activity a = ui.current_activity();
+		ui.check("preset_note");
+		ui.on_main(new Runnable() {
+			public void run() {
+				((PresetNoteActivity)a).do_delete(null);
+			} });
+		ui.check("preset_note.delete");
+		ui.back();
+		scenario.close();
+		scenario = null;
 	}
 }

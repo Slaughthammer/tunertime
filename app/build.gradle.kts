@@ -38,10 +38,10 @@ android {
         manifestPlaceholders["appLabel"] = "TunerTime"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-    // UI layout tests (app/src/androidTest) run against the dev build,
-    // so they install next to the Play Store app on a real phone:
-    // ./gradlew connectedDevAndroidTest
-    testBuildType = "dev"
+    // UI layout tests (app/src/androidTest) run against their own build,
+    // which installs next to the Play Store and dev apps on a real phone
+    // and leaves their settings alone: ./gradlew connectedUitestAndroidTest
+    testBuildType = "uitest"
 
     buildTypes {
         getByName("release") {
@@ -58,6 +58,11 @@ android {
             initWith(getByName("release"))
             applicationIdSuffix = ".dev"
             manifestPlaceholders["appLabel"] = "TunerTime dev"
+        }
+        create("uitest") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".uitest"
+            manifestPlaceholders["appLabel"] = "TunerTime UI test"
         }
     }
     compileOptions {

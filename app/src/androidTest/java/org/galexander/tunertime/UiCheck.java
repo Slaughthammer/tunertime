@@ -67,8 +67,8 @@ import java.util.Set;
  *  ATF_*           anything else the Accessibility Test Framework flags
  *                  (its warnings are only reported, never fail)
  *
- * A finding's key is screen|orientation|fontscale|CHECK|element, e.g.
- *  main.note|land|1.3|TEXT_CUT_V|Button"cent+"
+ * A finding's key is screen|language|orientation|fontscale|CHECK|element,
+ * e.g. main.note|de|land|1.3|TEXT_CUT_V|Button"Cent+"
  * Keys listed in androidTest/assets/known_ui_issues.txt (where * matches
  * any field) are known and only reported; any other finding fails the
  * test at the end (finish()), after all states have been checked.
@@ -93,6 +93,7 @@ final class UiCheck {
 	/* current context, set by the test */
 	String orient = "port";
 	String font = "1.0";
+	String lang = "en";
 
 	private final List<String[]> rules = new ArrayList<String[]>();
 	private final List<String> found = new ArrayList<String>();
@@ -152,11 +153,30 @@ final class UiCheck {
 			shell("settings put system font_scale " +
 					saved_font_scale);
 		}
+		inst.runOnMainSync(new Runnable() {
+			public void run() {
+				Lang.set(target, "system");
+			} });
 		try {
 			dev.setOrientationNatural();
 			dev.unfreezeRotation();
 		} catch (Exception e) {
 		}
+	}
+
+	/* the app's own language (Android 13+), like Settings -> Language;
+	 * "system" for the phone's */
+	void set_language(String l) {
+		final String v = l;
+		lang = l;
+		inst.runOnMainSync(new Runnable() {
+			public void run() {
+				android.preference.PreferenceManager
+					.getDefaultSharedPreferences(target)
+					.edit().putString(Lang.KEY, v).commit();
+				Lang.set(target, v);
+			} });
+		settle(1500);
 	}
 
 	void set_font_scale(String fs) {
@@ -302,7 +322,7 @@ final class UiCheck {
 	/* soft findings (ATF warnings) are only reported, never fail */
 	private void add(String screen, String check, String elem,
 			String detail, boolean soft) {
-		String key = screen + "|" + orient + "|" + font + "|" +
+		String key = screen + "|" + lang + "|" + orient + "|" + font + "|" +
 				check + "|" + elem;
 		String line = key + "\t" + detail;
 		if (found.contains(line)) {
@@ -361,7 +381,8 @@ final class UiCheck {
 			return;
 		}
 		String fs = font.replace('.', '_');
-		shell("screencap -p " + out_dir + "/" + screen + "-" + orient +
+		shell("screencap -p " + out_dir + "/" + screen + "-" + lang +
+				"-" + orient +
 				"-fs" + fs + ".png");
 	}
 
