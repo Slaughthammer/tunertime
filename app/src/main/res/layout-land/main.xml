@@ -40,14 +40,14 @@
 		    android:layout_width="1dp"
 		    android:layout_height="wrap_content"
 		    android:layout_weight="1"
-		    android:paddingLeft="4dp"
+		    android:paddingLeft="8dp"
 		    android:gravity="left" />
 		<TextView android:id="@+id/stretch_display"
 		    style="@style/Tuner.Readout.Status"
 		    android:layout_width="1dp"
 		    android:layout_height="wrap_content"
 		    android:layout_weight="1"
-		    android:paddingRight="4dp"
+		    android:paddingRight="8dp"
 		    android:gravity="right" />
 	    </LinearLayout>
 	    <FrameLayout android:id="@+id/mode_holder"
