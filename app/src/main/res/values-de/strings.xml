@@ -237,4 +237,6 @@
 
 	<!-- Mixturmodus: Schwebung im gemessenen Teilton -->
 	<string name="mixture_beating">Schwebung: zweite Pfeife auf diesem Teilton?</string>
+	<!-- L&#228;ngenmodus, innerhalb 0,2 Cent -->
+	<string name="length_in_tune_mm">%1$s mm\nstimmt</string>
 </resources>
