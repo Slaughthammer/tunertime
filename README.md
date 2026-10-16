@@ -43,7 +43,8 @@ this fork.
   ±1c / ±0.1c buttons and a ± key in the note editor. Existing whole-cent
   presets and settings are migrated.
 - **A 12-note preset can temper note mode** (Settings toggle, on by default).
-  The title shows the active temperament and offset.
+  The action bar's subtitle shows the active temperament and offset (the
+  preset in preset and mixture mode).
 - **Preset management** (`PresetIO.java`): long-press for
   edit/rename/duplicate/move/export/delete, sort, import and export all.
   Plain-text, hand-editable format, described in the header of every
