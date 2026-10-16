@@ -653,6 +653,10 @@ public class TunerTime extends Activity
 
 	/* from the strobe thread, after each buffer while a row is focused */
 	public void focus_drift(double freq, double cycles, double secs) {
+		if (parms.length_mode) {
+			/* shown with the next pitch estimate (on_pitch) */
+			length.add_drift(freq, cycles, secs);
+		}
 		if (!mix.measuring()) {
 			return;
 		}
