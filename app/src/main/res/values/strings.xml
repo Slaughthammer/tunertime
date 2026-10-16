@@ -8,10 +8,10 @@
 	<string name="title_preset_select">Select preset</string>
 	<string name="title_preset_edit">Edit preset</string>
 	<string name="title_preset_note">Edit preset note</string>
-	<string name="title_strobe">TunerTime: strobe</string>
-	<string name="title_strobe_with">TunerTime: strobe (%1$s)</string>
-	<string name="title_fft">TunerTime: FFT</string>
-	<string name="title_mixture">TunerTime: mixture</string>
+	<string name="title_strobe">TunerTime Organ: strobe</string>
+	<string name="title_strobe_with">TunerTime Organ: strobe (%1$s)</string>
+	<string name="title_fft">TunerTime Organ: FFT</string>
+	<string name="title_mixture">TunerTime Organ: mixture</string>
 
 	<!-- menus -->
 	<string name="menu_settings">Settings</string>
@@ -104,9 +104,9 @@
 	<string name="ok">OK</string>
 	<string name="cancel">Cancel</string>
 	<string name="about_title">About</string>
-	<string name="about_message">TunerTime version %1$s</string>
+	<string name="about_message">TunerTime Organ version %1$s</string>
 	<string name="perm_title">Microphone needed</string>
-	<string name="perm_message">TunerTime needs access to the microphone for all of its features. You can allow it in the system settings under Apps &#8594; TunerTime &#8594; Permissions.</string>
+	<string name="perm_message">TunerTime Organ needs access to the microphone for all of its features. You can allow it in the system settings under Apps &#8594; TunerTime Organ &#8594; Permissions.</string>
 
 	<!-- preset screens -->
 	<string name="no_presets">no presets</string>

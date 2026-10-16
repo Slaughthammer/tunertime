@@ -7,15 +7,15 @@
 	<string name="title_preset_select">Preset w&#228;hlen</string>
 	<string name="title_preset_edit">Preset bearbeiten</string>
 	<string name="title_preset_note">Preset-Ton bearbeiten</string>
-	<string name="title_strobe">TunerTime: Strobe</string>
-	<string name="title_strobe_with">TunerTime: Strobe (%1$s)</string>
-	<string name="title_fft">TunerTime: FFT</string>
-	<string name="title_mixture">TunerTime: Mixtur</string>
+	<string name="title_strobe">TunerTime Organ: Strobe</string>
+	<string name="title_strobe_with">TunerTime Organ: Strobe (%1$s)</string>
+	<string name="title_fft">TunerTime Organ: FFT</string>
+	<string name="title_mixture">TunerTime Organ: Mixtur</string>
 
 	<!-- Men&#252;s -->
 	<string name="menu_settings">Einstellungen</string>
 	<string name="menu_help">Hilfe</string>
-	<string name="menu_about">&#220;ber TunerTime</string>
+	<string name="menu_about">&#220;ber TunerTime Organ</string>
 	<string name="menu_add_temperament">Historische Stimmung hinzuf&#252;gen&#8230;</string>
 	<string name="menu_sort">Nach Namen sortieren</string>
 	<string name="menu_import">Importieren&#8230;</string>
@@ -98,10 +98,10 @@
 	<string name="follow_shift_semi">Folgen: %1$s%2$d Halbt&#246;ne gegen&#252;ber erkannt (Auto halten hebt es auf)</string>
 	<string name="ok">OK</string>
 	<string name="cancel">Abbrechen</string>
-	<string name="about_title">&#220;ber TunerTime</string>
-	<string name="about_message">TunerTime Version %1$s</string>
+	<string name="about_title">&#220;ber TunerTime Organ</string>
+	<string name="about_message">TunerTime Organ Version %1$s</string>
 	<string name="perm_title">Mikrofon erforderlich</string>
-	<string name="perm_message">TunerTime braucht f&#252;r alle Funktionen Zugriff auf das Mikrofon. Erlauben l&#228;sst er sich in den Systemeinstellungen unter Apps &#8594; TunerTime &#8594; Berechtigungen.</string>
+	<string name="perm_message">TunerTime Organ braucht f&#252;r alle Funktionen Zugriff auf das Mikrofon. Erlauben l&#228;sst er sich in den Systemeinstellungen unter Apps &#8594; TunerTime Organ &#8594; Berechtigungen.</string>
 
 	<!-- Presets -->
 	<string name="no_presets">keine Presets</string>
