@@ -46,7 +46,8 @@ import java.util.List;
  * 21Hz); it is scaled down when the level is close to the noise floor
  * (a slowly rising minimum of the block RMS), and halved while clipping.
  * Scores are smoothed, and nothing is compared while no mic hears anything
- * above its floor.
+ * above its floor.  The periodicity of the other channel is only worked out
+ * while the one in use is doubtful (below), which halves the cost.
  *
  * A switch needs: the current mic doubtful (smoothed score below DOUBT,
  * clipping, or hearing nothing while the other does), the other better by
@@ -337,6 +338,10 @@ public class MicSelect {
 		boolean sig = false, clip = false;
 		double score = 0.0d;
 		double ema = 0.0d;
+			/* work out the periodicity (else score is not
+			 * updated while there is a signal); and whether it
+			 * was, in the last frame */
+		boolean scoring = true, scored = false;
 
 		void reset_frame() {
 			pos = sub = 0;
@@ -385,12 +390,14 @@ public class MicSelect {
 			double snr = 20.0d*Math.log10(Math.max(rms, 1.0d)/floor);
 			clip = (nclip*500 > nsamp);
 			sig = (rms > MIN_RMS) && (snr > MIN_SNR);
-			if (sig) {
+			scored = false;
+			if (!sig) {
+				score = 0.0d;
+			} else if (scoring) {
 				score = periodicity(d) *
 					Math.min(1.0d, snr/FULL_SNR) *
 					(clip ? 0.5d : 1.0d);
-			} else {
-				score = 0.0d;
+				scored = true;
 			}
 			sumsq = 0.0d;
 			nsamp = nclip = 0;
@@ -713,19 +720,28 @@ public class MicSelect {
 
 	private void stereo_decide() {
 		Qual cur = q[ch], oth = q[1-ch];
+		cur.scoring = true;
 		if (!cur.sig && !oth.sig) {
 			streak = 0;
+			oth.scoring = true;	/* no signal: costs nothing */
 			return;
 		}
 		cur.smooth();
-		oth.smooth();
+		if (oth.scored || !oth.sig) {
+			oth.smooth();
+		}
 		boolean doubtful = !cur.sig || cur.clip || (cur.ema < DOUBT);
-		boolean better = oth.sig && (oth.ema > cur.ema + MARGIN);
+		boolean better = oth.sig && oth.scored &&
+				 (oth.ema > cur.ema + MARGIN);
 		streak = (doubtful && better) ? (streak+1) : 0;
+		/* the other channel is only of interest while this one is
+		 * doubtful; from the next frame on */
+		oth.scoring = doubtful;
 		long now = SystemClock.elapsedRealtime();
 		if ((streak >= SWITCH_FRAMES) && (now - last_switch >= HOLD_MS) &&
 		    !mixture.busy) {
 			ch = 1-ch;
+			q[ch].scoring = true;
 			switches++;
 			streak = 0;
 			last_switch = now;
@@ -780,18 +796,34 @@ public class MicSelect {
 			if (!reopen((dev_i+1) % devs.length)) {
 				probing = false;
 				last_probe = now;
-				reopen(prev_i);
+				if (mode == PROBE) {	/* else it gave up */
+					reopen(prev_i);
+				}
 			}
 		}
 	}
 
 		/* switches the mono recorder to devs[i]; the noise floor is
-		 * carried over, assuming the mics are alike */
+		 * carried over, assuming the mics are alike.  if that fails,
+		 * back to the default route; if that fails as well, to plain
+		 * MIC with no more probing, rather than ending the Listener
+		 * (read() fails without a recorder) without a word */
 	private boolean reopen(int i) {
 		close();
 		q[0].reset_frame();
 		if (!create(source, 1, devs[i])) {
-			create(source, 1, null);
+			if (!create(source, 1, null)) {
+				mode = FIXED;
+				if ((source != MediaRecorder.AudioSource.MIC) &&
+				    create(MediaRecorder.AudioSource.MIC, 1,
+					   null)) {
+					source = MediaRecorder.AudioSource.MIC;
+					toast("Microphone could not be reopened, using the default microphone");
+				} else {
+					toast("Microphone could not be reopened");
+				}
+			}
+			active_name = (rec != null) ? routed_name() : null;
 			return false;
 		}
 		dev_i = i;
