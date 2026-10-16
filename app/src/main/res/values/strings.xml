@@ -160,6 +160,7 @@
 
 	<!-- historical temperaments, in the order of temperaments.java -->
 	<string-array name="temperament_names">
+		<item>Equal temperament</item>
 		<item>Pythagorean</item>
 		<item>Meantone 1/4 comma</item>
 		<item>Meantone 1/6 comma</item>
@@ -172,6 +173,7 @@
 	<!-- note names in these are English (G#, Eb); they are shown in
 	     German if German note names are on -->
 	<string-array name="temperament_about">
+		<item>all semitones equal; to switch back from a historical one</item>
 		<item>pure fifths, wolf G#-Eb</item>
 		<item>pure major thirds, wolf G#-Eb; Renaissance/early Baroque</item>
 		<item>Baroque organs, mild wolf G#-Eb</item>

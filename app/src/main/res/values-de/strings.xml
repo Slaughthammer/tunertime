@@ -155,6 +155,7 @@
 
 	<!-- historische Stimmungen, Reihenfolge wie temperaments.java -->
 	<string-array name="temperament_names">
+		<item>Gleichstufig</item>
 		<item>Pythagoreisch</item>
 		<item>Mittelt&#246;nig 1/4 Komma</item>
 		<item>Mittelt&#246;nig 1/6 Komma</item>
@@ -167,6 +168,7 @@
 	<!-- Tonnamen hier englisch (G#, Eb); mit deutschen Tonnamen werden
 	     sie als Gis, Es angezeigt -->
 	<string-array name="temperament_about">
+		<item>alle Halbt&#246;ne gleich; zum Zur&#252;ckwechseln von einer historischen Stimmung</item>
 		<item>reine Quinten, Wolf G#-Eb</item>
 		<item>reine gro&#223;e Terzen, Wolf G#-Eb; Renaissance/Fr&#252;hbarock</item>
 		<item>Barockorgeln, milder Wolf G#-Eb</item>

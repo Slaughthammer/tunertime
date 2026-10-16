@@ -9,6 +9,7 @@ import java.util.List;
  * A = 0, so the A-freq setting keeps meaning the A you hear. */
 public class temperaments {
 	public static final String[] names = {
+		"Equal temperament",
 		"Pythagorean",
 		"Meantone 1/4 comma",
 		"Meantone 1/6 comma",
@@ -20,6 +21,7 @@ public class temperaments {
 	};
 
 	public static final String[] about = {
+		"all semitones equal; to switch back from a historical one",
 		"pure fifths, wolf G#-Eb",
 		"pure major thirds, wolf G#-Eb; Renaissance/early Baroque",
 		"Baroque organs, mild wolf G#-Eb",
@@ -31,6 +33,7 @@ public class temperaments {
 	};
 
 	private static final double[][] cents = {
+		{ 0,   0,     0,     0,      0,     0,      0,     0,      0,      0,     0,      0    },
 		{ 0,  13.69,  3.91, -9.78,   7.82, -1.96,  11.73,  1.96,  15.64,   5.87, -3.91,   9.78 },
 		{ 0, -23.95, -6.84, 10.26, -13.69,  3.42, -20.53, -3.42, -27.37, -10.26,  6.84, -17.11 },
 		{ 0, -11.40, -3.26,  4.89,  -6.52,  1.63,  -9.78, -1.63, -13.03,  -4.89,  3.26,  -8.15 },
