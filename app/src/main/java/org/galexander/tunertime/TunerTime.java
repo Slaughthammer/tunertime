@@ -44,6 +44,10 @@ public class TunerTime extends Activity
 	private TextView afreq_center_display;
 	private View stretch_buttons;
 	private TextView stretch_stretch_display;
+	private View mixture_buttons;
+	private TextView mixture_display;
+	private TextView mixture_status;
+	private final mixture mix = new mixture();
 	private View preset_buttons;
 	private TextView preset_semi_display;
 	private TextView preset_oct_display;
@@ -118,6 +122,13 @@ public class TunerTime extends Activity
 		stretch_stretch_display = (TextView)stretch_buttons.
 				findViewById(R.id.stretch_display2);
 
+		mixture_buttons = fl8r.inflate(
+				R.layout.mixture_buttons, buttons_holder,false);
+		mixture_display = (TextView)mixture_buttons.
+				findViewById(R.id.mixture_display);
+		mixture_status = (TextView)mixture_buttons.
+				findViewById(R.id.mixture_status);
+
 		preset_buttons = fl8r.inflate(
 				R.layout.preset_buttons, buttons_holder, false);
 		preset_semi_display = (TextView)preset_buttons.findViewById(
@@ -172,8 +183,11 @@ public class TunerTime extends Activity
 		wakelock.acquire();
 		stop_strobe();
 		parms.load();
+		organ_resume();
 		if (parms.fft_mode) {
 			set_mode(fft_buttons, true);
+		} else if (parms.mixture_mode) {
+			set_mode(mixture_buttons, false);
 		} else {
 			set_mode((parms.preset_mode ? preset_buttons
 						    : note_buttons), false);
@@ -214,11 +228,13 @@ public class TunerTime extends Activity
 				brighten_mode(note_button);
 			} else if (buttons == afreq_buttons) {
 				brighten_mode(afreq_button);
-			} else if (buttons == stretch_buttons) {
+			} else if ((buttons == stretch_buttons) ||
+				   (buttons == mixture_buttons)) {
 				brighten_mode(stretch_button);
 			} else if (buttons == preset_buttons) {
 				brighten_mode(preset_button);
 			}
+			mixture_set(buttons == mixture_buttons);
 			boolean was_preset = parms.preset_mode;
 			parms.preset_mode = (buttons == preset_buttons);
 			if (was_preset && !parms.preset_mode) {
@@ -226,7 +242,9 @@ public class TunerTime extends Activity
 				parms.note_cents = parms.strobe_cents -
 					parms.temper_offset(parms.strobe_cents);
 			}
-			if (parms.preset_mode) {
+			if (parms.mixture_mode) {
+				title = "TunerTime: mixture";
+			} else if (parms.preset_mode) {
 				preset p = preset.find(parms.preset_id);
 				if (p == null) {
 					parms.preset_note = 0;
@@ -244,6 +262,7 @@ public class TunerTime extends Activity
 		} else {
 			title = "TunerTime: FFT";
 			parms.fft_xoffset = Strobe.FFT_RANGE_MULT;
+			mixture_set(false);
 		}
 		buttons_holder.removeAllViews();
 		buttons_holder.addView(buttons);
@@ -447,7 +466,119 @@ public class TunerTime extends Activity
 		set_mode(afreq_buttons, false);
 	}
 	public void stretch_clicked(View v) {
-		set_mode(stretch_buttons, false);
+		if (!parms.organ_mode) {
+			set_mode(stretch_buttons, false);
+		} else if (parms.mixture_mode) {
+			mixture_measure(v);	/* tapped again: measure again */
+		} else {
+			set_mode(mixture_buttons, false);
+		}
+	}
+
+	/* organ mode: no stretch; the stretch tab becomes mixture mode, and
+	 * a tap on a strobe row focuses its partial instead of pausing */
+	private void organ_resume() {
+		stretch_button.setText(parms.organ_mode ? "mixture" : "stretch");
+		if (!parms.organ_mode || (parms.focus_row() < 0)) {
+			/* the focused footage is no longer shown */
+			parms.focus_ratio = 0.0d;
+		}
+		if (!parms.organ_mode) {
+			parms.mixture_mode = false;
+		}
+		mix.stop();
+	}
+
+	/* entering mixture mode starts from the current target and measures
+	 * right away */
+	private void mixture_set(boolean on) {
+		if (on && !parms.mixture_mode) {
+			parms.mixture_cents = parms.strobe_cents;
+			parms.mixture_mode = true;
+			mixture_measure(null);
+		} else if (!on) {
+			parms.mixture_mode = false;
+			mix.stop();
+		}
+	}
+
+	public void mixture_measure(View v) {
+		if (parms.focus_row() < 0) {
+			/* nothing focused: the 8' row, else the lowest */
+			int i;
+			for (i = 0; i < parms.num_strobes; i++) {
+				if (parms.row_ratio(i) == 1.0d) {
+					break;
+				}
+			}
+			parms.focus_ratio = parms.row_ratio(
+					(i < parms.num_strobes) ? i : 0);
+		}
+		mix.start();
+		update_status();
+	}
+
+	/* back to the nearest note, with no offset */
+	public void mixture_reset(View v) {
+		int semi = 100*U;
+		mix.stop();
+		parms.mixture_cents = ((parms.mixture_cents + semi/2) / semi) *
+						semi;
+		update_status();
+	}
+
+	/* from the strobe thread, after each buffer while a row is focused */
+	public void focus_drift(double freq, double cycles, double secs) {
+		if (!mix.measuring()) {
+			return;
+		}
+		final double cents = mix.feed(freq, cycles, secs);
+		runOnUiThread(new Runnable() {
+			public void run() {
+				if (!parms.mixture_mode) {
+					return;
+				}
+				if (!Double.isNaN(cents)) {
+					/* in tune where it was measured */
+					parms.mixture_cents += (int)Math.round(
+								cents*U);
+				}
+				update_status();
+			} });
+	}
+
+	/* organ mode: the tapped strobe row's partial becomes the focused
+	 * one, tapped again it is released */
+	private void tap_row(int y, int h) {
+		int n = parms.num_strobes;
+		if ((n < 1) || (h <= 0)) {
+			return;
+		}
+		int row = range_limit((y*n)/h, 0, n-1);
+		double r = parms.row_ratio(row);
+		parms.focus_ratio = (parms.focus_ratio == r) ? 0.0d : r;
+		if (parms.focus_ratio == 0.0d) {
+			mix.stop();
+		} else if (mix.measuring()) {
+			mix.start();		/* measure the new row */
+		}
+		update_status();
+	}
+
+	private void update_mixture_status() {
+		note n = new note(parms.mixture_cents);
+		mixture_display.setText(n.note_str + n.octave + " " +
+					n.cents_str);
+		String f = (parms.focus_row() >= 0) ?
+				parms.footage_str(parms.focus_ratio) : null;
+		if (mix.measuring()) {
+			mixture_status.setText("measuring " + f + " " +
+				Math.round(mix.progress()*100.0d) + "%");
+		} else if (f != null) {
+			mixture_status.setText(f + " held");
+		} else {
+			mixture_status.setText("tap a strobe row");
+		}
 	}
 	public void preset_clicked(View v) {
 		set_mode(preset_buttons, false);
@@ -524,7 +655,12 @@ public class TunerTime extends Activity
 		 * wonkers if the values go out-of-range anyways.  */
 	private void update_status() {
 		String temper_str = null;
-		if (parms.preset_mode) {
+		if (parms.mixture_mode) {
+			/* wherever the focused partial was measured */
+			parms.mixture_cents = range_limit(parms.mixture_cents,
+							0, 9600*U);
+			parms.strobe_cents = parms.mixture_cents;
+		} else if (parms.preset_mode) {
 			update_preset();
 		} else {
 			/* note mode: apply the selected preset if it is a
@@ -566,7 +702,8 @@ public class TunerTime extends Activity
 		note_semi_display.setText(nn.note_str);
 		note_oct_display.setText(Integer.toString(nn.octave));
 		note_cent_display.setText(nn.cents_str);
-		if (!parms.fft_mode && !parms.preset_mode) {
+		if (!parms.fft_mode && !parms.preset_mode &&
+		    !parms.mixture_mode) {
 			setTitle("TunerTime: strobe" + ((temper_str != null) ?
 					(" (" + temper_str + ")") : ""));
 		}
@@ -582,6 +719,12 @@ public class TunerTime extends Activity
 				string_int10(Math.abs(parms.cents_per_octave));
 		stretch_display.setText(stretch_str);
 		stretch_stretch_display.setText(stretch_str);
+		if (parms.organ_mode) {
+			/* no stretch: the mixture offset, if any */
+			stretch_display.setText(parms.mixture_mode ?
+				("mix" + n.cents_str) : "organ");
+			update_mixture_status();
+		}
 
 		N_display.setText(Integer.toString(parms.fft_size));
 		grid_button.setText(parms.fft_grid_freq ? "Hz" : "scale");
@@ -795,7 +938,10 @@ public class TunerTime extends Activity
 				update_status();
 				return true;
 			case MotionEvent.ACTION_UP:
-				if (could_be_click && (strobe != null)) {
+				if (could_be_click && parms.organ_mode &&
+				    !parms.fft_mode) {
+					tap_row(y1, height);
+				} else if (could_be_click && (strobe != null)) {
 					strobe.toggle_pause();
 					update_status();
 				}

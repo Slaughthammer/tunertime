@@ -29,6 +29,7 @@ static jmethodID mid_st_do_draw;
 static jmethodID mid_st_time_to_die;
 static jmethodID mid_st_check_surface;
 static jmethodID mid_st_pitch_detected;
+static jmethodID mid_st_focus_drift;
 static jmethodID mid_tt_cents_to_freq;
 static jmethodID mid_li_read;
 static jmethodID mid_li_get_samplerate;
@@ -42,6 +43,8 @@ static jfieldID fid_p_strobe_cents;
 static jfieldID fid_p_num_strobes;
 static jfieldID fid_p_auto_note;
 static jfieldID fid_p_harm_mult;
+static jfieldID fid_p_organ_mode;
+static jfieldID fid_p_focus_ratio;
 static jfieldID fid_p_strobe_color;
 static jfieldID fid_p_fft_mode;
 static jfieldID fid_p_fft_size;
@@ -282,6 +285,7 @@ jni_init(JNIEnv *env_)
 	METHOD(st_time_to_die, strobe, "time_to_die", "()Z")
 	METHOD(st_check_surface, strobe, "check_surface", "()[I")
 	METHOD(st_pitch_detected, strobe, "pitch_detected", "(D)V")
+	METHOD(st_focus_drift, strobe, "focus_drift", "(DDDD)V")
 	METHOD(tt_cents_to_freq, tunertime, "cents_to_freq", "(II)D")
 	STMETHOD(li_read, listener, "read", "([SI)I")
 	STMETHOD(li_get_samplerate, listener, "get_samplerate", "()I")
@@ -296,6 +300,8 @@ jni_init(JNIEnv *env_)
 	STFIELD(p_auto_note, parms, "auto_note", "Z")
 	STFIELD(p_num_strobes, parms, "num_strobes", "I")
 	STFIELD(p_harm_mult, parms, "harm_mult", "[I")
+	STFIELD(p_organ_mode, parms, "organ_mode", "Z")
+	STFIELD(p_focus_ratio, parms, "focus_ratio", "D")
 	STFIELD(p_strobe_color, parms, "strobe_color", "Ljava/lang/String;")
 	STFIELD(p_fft_mode, parms, "fft_mode", "Z")
 	STFIELD(p_fft_size, parms, "fft_size", "I")
@@ -360,6 +366,15 @@ set_pianoname(jobject this, char *pianoname)
 	(*env)->DeleteLocalRef(env, j_pianoname);
 }
 
+/* hands the drift of the focused row in the last buffer to the UI */
+void
+focus_drift(jobject this, double freq, double cycles, double secs,
+		double buf_secs)
+{
+	(*env)->CallVoidMethod(env, this, mid_st_focus_drift,
+			freq, cycles, secs, buf_secs);
+}
+
 
 static void
 resize_bitmap(void)
@@ -408,6 +423,7 @@ check_parms(jobject this)
 		(*env)->GetIntArrayRegion(env, a, 0, MAX_STROBES, harm_mult);
 		(*env)->DeleteLocalRef(env, a);
 	}
+	organ_mode = (*env)->GetStaticBooleanField(env, cl_parms, fid_p_organ_mode);
 
 	{
 		jstring t = (*env)->GetStaticObjectField(env, cl_parms, fid_p_strobe_color);
@@ -476,6 +492,12 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 		/* process sound into bitmap */
 		if (bitmap) {
 			int changed = check_parms(this);
+			int paused = (*env)->GetBooleanField(env, this,
+							fid_st_paused);
+			double freq, cycles, secs;
+
+			strobe_focus((*env)->GetStaticDoubleField(env,
+						cl_parms, fid_p_focus_ratio));
 
 			jint *bitmap_ptr = (*env)->GetPrimitiveArrayCritical(env, bitmap, 0);
 			if (changed) {
@@ -486,10 +508,17 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 					strobe_redraw(bitmap_ptr);
 				}
 			}
-			if (!(*env)->GetBooleanField(env,this,fid_st_paused)) {
+			if (!paused) {
 				newdata(bitmap_ptr);
 			}
 			(*env)->ReleasePrimitiveArrayCritical(env, bitmap, bitmap_ptr, 0);
+			/* no JNI calls inside the critical region, so the
+			 * focused row's drift is reported only now */
+			if (!fft_mode && !paused && (snd_buflen > 0) &&
+			    strobe_drift(&freq, &cycles, &secs)) {
+				focus_drift(this, freq, cycles, secs,
+					snd_buflen/(double)sample_rate);
+			}
 			/* send bitmap to surface */
 			if ((*env)->CallBooleanMethod(env, this, mid_st_do_draw, bitmap, width, height)) {
 				/* thread was interrupted, must be time for it to die */

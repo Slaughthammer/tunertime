@@ -7,7 +7,8 @@
 		android:summary="Tuning organ pipes: no stretch, organ-specific displays"
 		android:defaultValue="false" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="Strobe">
+    <PreferenceCategory android:key="strobe_category"
+		android:title="Strobe">
 	<ListPreference
 		android:key="strobe_color"
 		android:title="Colors"
@@ -22,6 +23,14 @@
 		android:entries="@array/harmonics"
 		android:entryValues="@array/harmonics"
 		android:defaultValue="@array/harmonics_default" />
+	<!-- shown instead of "harmonics" in organ mode (Settings.java) -->
+	<MultiSelectListPreference
+		android:key="organ_footages"
+		android:title="Footages shown"
+		android:summary="Organ mode: one strobe row per checked footage, 8 ft being the note (up to 8)"
+		android:entries="@array/footage_name"
+		android:entryValues="@array/footage_value"
+		android:defaultValue="@array/footage_default" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Presets">
 	<CheckBoxPreference

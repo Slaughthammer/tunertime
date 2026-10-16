@@ -21,8 +21,12 @@ public class parms {
 	static public volatile boolean auto_note = false;
 	static public final int MAX_STROBES = 8;	/* matches jni/interface.h */
 	static public volatile int num_strobes = 5;
-		/* harmonic multiplier per strobe row, ascending */
+		/* harmonic multiplier per strobe row, ascending.  in organ
+		 * mode these are organ footages, as multiples of the 32'
+		 * pitch: 32'=1, 16'=2, 10 2/3'=3, 8'=FOOTAGE_DIV (the note
+		 * itself), 4'=8, ... 1/8'=256 */
 	static public volatile int[] harm_mult = { 1, 2, 4, 6, 8, 1, 1, 1 };
+	static public final int FOOTAGE_DIV = 4;	/* jni ORGAN_DIV */
 	static public volatile String strobe_color = "batlow";
 
 	static public volatile boolean fft_mode = false;
@@ -46,6 +50,49 @@ public class parms {
 		 * divided by the note's 8' fundamental, e.g. 2.0 for 4',
 		 * 0.5 for 16'.  0 = none.  pitch detection prefers it */
 	static public volatile double focus_ratio = 0.0d;
+		/* mixture mode (organ mode, in place of stretch): the target
+		 * is wherever the focused partial was measured to be, in
+		 * tenths of a cent like strobe_cents */
+	static public boolean mixture_mode = false;
+	static public int mixture_cents = 48000;
+
+		/* frequency of strobe row i over the note's 8' (fundamental) */
+	public static double row_ratio(int i) {
+		return organ_mode ? (harm_mult[i] / (double)FOOTAGE_DIV)
+				  : (double)harm_mult[i];
+	}
+		/* the strobe row showing the focused partial, or -1 */
+	public static int focus_row() {
+		for (int i = 0; (i < num_strobes) && (focus_ratio > 0.0d); i++) {
+			if (Math.abs(row_ratio(i) - focus_ratio) < 1e-6) {
+				return i;
+			}
+		}
+		return -1;
+	}
+		/* organ footage of ratio r to the 8', like "10 2/3'" */
+	public static String footage_str(double r) {
+		int m = (int)Math.round(r*FOOTAGE_DIV);
+		int num = 8*FOOTAGE_DIV;		/* 32' */
+		if (m < 1) {
+			return "?'";
+		}
+		int whole = num/m, rem = num%m;
+		int g = gcd(rem, m);
+		if (rem == 0) {
+			return whole + "'";
+		}
+		return ((whole > 0) ? (whole + " ") : "") +
+				(rem/g) + "/" + (m/g) + "'";
+	}
+	private static int gcd(int a, int b) {
+		while (b != 0) {
+			int t = a%b;
+			a = b;
+			b = t;
+		}
+		return a;
+	}
 
 		/* stretch in effect, tenths of a cent per octave; organs are
 		 * tuned without stretch */
@@ -102,7 +149,15 @@ public class parms {
 		note_temper = prefs.getBoolean("note_temper", true);
 		auto_note = prefs.getBoolean("auto_note", false);
 		organ_mode = prefs.getBoolean("organ_mode", false);
-		load_harmonics();
+		mixture_mode = organ_mode &&
+				prefs.getBoolean("mixture_mode", false);
+		mixture_cents = prefs.getInt("mixture_cents10", strobe_cents);
+		if (organ_mode) {
+			load_rows("organ_footages", FOOTAGE_DEFAULT,
+					64*FOOTAGE_DIV);	/* 1/8' */
+		} else {
+			load_harmonics();
+		}
 		strobe_color = prefs.getString("strobe_color", "batlow");
 		fft_mode = prefs.getBoolean("fft_mode", false);
 		fft_size = prefs.getInt("fft_size", 2048);
@@ -129,18 +184,39 @@ public class parms {
 				set.add(prefs.getString("harm"+i, defs[i]));
 			}
 		}
+		set_rows(set, 20);
+	}
+
+		/* organ mode: "organ_footages", one row per footage, stored
+		 * as the multiple of the 32' pitch (res/values/arrays.xml).
+		 * default 16', 8', 4', 2 2/3', 2' */
+	private static final String[] FOOTAGE_DEFAULT =
+				{ "2", "4", "8", "12", "16" };
+	private static void load_rows(String key, String[] defs, int max) {
+		Set<String> set = prefs.getStringSet(key, null);
+		if (set == null) {
+			set = new HashSet<String>();
+			for (String s : defs) {
+				set.add(s);
+			}
+		}
+		set_rows(set, max);
+	}
+
+		/* harm_mult[] and num_strobes from a set of multipliers */
+	private static void set_rows(Set<String> set, int max) {
 		TreeSet<Integer> sorted = new TreeSet<Integer>();
 		for (String s : set) {
 			try {
 				int m = Integer.parseInt(s);
-				if ((m >= 1) && (m <= 20)) {
+				if ((m >= 1) && (m <= max)) {
 					sorted.add(m);
 				}
 			} catch (NumberFormatException e) {
 			}
 		}
 		if (sorted.isEmpty()) {
-			sorted.add(1);
+			sorted.add(organ_mode ? FOOTAGE_DIV : 1);  /* 8' */
 		}
 		int[] mult = new int[MAX_STROBES];
 		int n = 0;
@@ -163,6 +239,8 @@ public class parms {
 		editor.putInt("cents_per_octave", cents_per_octave);
 		editor.putInt("strobe_cents10", strobe_cents);
 		editor.putInt("note_cents10", note_cents);
+		editor.putBoolean("mixture_mode", mixture_mode);
+		editor.putInt("mixture_cents10", mixture_cents);
 		editor.putBoolean("fft_mode", fft_mode);
 		editor.putInt("fft_size", fft_size);
 		editor.putInt("fft_width", fft_width);
