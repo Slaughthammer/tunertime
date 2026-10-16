@@ -12,6 +12,7 @@
 	<string name="title_strobe_with">TunerTime Organ: strobe (%1$s)</string>
 	<string name="title_fft">TunerTime Organ: FFT</string>
 	<string name="title_mixture">TunerTime Organ: mixture</string>
+	<string name="title_mixture_with">TunerTime Organ: mixture (%1$s)</string>
 
 	<!-- menus -->
 	<string name="menu_settings">Settings</string>
