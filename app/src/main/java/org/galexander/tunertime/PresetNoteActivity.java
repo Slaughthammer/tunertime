@@ -96,11 +96,13 @@ public class PresetNoteActivity extends Activity {
 		preset p = preset.find(parms.preset_id);
 		if (p == null) {
 			finish();
+			return;
 		}
 		notes = p.notes;
 		note_idx = parms.preset_note;
 		if ((note_idx < 0) || (note_idx >= notes.size())) {
 			finish();
+			return;
 		}
 		/* "B" or German "H"; with "#" the sharp of A is B or German B */
 		((TextView)pn_notes[6]).setText(note.class_name(11));
