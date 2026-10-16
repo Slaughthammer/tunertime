@@ -59,6 +59,7 @@ extern int organ_mode;
 void strobe_init(void);
 void strobe_focus(double ratio);
 int strobe_drift(double *freq, double *cycles, double *secs);
+int strobe_drift_amp(double *amp);
 void strobe_color(const char *s);
 void strobe_redraw(jint *bitmap_ptr);
 void strobe_newdata(jint *bitmap_ptr);

@@ -76,6 +76,9 @@ static jint bitmap[400*700];
 #define DRIFT_MIN_SECS	0.3	/* pipelength.DRIFT_MIN_SECS */
 #define MEASURE_SECONDS	2.0	/* mixture.MEASURE_SECONDS */
 #define MSTART		0.5	/* measure pressed this long after the key */
+#define BEAT_SWING	0.7	/* strobe_drift_amp(): (hi-lo)/(hi+lo) over a
+				 * measurement that means a second pipe of
+				 * about the same level */
 #define RECALC_BEFORE	0.4	/* target set this long before the key */
 /* organ rows, in multiples of the 32' pitch: 32' 16' 8' 4' 2 2/3' 2' 1 1/3' 1' */
 static const int rows[] = { 1, 2, 4, 8, 12, 16, 24, 32 };
@@ -627,6 +630,7 @@ struct keyres {
 	struct lenres lr;	/* length mode, the pipe's row focused */
 	/* mixture */
 	double mx_err, mx_time;
+	double mx_swing;	/* strobe_drift_amp() over the measurement */
 	double focus;
 };
 
@@ -645,6 +649,8 @@ struct scenres {
 	} ld, lr;
 	double mx_mean, mx_max, mx_time;
 	int mx_n, mx_fail;
+	int beat;		/* measurements with a swing > BEAT_SWING */
+	double swing;		/* the largest swing */
 };
 
 static int semis(double hz) { return (int)lround(12.0*log2(hz/440.0)); }
@@ -709,7 +715,7 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 	int nl = 0;
 	/* mixture */
 	int mx_on = 0, mx_b0 = 0;
-	double mx_c = 0.0, mx_s = 0.0;
+	double mx_c = 0.0, mx_s = 0.0, mx_lo = 0.0, mx_hi = 0.0;
 	int tgt_key = -1;
 
 	memset(kr, 0, sizeof kr);
@@ -752,7 +758,7 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 			if (S->hint) pitch_hint(r, key_hz(k->semi));
 			nd = 0;
 			mx_on = 0;
-			mx_c = mx_s = 0.0;
+			mx_c = mx_s = mx_lo = mx_hi = 0.0;
 			tgt_key = ki;
 		}
 		memcpy(snd_buf, buf + b*BUFLEN, BUFLEN*sizeof(short));
@@ -812,6 +818,14 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 				}
 				mx_c += c;
 				mx_s += s;
+				{
+					double a;
+					if (strobe_drift_amp(&a) && (a > 0.0)) {
+						if ((mx_lo == 0.0) || (a < mx_lo))
+							mx_lo = a;
+						if (a > mx_hi) mx_hi = a;
+					}
+				}
 				if (mx_s >= MEASURE_SECONDS) {
 					struct key *k = &S->k[ki];
 					int j = focus_pipe(S, ki);
@@ -826,6 +840,8 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 						S->p[j].ratio / f_row);
 					kr[ki].mx_err = got - tru;
 					kr[ki].mx_time = t - S->k[ki].on;
+					kr[ki].mx_swing = (mx_hi > 0.0) ?
+						(mx_hi - mx_lo)/(mx_hi + mx_lo) : 0.0;
 					tgt_key = -1;
 				}
 			}
@@ -946,8 +962,8 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 					100*L[q]->unclear/n, L[q]->err,
 					L[q]->worst);
 			}
-			printf(" | mix %+6.2f (%.1fs)\n", kr[i].mx_err,
-				kr[i].mx_time);
+			printf(" | mix %+6.2f (%.1fs) swing %.2f\n", kr[i].mx_err,
+				kr[i].mx_time, kr[i].mx_swing);
 		}
 		R->keys++;
 		if (kr[i].lat >= 0.0) { R->shown++; lat[nl++] = kr[i].lat; }
@@ -982,6 +998,8 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 				R->mx_mean += fabs(kr[i].mx_err);
 				R->mx_max = fmax(R->mx_max, fabs(kr[i].mx_err));
 				R->mx_time = fmax(R->mx_time, kr[i].mx_time);
+				R->swing = fmax(R->swing, kr[i].mx_swing);
+				if (kr[i].mx_swing > BEAT_SWING) R->beat++;
 			}
 		}
 	}
@@ -1359,7 +1377,7 @@ int main(int argc, char **argv) {
 	printf("%-26s %5s %9s %5s %8s | %4s %4s %4s %4s %5s | %4s %4s %4s %5s | "
 		"%s\n", "scenario", "shown", "med/max s", "oct/x", "/sustain",
 		"%", "bad%", "uncl", "tmax", "err", "%", "bad%", "tmax", "err",
-		"mean/max c");
+		"mean/max c, beat warnings, max swing");
 	for (c = 0; c < nb; c++) {
 		short *buf;
 		int n, j;
@@ -1406,6 +1424,7 @@ int main(int argc, char **argv) {
 				100*R.lr.frac, 100*R.lr.bad,
 				R.lr.never ? 99.9 : R.lr.tst, R.lr.err,
 				R.mx_mean, R.mx_max);
+			printf(" beat %d/%d %.2f", R.beat, R.mx_n, R.swing);
 			if (R.mx_fail) printf(" (%d unfinished)", R.mx_fail);
 			printf("\n");
 			t_keys += R.keys; t_shown += R.shown;

@@ -366,6 +366,8 @@ static struct {
 	int prev_ok;		/* previous block was loud enough */
 	double peak;		/* recent block amplitude, decaying */
 	double cycles, secs;	/* drift found in the last buffer */
+	double amp_sum;		/* ... and its blocks' amplitudes, summed */
+	int amp_n;
 	int settle;		/* samples still to ignore after a reset */
 	int settle_len;		/* ... and after an onset */
 	double prev_amp;	/* the previous block's amplitude */
@@ -456,6 +458,8 @@ drift_block(void)
 					drift.im*drift.prev_im);
 		drift.cycles += dph/(2.0*M_PI);
 		drift.secs += secs;
+		drift.amp_sum += amp;
+		drift.amp_n++;
 	}
 	drift.prev_re = drift.re;
 	drift.prev_im = drift.im;
@@ -470,6 +474,8 @@ drift_feed(struct strobe_rec *s)
 	int i;
 
 	drift.cycles = drift.secs = 0.0;
+	drift.amp_sum = 0.0;
+	drift.amp_n = 0;
 	if (drift.len <= 0) {
 		return;
 	}
@@ -499,6 +505,26 @@ strobe_drift(double *freq, double *cycles, double *secs)
 	*freq = strobes[focus_row].freq;
 	*cycles = drift.cycles;
 	*secs = drift.secs;
+	return 1;
+}
+
+
+/* the mean amplitude (16-bit units) of the blocks that went into the last
+ * buffer's drift, 0 if none.  over a measurement, the swing of these,
+ * (hi-lo)/(hi+lo), shows the partial beating: a second pipe sounds on it
+ * (celeste, a rank not muted), and the drift then follows the louder one
+ * or lands between them.  in tools/sim_organ.c two pipes of equal level
+ * swing 0.7-0.85 (the measurement up to 8 c off), a second one at half
+ * level 0.3-0.6 (up to 1.3 c off); a single pipe stays below 0.3 up to
+ * C6, but in the reverberant treble the room alone swings it up to 0.5,
+ * rarely 0.8, and a tremulant 0.2-0.65.  returns 0 if no row is focused */
+int
+strobe_drift_amp(double *amp)
+{
+	if ((focus_row < 0) || (drift.len <= 0)) {
+		return 0;
+	}
+	*amp = (drift.amp_n > 0) ? drift.amp_sum/drift.amp_n : 0.0;
 	return 1;
 }
 
