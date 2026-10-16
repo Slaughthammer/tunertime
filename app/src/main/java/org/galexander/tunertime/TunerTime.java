@@ -769,9 +769,13 @@ public class TunerTime extends Activity
 	 * a step of note mode and keeps its offset from the step (the
 	 * organ's pitch is much the same from key to key), until measure
 	 * is tapped with the reference rank sounding.  note mode moves
-	 * along, so that it is at the same key when going back to it */
+	 * along, so that it is at the same key when going back to it.
+	 * The reference row last measured is focused again (decided with
+	 * the organ tuner), so that each key takes just "Ton+", then
+	 * "measure" with the reference rank sounding */
 	public void mixture_semi_incr(View v) { mixture_move(1); }
 	public void mixture_semi_decr(View v) { mixture_move(-1); }
+	private double mixture_last_ref = 0.0d;	/* row last measured on */
 	private void mixture_move(int d) {
 		int semi = 100*U;
 		int k = nearest_step(parms.mixture_cents);
@@ -779,11 +783,32 @@ public class TunerTime extends Activity
 			return;
 		}
 		mix.stop();
+		if (parms.mixture_ref > 0.0d) {
+			mixture_last_ref = parms.mixture_ref;
+		}
 		parms.mixture_cents += step_cents(k+d) - step_cents(k);
 		parms.mixture_ref = 0.0d;
 		int nk = (parms.note_cents + semi/2) / semi;
 		parms.note_cents += (k+d-nk)*semi;
 		update_status();
+		refocus(mixture_last_ref);
+	}
+
+	/* focuses the row of footage ratio r, if it is shown and not too
+	 * high for the new target; otherwise the focus is left as it is */
+	private void refocus(double r) {
+		if ((r <= 0.0d) || (r == parms.focus_ratio)) {
+			return;
+		}
+		for (int i = 0; i < parms.num_strobes; i++) {
+			if (parms.row_ratio(i) == r) {
+				if (!Strobe.row_too_high(this, i)) {
+					parms.focus_ratio = r;
+					update_status();
+				}
+				return;
+			}
+		}
 	}
 
 	/* back to the nearest note (of the temperament, if one is in
