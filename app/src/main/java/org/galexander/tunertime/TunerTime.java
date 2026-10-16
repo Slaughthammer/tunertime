@@ -326,8 +326,8 @@ public class TunerTime extends Activity
 	}
 
 	/* auto note detection: off -> follow; then tap toggles follow/lock,
-	 * long press turns it off.  only note mode follows. */
-	private boolean auto_locked = false;
+	 * long press turns it off.  only note mode follows.  the state is
+	 * parms.auto_note and parms.auto_locked, kept across rotation */
 	private int det_semi = Integer.MIN_VALUE, det_count = 0;
 	private static final int DET_AGREE = 3;	/* estimates in a row */
 
@@ -357,7 +357,7 @@ public class TunerTime extends Activity
 		if (!auto_applies()) {
 			return;
 		}
-		if (!parms.auto_note && !auto_locked) {
+		if (!parms.auto_note && !parms.auto_locked) {
 			parms.auto_note = true;
 			follow_shift = 0;
 			det_stable = Integer.MIN_VALUE;
@@ -365,10 +365,10 @@ public class TunerTime extends Activity
 					Toast.LENGTH_SHORT).show();
 		} else if (parms.auto_note) {
 			parms.auto_note = false;	/* lock */
-			auto_locked = true;
+			parms.auto_locked = true;
 		} else {
 			parms.auto_note = true;		/* unlock */
-			auto_locked = false;
+			parms.auto_locked = false;
 			last_heard = SystemClock.uptimeMillis();
 		}
 		det_count = 0;
@@ -377,7 +377,7 @@ public class TunerTime extends Activity
 
 	private void auto_off() {
 		parms.auto_note = false;
-		auto_locked = false;
+		parms.auto_locked = false;
 		det_count = 0;
 		follow_shift = 0;
 		det_stable = Integer.MIN_VALUE;
@@ -904,7 +904,7 @@ public class TunerTime extends Activity
 			auto_button.setText("follow");
 			auto_button.setTextColor(getResources().getColor(
 					R.color.accent));
-		} else if (auto_locked) {
+		} else if (parms.auto_locked) {
 			auto_button.setText("locked");
 			auto_button.setTextColor(getResources().getColor(
 					R.color.warn));
