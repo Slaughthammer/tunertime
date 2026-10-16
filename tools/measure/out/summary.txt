@@ -1,0 +1,142 @@
+[q1]
+  open flue: 97/97 correct; wrong at -; median follow latency 0.24 s
+  stopped (Gedackt): 97/97 correct; wrong at -; median follow latency 0.24 s
+  reed (Trompete): 86/97 correct; wrong at A#6, D7, D#7, E7, F7, F#7, G#7, A7, A#7, B7, C8; median follow latency 0.24 s
+  missing fundamental: 92/97 correct; wrong at G#7, A7, A#7, B7, C8; median follow latency 0.24 s
+  noisy (SNR 10 dB): 97/97 correct; wrong at -; median follow latency 0.34 s
+  phone mic (HP 150 Hz): 86/97 correct; wrong at C0, C#0, D0, D#0, E0, F0, F#0, G0, G#0, A0, A#0; median follow latency 0.24 s
+  stopped + phone mic: 96/97 correct; wrong at C0; median follow latency 0.24 s
+  noisy (SNR 0 dB): 97/97 correct; wrong at -; median follow latency 0.34 s
+  open, wind wander 0.5 c: 97/97 correct; wrong at -; median follow latency 0.24 s
+  half-band variant, open flue: wrong at -
+  half-band variant, stopped (Gedackt): wrong at -
+  half-band variant, reed (Trompete): wrong at -
+  half-band variant, missing fundamental: wrong at G7, G#7, A7, A#7, B7, C8
+  half-band variant, noisy (SNR 10 dB): wrong at -
+  half-band variant, phone mic (HP 150 Hz): wrong at C0, C#0, D0, D#0, E0, F0, F#0, G0, G#0, A0, A#0
+  half-band variant, stopped + phone mic: wrong at C0
+  half-band variant, noisy (SNR 0 dB): wrong at -
+  half-band variant, open, wind wander 0.5 c: wrong at -
+[q2]
+  open flue: single-estimate sd median 0.00 c (C2-C7: 0.00 c), worst |bias| 2.2 c; 1-s median error p95 <= 1 c at 96/97 notes; 'stable' (MAD<1c) but > 1 c wrong at 1 notes (worst 2.2 c)
+  stopped (Gedackt): single-estimate sd median 0.00 c (C2-C7: 0.00 c), worst |bias| 1.5 c; 1-s median error p95 <= 1 c at 88/97 notes; 'stable' (MAD<1c) but > 1 c wrong at 9 notes (worst 1.5 c)
+  reed (Trompete): single-estimate sd median 0.00 c (C2-C7: 0.00 c), worst |bias| 11.9 c; 1-s median error p95 <= 1 c at 88/97 notes; 'stable' (MAD<1c) but > 1 c wrong at 9 notes (worst 504.4 c)
+  noisy (SNR 10 dB): single-estimate sd median 0.02 c (C2-C7: 0.01 c), worst |bias| 2.2 c; 1-s median error p95 <= 1 c at 96/97 notes; 'stable' (MAD<1c) but > 1 c wrong at 1 notes (worst 2.3 c)
+  phone mic (HP 150 Hz): single-estimate sd median 0.00 c (C2-C7: 0.00 c), worst |bias| 2.2 c; 1-s median error p95 <= 1 c at 85/97 notes; 'stable' (MAD<1c) but > 1 c wrong at 1 notes (worst 2.2 c)
+  open, wind wander 0.5 c: single-estimate sd median 0.37 c (C2-C7: 0.36 c), worst |bias| 2.3 c; 1-s median error p95 <= 1 c at 96/97 notes; 'stable' (MAD<1c) but > 1 c wrong at 1 notes (worst 2.5 c)
+  half-band variant, open flue: 1-s median error p95 <= 1 c at 97/97 notes, worst 0.58 c, notes > 0.3 c: 5
+  half-band variant, stopped (Gedackt): 1-s median error p95 <= 1 c at 89/97 notes, worst 1.53 c, notes > 0.3 c: 29
+  estimates per second: 10.77 (fs/2/HOP = 22050/2048)
+[q3]
+  32': wall time to 2 usable s (cold) 3.7/2.9/2.6/2.3/2.2/2.1 s; cold pull to in-tune 1.7/0.9/0.3/0.1/0.2/0.4 %
+     variant settle-at-onset: wall 3.9/3.1/2.8/2.5/2.3/2.2 s; pull 1.13/0.44/0.12/0.02/0.01/0.02 %
+     RMS cold T=0.5 SNR 20: as is 0.254 c, variant 0.146 c
+     RMS cold T=1 SNR 20: as is 0.161 c, variant 0.094 c
+     RMS cold T=2 SNR 20: as is 0.087 c, variant 0.054 c
+  16': wall time to 2 usable s (cold) 2.9/2.6/2.3/2.2/2.1/2.0 s; cold pull to in-tune 0.8/0.2/0.1/0.2/0.4/0.4 %
+     variant settle-at-onset: wall 3.1/2.7/2.5/2.3/2.2/2.1 s; pull 0.39/0.06/0.01/-0.00/0.02/-0.40 %
+     RMS cold T=0.5 SNR 20: as is 0.419 c, variant 0.186 c
+     RMS cold T=1 SNR 20: as is 0.218 c, variant 0.097 c
+     RMS cold T=2 SNR 20: as is 0.108 c, variant 0.048 c
+  8': wall time to 2 usable s (cold) 2.6/2.3/2.2/2.1/2.0/2.0 s; cold pull to in-tune 0.3/0.1/0.2/0.4/0.7/3.5 %
+     variant settle-at-onset: wall 2.7/2.5/2.3/2.2/2.1/2.1 s; pull 0.07/0.01/0.02/0.02/0.11/1.63 %
+     RMS cold T=0.5 SNR 20: as is 1.029 c, variant 0.456 c
+     RMS cold T=1 SNR 20: as is 0.525 c, variant 0.233 c
+     RMS cold T=2 SNR 20: as is 0.263 c, variant 0.117 c
+  4': wall time to 2 usable s (cold) 2.3/2.2/2.1/2.0/2.0/2.0 s; cold pull to in-tune 0.1/0.2/0.4/0.9/1.0/2.8 %
+     variant settle-at-onset: wall 2.5/2.3/2.2/2.1/2.1/2.1 s; pull 0.02/0.03/0.02/-0.10/0.01/1.02 %
+     RMS cold T=0.5 SNR 20: as is 0.927 c, variant 0.405 c
+     RMS cold T=1 SNR 20: as is 0.467 c, variant 0.206 c
+     RMS cold T=2 SNR 20: as is 0.234 c, variant 0.103 c
+  2 2/3': wall time to 2 usable s (cold) 2.3/2.1/2.1/2.0/2.0/2.0 s; cold pull to in-tune 0.2/0.3/0.2/0.6/1.9/2.7 %
+     variant settle-at-onset: wall 2.3/2.2/2.1/2.1/2.1/2.1 s; pull 0.04/0.03/0.02/1.09/0.32/0.37 %
+     RMS cold T=0.5 SNR 20: as is 1.081 c, variant 0.336 c
+     RMS cold T=1 SNR 20: as is 0.552 c, variant 0.173 c
+     RMS cold T=2 SNR 20: as is 0.278 c, variant 0.086 c
+  1': wall time to 2 usable s (cold) 2.1/2.0/2.0/2.0/2.0 s; cold pull to in-tune 0.4/-1.0/1.5/3.3/2.2 %
+     variant settle-at-onset: wall 2.2/2.1/2.1/2.1/2.1 s; pull 0.03/0.06/0.03/1.23/0.86 %
+     RMS cold T=0.5 SNR 20: as is 1.196 c, variant 0.491 c
+     RMS cold T=1 SNR 20: as is 0.605 c, variant 0.250 c
+     RMS cold T=2 SNR 20: as is 0.304 c, variant 0.125 c
+  RMS warm T=1 s SNR 40 dB: 32' 0.036, 16' 0.018, 8' 0.006, 4' 0.003, 2 2/3' 0.002, 1' 0.001
+  RMS warm T=2 s SNR 40 dB: 32' 0.022, 16' 0.007, 8' 0.004, 4' 0.002, 2 2/3' 0.001, 1' 0.000
+  RMS warm T=1 s SNR 20 dB: 32' 0.032, 16' 0.019, 8' 0.009, 4' 0.004, 2 2/3' 0.003, 1' 0.002
+  RMS warm T=2 s SNR 20 dB: 32' 0.024, 16' 0.004, 8' 0.003, 4' 0.002, 2 2/3' 0.001, 1' 0.001
+  RMS warm T=1 s SNR 10 dB: 32' 0.039, 16' 0.025, 8' 0.018, 4' 0.011, 2 2/3' 0.008, 1' 0.004
+  RMS warm T=2 s SNR 10 dB: 32' 0.023, 16' 0.014, 8' 0.007, 4' 0.005, 2 2/3' 0.004, 1' 0.002
+  RMS warm T=1 s SNR 0 dB: 32' 0.088, 16' 0.077, 8' 0.035, 4' 0.030, 2 2/3' 0.027, 1' 0.016
+  RMS warm T=2 s SNR 0 dB: 32' 0.046, 16' 0.029, 8' 0.022, 4' 0.014, 2 2/3' 0.013, 1' 0.007
+[q3beat]
+  C3 1' row, 2nd pipe +1 c: T=2 s error/delta by r 0.20:-0.04..0.03, 0.50:-0.10..0.05, 0.70:-0.20..0.07, 0.85:-0.26..0.08, 1.00:0.49..0.49, 1.20:0.92..0.93, 1.50:0.93..1.18, 2.00:0.94..1.07, 5.00:0.97..1.04
+  C3 1' row, 2nd pipe +2 c: T=2 s error/delta by r 0.20:-0.03..0.02, 0.50:-0.06..0.05, 0.70:-0.09..0.07, 0.85:-0.10..0.08, 1.00:0.48..0.49, 1.20:0.92..1.10, 1.50:0.93..1.08, 2.00:0.94..1.06, 5.00:0.98..1.03
+  C3 1' row, 2nd pipe +3 c: T=2 s error/delta by r 0.20:-0.01..0.02, 0.50:-0.03..0.04, 0.70:-0.04..0.04, 0.85:-0.04..-0.03, 1.00:0.48..0.48, 1.20:0.92..1.04, 1.50:0.94..1.03, 2.00:0.95..1.02, 5.00:0.98..1.01
+  C5 1' row, 2nd pipe +1 c: T=2 s error/delta by r 0.20:-0.00..0.00, 0.50:-0.01..0.02, 0.70:-0.01..0.03, 0.85:0.12..0.12, 1.00:0.49..0.50, 1.20:0.99..1.01, 1.50:0.97..1.01, 2.00:0.98..1.01, 5.00:1.00..1.00
+  C5 1' row, 2nd pipe +2 c: T=2 s error/delta by r 0.20:-0.00..0.00, 0.50:-0.01..0.01, 0.70:-0.01..0.02, 0.85:0.16..0.18, 1.00:0.49..0.49, 1.20:0.85..0.85, 1.50:0.98..1.01, 2.00:0.98..1.01, 5.00:1.00..1.00
+  C5 1' row, 2nd pipe +3 c: T=2 s error/delta by r 0.20:-0.00..0.00, 0.50:-0.01..0.01, 0.70:-0.01..0.02, 0.85:0.17..0.19, 1.00:0.48..0.48, 1.20:0.80..0.82, 1.50:0.99..1.01, 2.00:0.99..1.01, 5.00:1.00..1.00
+[q3trem]
+  tremulant 4.5 Hz +-10 c, 8' row: RMS error at T=2 s 0.05 c, worst over T in 1.5-2.5 s 0.22 c
+  tremulant 4.5 Hz +-10 c, 1' row: RMS error at T=2 s 0.07 c, worst over T in 1.5-2.5 s 0.30 c
+  tremulant 5.5 Hz +-10 c, 8' row: RMS error at T=2 s 0.06 c, worst over T in 1.5-2.5 s 0.18 c
+  tremulant 5.5 Hz +-10 c, 1' row: RMS error at T=2 s 0.07 c, worst over T in 1.5-2.5 s 0.23 c
+  tremulant 6.5 Hz +-10 c, 8' row: RMS error at T=2 s 0.04 c, worst over T in 1.5-2.5 s 0.14 c
+  tremulant 6.5 Hz +-10 c, 1' row: RMS error at T=2 s 0.07 c, worst over T in 1.5-2.5 s 0.20 c
+[q3level]
+  C2: 3:nanc/nans, 5.33:nanc/nans, 9.49:0.01c/2.0s, 16.87:0.01c/2.0s, 30:0.00c/2.0s, 53.35:0.00c/2.0s, 94.87:0.00c/2.0s, 168.7:0.00c/2.0s, 300:0.00c/2.0s, 533.48:0.00c/2.0s, 948.68:0.00c/2.0s, 1687.02:0.00c/2.0s, 3000:0.00c/2.0s, 5334.84:0.00c/2.0s, 9486.83:0.00c/2.0s
+  C4: 3:nanc/nans, 5.33:nanc/nans, 9.49:0.01c/2.0s, 16.87:0.00c/2.0s, 30:0.00c/2.0s, 53.35:0.00c/2.0s, 94.87:0.00c/2.0s, 168.7:0.00c/2.0s, 300:0.00c/2.0s, 533.48:0.00c/2.0s, 948.68:0.00c/2.0s, 1687.02:0.00c/2.0s, 3000:0.00c/2.0s, 5334.84:0.00c/2.0s, 9486.83:0.00c/2.0s
+  C6: 3:nanc/nans, 5.33:nanc/nans, 9.49:0.00c/2.0s, 16.87:0.00c/2.0s, 30:0.00c/2.0s, 53.35:0.00c/2.0s, 94.87:0.00c/2.0s, 168.7:0.00c/2.0s, 300:0.00c/2.0s, 533.48:0.00c/2.0s, 948.68:0.00c/2.0s, 1687.02:0.00c/2.0s, 3000:0.00c/2.0s, 5334.84:0.00c/2.0s, 9486.83:0.00c/2.0s
+[q3wind]
+  wander 0.25 c rms (0.1 s), 32' row: RMS error T=0.25 0.128, T=0.5 0.109, T=0.75 0.099, T=1 0.092, T=1.5 0.082, T=2 0.070, T=3 0.058, T=4 0.051
+  wander 0.25 c rms (0.1 s), 8' row: RMS error T=0.25 0.133, T=0.5 0.102, T=0.75 0.102, T=1 0.099, T=1.5 0.095, T=2 0.079, T=3 0.059, T=4 0.058
+  wander 0.25 c rms (0.1 s), 1' row: RMS error T=0.25 0.202, T=0.5 0.151, T=0.75 0.111, T=1 0.106, T=1.5 0.092, T=2 0.076, T=3 0.053, T=4 0.051
+  wander 0.50 c rms (0.1 s), 32' row: RMS error T=0.25 0.255, T=0.5 0.201, T=0.75 0.186, T=1 0.175, T=1.5 0.149, T=2 0.149, T=3 0.130, T=4 0.119
+  wander 0.50 c rms (0.1 s), 8' row: RMS error T=0.25 0.335, T=0.5 0.234, T=0.75 0.195, T=1 0.174, T=1.5 0.177, T=2 0.173, T=3 0.156, T=4 0.130
+  wander 0.50 c rms (0.1 s), 1' row: RMS error T=0.25 0.369, T=0.5 0.271, T=0.75 0.250, T=1 0.234, T=1.5 0.181, T=2 0.146, T=3 0.122, T=4 0.099
+  wander 1.00 c rms (0.1 s), 32' row: RMS error T=0.25 0.610, T=0.5 0.518, T=0.75 0.425, T=1 0.411, T=1.5 0.340, T=2 0.280, T=3 0.232, T=4 0.200
+  wander 1.00 c rms (0.1 s), 8' row: RMS error T=0.25 0.723, T=0.5 0.547, T=0.75 0.429, T=1 0.364, T=1.5 0.306, T=2 0.307, T=3 0.301, T=4 0.271
+  wander 1.00 c rms (0.1 s), 1' row: RMS error T=0.25 0.764, T=0.5 0.577, T=0.75 0.481, T=1 0.478, T=1.5 0.446, T=2 0.406, T=3 0.267, T=4 0.233
+[q4]
+  open C0: L 10495 mm, 6.062 mm/cent, 'in tune' (|dL| < 0.05 mm) = +-0.01 c
+  open C2: L 2624 mm, 1.516 mm/cent, 'in tune' (|dL| < 0.05 mm) = +-0.03 c
+  open C4: L 656 mm, 0.379 mm/cent, 'in tune' (|dL| < 0.05 mm) = +-0.13 c
+  open C6: L 164 mm, 0.095 mm/cent, 'in tune' (|dL| < 0.05 mm) = +-0.53 c
+  open C7: L 82 mm, 0.047 mm/cent, 'in tune' (|dL| < 0.05 mm) = +-1.06 c
+  open C8: L 41 mm, 0.024 mm/cent, 'in tune' (|dL| < 0.05 mm) = +-2.11 c
+  stopped C0: L 5247 mm, 3.031 mm/cent, 'in tune' (|dL| < 0.05 mm) = +-0.02 c
+  stopped C2: L 1312 mm, 0.758 mm/cent, 'in tune' (|dL| < 0.05 mm) = +-0.07 c
+  stopped C4: L 328 mm, 0.189 mm/cent, 'in tune' (|dL| < 0.05 mm) = +-0.26 c
+  stopped C6: L 82 mm, 0.047 mm/cent, 'in tune' (|dL| < 0.05 mm) = +-1.06 c
+  stopped C7: L 41 mm, 0.024 mm/cent, 'in tune' (|dL| < 0.05 mm) = +-2.11 c
+  stopped C8: L 20 mm, 0.012 mm/cent, 'in tune' (|dL| < 0.05 mm) = +-4.22 c
+[q5]
+  pitch.c as it is: strongest harmonic within FOCUS_SPAN 550 c:
+    8': focus fails at 0 notes: -; detector partial limit 9 kHz from D9, strobe row blank from F9
+    4': focus fails at 0 notes: -; detector partial limit 9 kHz from D8, strobe row blank from F8
+    2 2/3': focus fails at 18 notes: F#2, A#2, C#3, D3, D#3, F#3 ... F5, F#5, E6, A6 (18 notes); detector partial limit 9 kHz from G7, strobe row blank from A#7
+    2': focus fails at 38 notes: D2, D#2, E2, F#2, G#2, A#2 ... A6, A#6, B6, C7 (38 notes); detector partial limit 9 kHz from D7, strobe row blank from F7
+    1 3/5': focus fails at 60 notes: C2, C#2, D2, E2, F2, F#2 ... A6, A#6, B6, C7 (60 notes); detector partial limit 9 kHz from A#6, strobe row blank from C#7
+    1 1/3': focus fails at 34 notes: C2, C#2, D2, E2, F#2, G2 ... A6, A#6, B6, C7 (34 notes); detector partial limit 9 kHz from G6, strobe row blank from A#6
+    1': focus fails at 46 notes: C2, C#2, D2, D#2, E2, G#2 ... A6, A#6, B6, C7 (46 notes); detector partial limit 9 kHz from D6, strobe row blank from F6
+    1/2': focus fails at 23 notes: D5, D#5, E5, F5, F#5, G5 ... A6, A#6, B6, C7 (23 notes); detector partial limit 9 kHz from D5, strobe row blank from F5
+  variant: harmonic nearest to the expected partial (variants.py, pitch_focusnear.c):
+    8': focus fails at 0 notes: -; detector partial limit 9 kHz from D9, strobe row blank from F9
+    4': focus fails at 0 notes: -; detector partial limit 9 kHz from D8, strobe row blank from F8
+    2 2/3': focus fails at 0 notes: -; detector partial limit 9 kHz from G7, strobe row blank from A#7
+    2': focus fails at 0 notes: -; detector partial limit 9 kHz from D7, strobe row blank from F7
+    1 3/5': focus fails at 3 notes: A#6, B6, C7; detector partial limit 9 kHz from A#6, strobe row blank from C#7
+    1 1/3': focus fails at 6 notes: G6, G#6, A6, A#6, B6, C7; detector partial limit 9 kHz from G6, strobe row blank from A#6
+    1': focus fails at 11 notes: D6, D#6, E6, F6, F#6, G6, G#6, A6, A#6, B6, C7; detector partial limit 9 kHz from D6, strobe row blank from F6
+    1/2': focus fails at 23 notes: D5, D#5, E5, F5, F#5, G5 ... A6, A#6, B6, C7 (23 notes); detector partial limit 9 kHz from D5, strobe row blank from F5
+[q5alias]
+  reed (partials up to 20 kHz), pitch.c as it is: no/wrong estimate at A#6, D7, D#7, E7, F7, F#7, G#7, A7, A#7, B7, C8
+  same reed with partials above 10.5 kHz removed: no/wrong estimate at -
+  reed, variant: 63-tap half-band decimation: no/wrong estimate at -
+[cpu]
+  pitch_feed_ms_per_s,2.100
+  strobe_1_rows_ms_per_s,3.500
+strobe_2_rows_ms_per_s,3.900
+strobe_3_rows_ms_per_s,4.100
+strobe_4_rows_ms_per_s,4.400
+strobe_5_rows_ms_per_s,6.200
+strobe_6_rows_ms_per_s,5.300
+strobe_7_rows_ms_per_s,6.300
+strobe_8_rows_ms_per_s,6.300
