@@ -575,11 +575,16 @@ public class TunerTime extends Activity
 				if (!parms.mixture_mode) {
 					return;
 				}
-				if (!Double.isNaN(cents)) {
-					/* in tune where it was measured */
-					parms.mixture_cents += (int)Math.round(
-								cents*U);
+				if (Double.isNaN(cents)) {
+					/* just the progress: update_status()
+					 * would set parms.changed, and the
+					 * strobe recalculation that follows
+					 * resets the drift being measured */
+					update_mixture_status();
+					return;
 				}
+				/* in tune where it was measured */
+				parms.mixture_cents += (int)Math.round(cents*U);
 				update_status();
 			} });
 	}
