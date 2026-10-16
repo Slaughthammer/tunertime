@@ -219,7 +219,7 @@ public class PresetSelectActivity extends Activity {
 		String[] items = new String[temperaments.names.length];
 		for (int i = 0; i < items.length; i++) {
 			items[i] = temperaments.names[i] + "\n    " +
-					temperaments.about[i];
+					note.names_in(temperaments.about[i]);
 		}
 		new AlertDialog.Builder(this)
 			.setTitle("Add temperament (A = 0)")

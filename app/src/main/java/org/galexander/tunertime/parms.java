@@ -24,6 +24,9 @@ public class parms {
 		/* harmonic multiplier per strobe row, ascending */
 	static public volatile int[] harm_mult = { 1, 2, 4, 6, 8, 1, 1, 1 };
 	static public volatile String strobe_color = "batlow";
+		/* "english" (A#4), "german" (B-4, H-4 = English B4) or
+		 * "helmholtz" (German names, c' = C4); see note.java */
+	static public volatile String note_names = "english";
 
 	static public volatile boolean fft_mode = false;
 			/* number of samples in FFT window */
@@ -104,6 +107,7 @@ public class parms {
 		organ_mode = prefs.getBoolean("organ_mode", false);
 		load_harmonics();
 		strobe_color = prefs.getString("strobe_color", "batlow");
+		note_names = prefs.getString("note_names", "english");
 		fft_mode = prefs.getBoolean("fft_mode", false);
 		fft_size = prefs.getInt("fft_size", 2048);
 		fft_width = prefs.getInt("fft_width", Strobe.FFT_RANGE_MULT/4);

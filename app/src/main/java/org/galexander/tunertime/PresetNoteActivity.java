@@ -98,6 +98,8 @@ public class PresetNoteActivity extends Activity {
 		if ((note_idx < 0) || (note_idx >= notes.size())) {
 			finish();
 		}
+		/* "B" or German "H"; with "#" the sharp of A is B or German B */
+		((TextView)pn_notes[6]).setText(note.class_name(11));
 		update();
 	}
 
