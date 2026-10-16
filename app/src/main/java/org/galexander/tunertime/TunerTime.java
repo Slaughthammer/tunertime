@@ -639,6 +639,12 @@ public class TunerTime extends Activity
 	}
 
 	public void mixture_measure(View v) {
+		int fr = parms.focus_row();
+		if ((fr >= 0) && Strobe.row_too_high(this, fr)) {
+			/* the target moved up since it was focused */
+			too_high_toast();
+			parms.focus_ratio = 0.0d;
+		}
 		if (parms.focus_row() < 0) {
 			/* nothing focused: the 8' row, else the lowest */
 			int i;
@@ -701,6 +707,11 @@ public class TunerTime extends Activity
 		}
 		int row = range_limit((y*n)/h, 0, n-1);
 		double r = parms.row_ratio(row);
+		if ((parms.focus_ratio != r) && Strobe.row_too_high(this, row)) {
+			/* a blank row: no drift to show or measure */
+			too_high_toast();
+			return;
+		}
 		parms.focus_ratio = (parms.focus_ratio == r) ? 0.0d : r;
 		if (parms.focus_ratio == 0.0d) {
 			mix.stop();
@@ -708,6 +719,11 @@ public class TunerTime extends Activity
 			mix.start();		/* measure the new row */
 		}
 		update_status();
+	}
+
+	private void too_high_toast() {
+		Toast.makeText(this, "This row is too high for the sample rate",
+				Toast.LENGTH_SHORT).show();
 	}
 
 	private void update_mixture_status() {

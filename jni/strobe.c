@@ -36,11 +36,8 @@ int num_strobes = 5;
 int harm_mult[MAX_STROBES] = { 1, 2, 4, 6, 8, 1, 1, 1 };
 	/* organ mode: harm_mult[] holds multiples of the 32' pitch
 	 * (ORGAN_DIV = 8'), rows are labelled by footage, and rows the
-	 * sample rate cannot carry are left blank */
+	 * sample rate cannot carry (ORGAN_MAX_FREQ) are left blank */
 int organ_mode = 0;
-	/* highest strobe frequency in organ mode, as a fraction of the sample
-	 * rate: four samples per period still make a readable pattern */
-#define ORGAN_MAX_FREQ 0.25
 
 static struct strobe_rec strobes[MAX_STROBES];
 

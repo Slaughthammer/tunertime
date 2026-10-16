@@ -105,6 +105,18 @@ public class Strobe extends Thread {
 	}
 
 	private native void runner();		/* efficient C loop */
+		/* jni ORGAN_MAX_FREQ: organ mode leaves rows above this
+		 * fraction of the sample rate blank */
+	public static native double organ_max_freq();
+
+	/* organ mode: strobe row i of the target in strobe_cents is above
+	 * what the sample rate carries, so it is blank and never measures */
+	public static boolean row_too_high(TunerTime ui, int i) {
+		double f = ui.cents_to_freq(parms.strobe_cents, 1) *
+				parms.row_ratio(i);
+		return parms.organ_mode &&
+			(f > organ_max_freq() * Listener.get_samplerate());
+	}
 
 	private Paint label_p = null;
 	private Paint pause_p = null;
