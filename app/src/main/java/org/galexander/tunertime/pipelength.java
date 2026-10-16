@@ -34,6 +34,7 @@ public class pipelength {
 	private final long[] when = new long[MAX_EST];
 	private int n_est = 0;
 	private int last_target = -1;
+	private double last_focus = 0.0d;
 
 	pipelength(TunerTime ui_, View panel) {
 		ui = ui_;
@@ -98,9 +99,12 @@ public class pipelength {
 		temp_display.setText(parms.temperature + "\u00b0C");
 		kind_button.setText(parms.pipe_stopped ? "stopped" : "open");
 
-		if (parms.strobe_cents != last_target) {
-			/* a new note: earlier pitches belong to another pipe */
+		if ((parms.strobe_cents != last_target) ||
+		    (parms.focus_ratio != last_focus)) {
+			/* a new note or rank: earlier pitches belong to
+			 * another pipe */
 			last_target = parms.strobe_cents;
+			last_focus = parms.focus_ratio;
 			n_est = 0;
 		}
 		/* the note's pipe; a focused partial (4', 2 2/3', ...)
