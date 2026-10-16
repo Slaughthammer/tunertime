@@ -337,7 +337,7 @@ public class TunerTime extends Activity
 
 	/* inverse of cents_to_freq() for the fundamental */
 	private int freq_to_cents(double hz) {
-		double frac = ((double)parms.cents_per_octave)/12000.0d;
+		double frac = ((double)parms.stretch())/12000.0d;
 		double c = 1200.0d * Math.log(hz*10.0d/parms.A_freq) /
 				Math.log(2.0d) / (1.0d+frac);
 		return (int)Math.round(c*U) + 4800*U;
@@ -615,7 +615,7 @@ public class TunerTime extends Activity
 	public double cents_to_freq(int cents, int harm_mult) {
 		double c = ((double)(cents-4800*U)) / (double)U;
 		c += 1200.0d * Math.log((double)harm_mult) / Math.log(2.0d);
-		double frac = ((double)parms.cents_per_octave)/12000.0d;
+		double frac = ((double)parms.stretch())/12000.0d;
 		double octpow = c*(1.0d+frac) / 1200.0d;
 		double mult = Math.pow(2.0d, octpow);
 		return ((double)parms.A_freq)*mult/10.0d;

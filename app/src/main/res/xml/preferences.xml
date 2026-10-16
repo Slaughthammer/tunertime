@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="Main">
+	<CheckBoxPreference
+		android:key="organ_mode"
+		android:title="Organ mode"
+		android:summary="Tuning organ pipes: no stretch, organ-specific displays"
+		android:defaultValue="false" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="Strobe">
 	<ListPreference
 		android:key="strobe_color"

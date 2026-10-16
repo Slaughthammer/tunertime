@@ -40,6 +40,14 @@ public class parms {
 
 	static public int A_freq = 4400;              /* 440.0 *10 */
 	static public int cents_per_octave = 0;       /* *10 */
+		/* organ mode (Settings): no stretch, organ-specific displays */
+	static public volatile boolean organ_mode = false;
+
+		/* stretch in effect, tenths of a cent per octave; organs are
+		 * tuned without stretch */
+	public static int stretch() {
+		return organ_mode ? 0 : cents_per_octave;
+	}
 
 	static public boolean preset_mode = false;
 	static public int preset_id = -1;
@@ -89,6 +97,7 @@ public class parms {
 		note_cents = prefs.getInt("note_cents10", strobe_cents);
 		note_temper = prefs.getBoolean("note_temper", true);
 		auto_note = prefs.getBoolean("auto_note", false);
+		organ_mode = prefs.getBoolean("organ_mode", false);
 		load_harmonics();
 		strobe_color = prefs.getString("strobe_color", "batlow");
 		fft_mode = prefs.getBoolean("fft_mode", false);
