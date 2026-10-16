@@ -6,13 +6,12 @@
 		android:title="Organ mode"
 		android:summary="Tuning organ pipes: no stretch, organ-specific displays"
 		android:defaultValue="false" />
-	<ListPreference
-		android:key="note_names"
-		android:title="Note names"
-		android:summary="%s"
-		android:entries="@array/note_names_name"
-		android:entryValues="@array/note_names_value"
-		android:defaultValue="english" />
+	<CheckBoxPreference
+		android:key="german_names"
+		android:title="German note names"
+		android:summaryOn="Cis, B, H; octaves C&#8322; C&#8321; C c c&#185; c&#178; (a&#185; = A4)"
+		android:summaryOff="C#, A#, B; octaves numbered (A4)"
+		android:defaultValue="false" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Audio">
 	<ListPreference

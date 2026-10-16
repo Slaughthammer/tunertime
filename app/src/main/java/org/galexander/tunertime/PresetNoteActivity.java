@@ -99,6 +99,10 @@ public class PresetNoteActivity extends Activity {
 		}
 		/* "B" or German "H"; with "#" the sharp of A is B or German B */
 		((TextView)pn_notes[6]).setText(note.class_name(11));
+		/* 0..8, or with German names C2 (subscript) .. c5 */
+		for (int i = 0; i < pn_octs.length; i++) {
+			((TextView)pn_octs[i]).setText(note.octave_name(i));
+		}
 		update();
 	}
 

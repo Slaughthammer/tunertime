@@ -188,7 +188,7 @@ public class Strobe extends Thread {
 	 * follows the note-names setting.  in organ mode, the focused
 	 * partial's offset in place of the piano key, like "4' +01.5c" */
 	private int pn_cents = -1;
-	private String pn_names = null;
+	private boolean pn_german = false;
 	private String pn_str = null;
 	private void draw_pianoname(Canvas c) {
 		String s = pianoname;
@@ -202,11 +202,11 @@ public class Strobe extends Thread {
 		}
 		if (!parms.organ_mode) {
 			int cents = parms.strobe_cents;
-			String names = parms.note_names;
-			if ((cents != pn_cents) || !names.equals(pn_names)) {
+			boolean german = parms.german_names;
+			if ((cents != pn_cents) || (german != pn_german)) {
 				pn_str = note.piano_name(cents);
 				pn_cents = cents;
-				pn_names = names;
+				pn_german = german;
 			}
 			s = pn_str;
 		}

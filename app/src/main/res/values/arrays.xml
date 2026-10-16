@@ -39,16 +39,6 @@
 		<item>blueyellow</item>
 		<item>redblue</item>
 	</string-array>
-	<string-array name="note_names_name">
-		<item>English (C# &#8230; A# B, A4)</item>
-		<item>German (Cis &#8230; B H, A4)</item>
-		<item>Helmholtz (German, c\' = C4, a\' = A4)</item>
-	</string-array>
-	<string-array name="note_names_value">
-		<item>english</item>
-		<item>german</item>
-		<item>helmholtz</item>
-	</string-array>
 	<string-array name="harmonics_default">
 		<item>1</item>
 		<item>2</item>
