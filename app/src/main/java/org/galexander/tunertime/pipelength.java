@@ -15,6 +15,11 @@ import java.util.Arrays;
  * whatever e is; positive means too long (flat).  c follows the
  * temperature, c = 331.3*sqrt(1+T/273.15) m/s; a degree off moves dL by
  * less than 0.2%.  Only dL is shown, as the length to cut off or to add.
+ * The temperature setting only scales c; it does not move the target.
+ * The pipes' pitch changes with the air temperature (about 3 c, or
+ * 0.7 Hz at a = 440, per degree), and the tuner allows for that by
+ * hand through the A frequency, as decided with the organ tuner: no
+ * automatic temperature compensation anywhere.
  *
  * With a strobe row focused, the estimate is that row's drift over the last
  * WINDOW ms that had sound (Strobe.focus_drift): it follows exactly the
