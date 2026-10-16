@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Button;
 import android.widget.Toast;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.app.Activity;
 import androidx.core.content.ContextCompat;
 import androidx.core.app.ActivityCompat;
@@ -277,9 +278,33 @@ public class TunerTime extends Activity
 	private int det_semi = Integer.MIN_VALUE, det_count = 0;
 	private static final int DET_AGREE = 3;	/* estimates in a row */
 
+	/* Corrections while following.  If the user moves the note by hand
+	 * (semitone or octave buttons) while follow is on, within
+	 * CORR_RECENT ms of a stable detection, the interval from the
+	 * detected note to the note chosen (follow_shift, semitones) is
+	 * remembered and added to every later detection.  So correcting a
+	 * 4' stop down an octave once makes the whole stop follow an octave
+	 * lower, a Quint 2 2/3' corrected a twelfth down follows a twelfth
+	 * lower, and the corrected note is not snatched back by the next
+	 * estimate.  A toast shows the shift whenever it is set.  It is
+	 * cleared, and detections are taken as heard again, when
+	 *  - auto is turned off (long press) or turned on afresh,
+	 *  - nothing clear was heard for SHIFT_SILENCE ms (a new stop),
+	 *  - the user corrects back to the note as detected.
+	 * Lock and unlock keep it. */
+	private int follow_shift = 0;
+	private int det_stable = Integer.MIN_VALUE;	/* last agreed note */
+	private double det_stable_hz = 0.0;
+	private long det_stable_time = 0, last_heard = 0;
+	private static final long CORR_RECENT = 4000;
+	private static final long SHIFT_SILENCE = 10000;
+	private Toast shift_toast = null;
+
 	public void do_auto(View v) {
 		if (!parms.auto_note && !auto_locked) {
 			parms.auto_note = true;
+			follow_shift = 0;
+			det_stable = Integer.MIN_VALUE;
 			Toast.makeText(this, "auto: tap to lock, hold to turn off",
 					Toast.LENGTH_SHORT).show();
 		} else if (parms.auto_note) {
@@ -288,6 +313,7 @@ public class TunerTime extends Activity
 		} else {
 			parms.auto_note = true;		/* unlock */
 			auto_locked = false;
+			last_heard = SystemClock.uptimeMillis();
 		}
 		det_count = 0;
 		update_status();
@@ -297,6 +323,8 @@ public class TunerTime extends Activity
 		parms.auto_note = false;
 		auto_locked = false;
 		det_count = 0;
+		follow_shift = 0;
+		det_stable = Integer.MIN_VALUE;
 		update_status();
 	}
 
@@ -310,8 +338,17 @@ public class TunerTime extends Activity
 
 	/* moves note mode to the nearest note once DET_AGREE estimates in a
 	 * row agree; silence holds the current note.  the cents offset set
-	 * by hand carries over to the new note. */
+	 * by hand carries over to the new note, and so does a correction
+	 * (follow_shift, above). */
 	private void on_pitch(double hz) {
+		long now = SystemClock.uptimeMillis();
+		if (hz > 0.0) {
+			last_heard = now;
+		} else if ((follow_shift != 0) &&
+			   (now - last_heard > SHIFT_SILENCE)) {
+			follow_shift = 0;
+			show_shift();
+		}
 		if (!parms.auto_note || parms.preset_mode || parms.fft_mode ||
 		    ToneGenerator.playing || (hz <= 0.0)) {
 			det_count = 0;
@@ -328,11 +365,55 @@ public class TunerTime extends Activity
 			det_semi = k;
 			det_count = 1;
 		}
-		if ((det_count >= DET_AGREE) && (k != cur) &&
-		    (k >= 0) && (k*semi + off <= 9600*U)) {
-			parms.note_cents = k*semi + off;
+		if (det_count < DET_AGREE) {
+			return;
+		}
+		/* remembered even out of range (a 32' pipe heard below A0),
+		 * so that it can be corrected */
+		det_stable = k;
+		det_stable_hz = hz;
+		det_stable_time = now;
+		int t = k + follow_shift;
+		if ((t != cur) && (t >= 0) && (t*semi + off <= 9600*U)) {
+			parms.note_cents = t*semi + off;
 			update_status();
 		}
+	}
+
+	/* the user moved the note from semitone 'from' to 'to' by hand */
+	private void user_moved_note(int from, int to) {
+		if (!parms.auto_note || parms.preset_mode || parms.fft_mode) {
+			return;
+		}
+		long now = SystemClock.uptimeMillis();
+		boolean recent = (det_stable != Integer.MIN_VALUE) &&
+				 (now - det_stable_time < CORR_RECENT);
+		if (recent) {
+			follow_shift = to - det_stable;
+			show_shift();
+		}
+		DebugRecorder.intervention(this,
+			recent ? det_stable*100*U : DebugRecorder.NONE,
+			recent ? det_stable_hz : 0.0,
+			from*100*U, to*100*U, follow_shift);
+	}
+
+	private void show_shift() {
+		if (shift_toast != null) {
+			shift_toast.cancel();
+		}
+		String s;
+		if (follow_shift == 0) {
+			s = "follow: notes as detected";
+		} else {
+			int a = Math.abs(follow_shift);
+			s = "follow: " + ((follow_shift > 0) ? "+" : "-") +
+				((a % 12 == 0) ? ((a/12) + " oct")
+					       : (a + " semitones")) +
+				" from detected (hold auto to clear)";
+		}
+		shift_toast = Toast.makeText(this, s, Toast.LENGTH_SHORT);
+		shift_toast.show();
 	}
 
 	/* inverse of cents_to_freq() for the fundamental */
@@ -354,8 +435,14 @@ public class TunerTime extends Activity
 	}
 
 	private void incr_cents(int delta) {
+		int semi = 100*U;
+		int before = (parms.note_cents + semi/2) / semi;
 		parms.note_cents += delta;
 		parms.note_cents = range_limit(parms.note_cents, 0, 9600*U);
+		int after = (parms.note_cents + semi/2) / semi;
+		if (after != before) {
+			user_moved_note(before, after);
+		}
 		update_status();
 	}
 
