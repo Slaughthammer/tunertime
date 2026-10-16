@@ -1,5 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<string-array name="audio_source_name">
+		<item>Auto</item>
+		<item>Unprocessed</item>
+		<item>Voice recognition</item>
+		<item>Microphone (may be noise-suppressed)</item>
+		<item>Camcorder</item>
+	</string-array>
+	<string-array name="audio_source_value">
+		<item>auto</item>
+		<item>unprocessed</item>
+		<item>voice_recognition</item>
+		<item>mic</item>
+		<item>camcorder</item>
+	</string-array>
+	<!-- filled at runtime in Settings.java -->
+	<string-array name="microphone_name">
+		<item>Auto (best signal)</item>
+		<item>System default</item>
+	</string-array>
+	<string-array name="microphone_value">
+		<item>auto</item>
+		<item>default</item>
+	</string-array>
 	<string-array name="color_name">
 		<item>Batlow</item>
 		<item>Slate / White</item>

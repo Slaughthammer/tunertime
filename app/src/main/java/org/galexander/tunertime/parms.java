@@ -54,6 +54,11 @@ public class parms {
 	static public volatile boolean length_mode = false;
 	static public boolean pipe_stopped = false;	/* gedackt */
 	static public int temperature = 18;		/* degrees C */
+		/* Settings "Audio", see MicSelect: auto, unprocessed,
+		 * voice_recognition, mic, camcorder */
+	static public volatile String audio_source = "auto";
+		/* auto, default, or an input device key */
+	static public volatile String microphone = "auto";
 
 		/* stretch in effect, tenths of a cent per octave; organs are
 		 * tuned without stretch */
@@ -89,6 +94,7 @@ public class parms {
 
 	public static void init(Activity a) {
 		prefs = PreferenceManager.getDefaultSharedPreferences(a);
+		MicSelect.init(a);
 		check_for_legacy(a);
 	}
 	public static void load() {
@@ -113,6 +119,8 @@ public class parms {
 		length_mode = prefs.getBoolean("length_mode", false);
 		pipe_stopped = prefs.getBoolean("pipe_stopped", false);
 		temperature = prefs.getInt("temperature", 18);
+		audio_source = prefs.getString("audio_source", "auto");
+		microphone = prefs.getString("microphone", "auto");
 		load_harmonics();
 		strobe_color = prefs.getString("strobe_color", "batlow");
 		note_names = prefs.getString("note_names", "english");
