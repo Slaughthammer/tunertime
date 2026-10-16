@@ -61,6 +61,42 @@ public class Strobe extends Thread {
 		ui.pitch_detected(hz);
 	}
 
+	/* organ mode: the focused row's partial gained cycles on the row's
+	 * frequency freq during secs of usable signal, in the last buffer of
+	 * buf_secs.  called from the native loop after every buffer while a
+	 * row is focused.  smoothed here for the display in place of the
+	 * piano key name, and passed on for mixture mode */
+	private static final double FOCUS_TAU = 0.5;	/* display, seconds */
+	private double focus_freq = 0.0d;
+	private double focus_cycles = 0.0d, focus_secs = 0.0d;
+	private volatile String focus_str = null;
+	private volatile double focus_str_ratio = 0.0d;	/* focus_str is for */
+
+	public void focus_drift(double freq, double cycles, double secs,
+				double buf_secs) {
+		if (freq != focus_freq) {
+			focus_freq = freq;
+			focus_cycles = 0.0d;
+			focus_secs = 0.0d;
+		}
+		double d = Math.exp(-buf_secs/FOCUS_TAU);
+		focus_cycles = focus_cycles*d + cycles;
+		focus_secs = focus_secs*d + secs;
+		String s = parms.footage_str(parms.focus_ratio) + " ";
+		if ((focus_secs > FOCUS_TAU/4.0d) && (freq > 0.0d)) {
+			double c = 1200.0d * Math.log(
+				(freq + focus_cycles/focus_secs)/freq) /
+				Math.log(2.0d);
+			s += note.cents_str((int)Math.round(
+						c*preset.UNITS_PER_CENT));
+		} else {
+			s += "--.-c";
+		}
+		focus_str = s;
+		focus_str_ratio = parms.focus_ratio;
+		ui.focus_drift(freq, cycles, secs);
+	}
+
 	public void toggle_pause() {
 		paused = !paused;
 		if (!paused) {
@@ -102,11 +138,35 @@ public class Strobe extends Thread {
 			label_p.setTextSize(Math.min(sz, strobe_height/3.0f));
 			label_h = strobe_height;
 		}
+		int focus = parms.organ_mode ? parms.focus_row() : -1;
 		int y = -(int)label_p.getFontMetrics().ascent;
 		for (int i = 0; i < labels.length; i++) {
-			c.drawText(labels[i], 0, y, label_p);
+			if (i == focus) {
+				draw_focus(c, i*strobe_height, strobe_height);
+				c.drawText(labels[i], 0, y, focus_p);
+			} else {
+				c.drawText(labels[i], 0, y, label_p);
+			}
 			y += strobe_height;
 		}
+	}
+
+	/* organ mode: frames the focused row, labelled in the accent colour */
+	private Paint focus_p = null;
+	private Paint frame_p = null;
+	private void draw_focus(Canvas c, int y, int h) {
+		if (frame_p == null) {
+			int accent = ui.getResources().getColor(R.color.accent);
+			frame_p = new Paint();
+			frame_p.setColor(accent);
+			frame_p.setStyle(Paint.Style.STROKE);
+			frame_p.setStrokeWidth(Math.max(3.0f, width/150.0f));
+			focus_p = new Paint(label_p);
+			focus_p.setColor(accent);
+		}
+		focus_p.setTextSize(label_p.getTextSize());
+		float sw = frame_p.getStrokeWidth()/2.0f;
+		c.drawRect(sw, y+sw, width-sw, y+h-sw, frame_p);
 	}
 
 	private void draw_paused(Canvas c) {
@@ -125,20 +185,30 @@ public class Strobe extends Thread {
 
 	/* like "A49" for A-4.  the native side sets pianoname once the
 	 * strobe is set up, but the text is formatted here so that it
-	 * follows the note-names setting */
+	 * follows the note-names setting.  in organ mode, the focused
+	 * partial's offset in place of the piano key, like "4' +01.5c" */
 	private int pn_cents = -1;
 	private String pn_names = null;
 	private String pn_str = null;
 	private void draw_pianoname(Canvas c) {
-		if (parms.fft_mode || (pianoname == null)) {
+		String s = pianoname;
+		if (parms.organ_mode) {
+			s = ((parms.focus_ratio > 0.0d) &&
+			     (focus_str_ratio == parms.focus_ratio)) ?
+						focus_str : null;
+		}
+		if (parms.fft_mode || (s == null)) {
 			return;
 		}
-		int cents = parms.strobe_cents;
-		String names = parms.note_names;
-		if ((cents != pn_cents) || !names.equals(pn_names)) {
-			pn_str = note.piano_name(cents);
-			pn_cents = cents;
-			pn_names = names;
+		if (!parms.organ_mode) {
+			int cents = parms.strobe_cents;
+			String names = parms.note_names;
+			if ((cents != pn_cents) || !names.equals(pn_names)) {
+				pn_str = note.piano_name(cents);
+				pn_cents = cents;
+				pn_names = names;
+			}
+			s = pn_str;
 		}
 		if (pianoname_p == null) {
 			pianoname_p = new Paint();
@@ -155,7 +225,7 @@ public class Strobe extends Thread {
 			/* share the baseline of the first label */
 			y = Math.max(y, -(int)label_p.getFontMetrics().ascent);
 		}
-		c.drawText(pn_str, width-1, y, pianoname_p);
+		c.drawText(s, width-1, y, pianoname_p);
 	}
 
 	private void draw_all(Canvas c, int[] bitmap, int w, int h) {

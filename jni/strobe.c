@@ -34,6 +34,13 @@ struct strobe_rec {
 int base_cents;
 int num_strobes = 5;
 int harm_mult[MAX_STROBES] = { 1, 2, 4, 6, 8, 1, 1, 1 };
+	/* organ mode: harm_mult[] holds multiples of the 32' pitch
+	 * (ORGAN_DIV = 8'), rows are labelled by footage, and rows the
+	 * sample rate cannot carry are left blank */
+int organ_mode = 0;
+	/* highest strobe frequency in organ mode, as a fraction of the sample
+	 * rate: four samples per period still make a readable pattern */
+#define ORGAN_MAX_FREQ 0.25
 
 static struct strobe_rec strobes[MAX_STROBES];
 
@@ -145,6 +152,10 @@ filter_recalc(struct strobe_rec *s)
 static void
 strobe_recalc_single(struct strobe_rec *s)
 {
+	if (s->freq <= 0.0) {
+		/* blank row (organ mode, above ORGAN_MAX_FREQ) */
+		return;
+	}
 	filter_recalc(s);
 
 	double t = ((double)sample_rate) / (double)s->freq;
@@ -317,6 +328,145 @@ strobe_draw_htic(jint *bitmap_ptr, struct strobe_rec *s)
 }
 
 
+	/* drift of the focused row (organ mode): a row's pattern moves one
+	 * stripe for each cycle the partial gains on the row frequency.
+	 * the band-passed signal of that row is demodulated at the row
+	 * frequency over blocks of a few whole periods, and the phase step
+	 * from one block to the next, unwrapped, is that drift.  the
+	 * band-pass has already removed the other partials, so this follows
+	 * just the chosen one, and over a couple of seconds it resolves far
+	 * below a cent.  steps up to half a cycle per block are unambiguous,
+	 * i.e. up to freq/(2*DRIFT_MAX_PERIODS) Hz off, wider than the
+	 * band-pass anyway */
+#define DRIFT_MAX_PERIODS 8	/* whole periods per block, at most */
+#define DRIFT_MAX_SECS 0.1	/* block length, at most (low rows) */
+#define DRIFT_MIN_AMP 8.0	/* quieter blocks are ignored (16-bit units) */
+#define DRIFT_REL_AMP 0.1	/* ...as are blocks this far below the peak */
+#define DRIFT_PEAK_HALFLIFE 1.0	/* seconds */
+
+static int focus_row = -1;
+static struct {
+	double w;		/* reference step, radians per sample */
+	double ph;		/* reference phase */
+	double re, im;		/* sum over the current block */
+	int n, len;		/* samples in the current block, block length */
+	double prev_re, prev_im;	/* sum over the previous block */
+	int prev_ok;		/* previous block was loud enough */
+	double peak;		/* recent block amplitude, decaying */
+	double cycles, secs;	/* drift found in the last buffer */
+} drift;
+
+static void
+drift_reset(void)
+{
+	struct strobe_rec *s;
+	int k;
+
+	memset(&drift, 0, sizeof drift);
+	if ((focus_row < 0) || (focus_row >= num_strobes) ||
+	    (sample_rate <= 0)) {
+		return;
+	}
+	s = &strobes[focus_row];
+	if (s->freq <= 0.0) {
+		return;
+	}
+	drift.w = 2.0*M_PI*s->freq/(double)sample_rate;
+	k = s->freq*DRIFT_MAX_SECS;
+	if (k > DRIFT_MAX_PERIODS) k = DRIFT_MAX_PERIODS;
+	if (k < 1) k = 1;
+	drift.len = k*(double)sample_rate/s->freq + 0.5;
+}
+
+/* ratio is parms.focus_ratio: the focused partial's frequency over the
+ * note's 8', 0 for none.  picks the row showing it */
+void
+strobe_focus(double ratio)
+{
+	double div = organ_mode ? (double)ORGAN_DIV : 1.0;
+	int row = -1;
+	int i;
+
+	for (i = 0; (i < num_strobes) && (ratio > 0.0); i++) {
+		if (fabs(harm_mult[i]/div - ratio) < 1e-6) {
+			row = i;
+			break;
+		}
+	}
+	if (row != focus_row) {
+		focus_row = row;
+		drift_reset();
+	}
+}
+
+static void
+drift_block(void)
+{
+	double amp = 2.0*hypot(drift.re, drift.im)/drift.n;
+	double secs = drift.n/(double)sample_rate;
+	int ok;
+
+	drift.peak *= pow(0.5, secs/DRIFT_PEAK_HALFLIFE);
+	if (amp > drift.peak) {
+		drift.peak = amp;
+	}
+	ok = (amp >= DRIFT_MIN_AMP) && (amp >= DRIFT_REL_AMP*drift.peak);
+	if (ok && drift.prev_ok) {
+		/* angle of this block's sum against the previous one's,
+		 * positive when the partial is sharp of the row */
+		double dph = atan2(drift.im*drift.prev_re -
+					drift.re*drift.prev_im,
+				   drift.re*drift.prev_re +
+					drift.im*drift.prev_im);
+		drift.cycles += dph/(2.0*M_PI);
+		drift.secs += secs;
+	}
+	drift.prev_re = drift.re;
+	drift.prev_im = drift.im;
+	drift.prev_ok = ok;
+	drift.re = drift.im = 0.0;
+	drift.n = 0;
+}
+
+static void
+drift_feed(struct strobe_rec *s)
+{
+	int i;
+
+	drift.cycles = drift.secs = 0.0;
+	if (drift.len <= 0) {
+		return;
+	}
+	for (i = 0; i < snd_buflen; i++) {
+		double y = s->filtered[i];
+		drift.re += y*cos(drift.ph);
+		drift.im -= y*sin(drift.ph);
+		drift.ph += drift.w;
+		if (drift.ph >= 2.0*M_PI) {
+			drift.ph -= 2.0*M_PI;
+		}
+		if (++drift.n >= drift.len) {
+			drift_block();
+		}
+	}
+}
+
+/* the focused row's drift over the last buffer: the partial gained
+ * *cycles on the row frequency *freq during *secs of usable signal.
+ * returns 0 if no row is focused */
+int
+strobe_drift(double *freq, double *cycles, double *secs)
+{
+	if ((focus_row < 0) || (drift.len <= 0)) {
+		return 0;
+	}
+	*freq = strobes[focus_row].freq;
+	*cycles = drift.cycles;
+	*secs = drift.secs;
+	return 1;
+}
+
+
 /* just draws the separators...everything else is redrawn by strobe_newdata */
 void
 strobe_redraw(jint *bitmap_ptr)
@@ -337,16 +487,44 @@ strobe_newdata(jint *bitmap_ptr)
 	int i;
 	for (i = 0; i < num_strobes; i++) {
 		struct strobe_rec *s = &strobes[i];
-		if (snd_buflen == 0) {
-			/* not really any new data */
+		if ((snd_buflen == 0) || (s->freq <= 0.0)) {
+			/* not really any new data, or a blank row */
 			continue;
 		}
 		strobe_filter(s);
 		strobe_drawnew(bitmap_ptr, s);
 		strobe_draw_htic(bitmap_ptr, s);
+		if (i == focus_row) {
+			drift_feed(s);
+		}
 	}
 }
 
+
+/* organ footage of a row holding m times the 32' pitch, like "10 2/3'" */
+static void
+footage_str(char *buf, int m)
+{
+	int num = 8*ORGAN_DIV;		/* 32' */
+	int whole, rem, a, b;
+
+	if (m < 1) m = 1;
+	whole = num/m;
+	rem = num%m;
+	a = rem; b = m;			/* gcd, to reduce rem/m */
+	while (b) {
+		int t = a%b;
+		a = b;
+		b = t;
+	}
+	if (rem == 0) {
+		sprintf(buf, "%d'", whole);
+	} else if (whole == 0) {
+		sprintf(buf, "%d/%d'", rem/a, m/a);
+	} else {
+		sprintf(buf, "%d %d/%d'", whole, rem/a, m/a);
+	}
+}
 
 static void
 update_labels(jobject this)
@@ -365,6 +543,17 @@ update_labels(jobject this)
 		char *ext = ((mult==1) ? "st" : ((mult==2) ? "nd" :
 				((mult==3) ? "rd" : "th")));
 		labels[i] = labs[i];
+		if (organ_mode) {
+			char foot[20];
+			footage_str(foot, mult);
+			if (strobes[i].freq > 0.0) {
+				sprintf(labels[i], "%7s %7.1f", foot,
+					strobes[i].freq);
+			} else {
+				sprintf(labels[i], "%7s too high", foot);
+			}
+			continue;
+		}
 		sprintf(labels[i], "%2d%s %7.1f", mult, ext, strobes[i].freq);
 	}
 	set_labels(this, labels);
@@ -391,10 +580,21 @@ strobe_recalculate(jobject this)
 		strobes[i].prev_pos = 0;
 		strobes[i].y = y;
 		strobes[i].height = sheight;
-		strobes[i].freq = cents_to_freq(this, cents, mult);
+		if (organ_mode) {
+			/* no stretch in organ mode, so the partials are
+			 * exact multiples of the 32' pitch */
+			strobes[i].freq = cents_to_freq(this, cents, 1) *
+						mult / ORGAN_DIV;
+			if (strobes[i].freq > ORGAN_MAX_FREQ*sample_rate) {
+				strobes[i].freq = 0.0;
+			}
+		} else {
+			strobes[i].freq = cents_to_freq(this, cents, mult);
+		}
 		strobe_recalc_single(&strobes[i]);
 
 		y += sheight;
 	}
+	drift_reset();
 	update_labels(this);
 }
