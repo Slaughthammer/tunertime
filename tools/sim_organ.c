@@ -5,7 +5,7 @@
  *   sim_organ                 all scenarios, one line each, and a summary
  *   sim_organ -v [name]       ... with every note's details
  *   sim_organ -w dir [name]   also writes each scenario as dir/<name>.wav
- *   sim_organ -a N            N estimates in a row move the note (3)
+ *   sim_organ -a N            N estimates in a row move the note (4)
  *                             (16-bit mono, replay with test_pitch file.wav)
  *   name                      only scenarios whose name contains it
  *
@@ -70,7 +70,7 @@ static jint bitmap[400*700];
 
 /* ---- app constants emulated (Java side) ---- */
 #define BUFLEN		1024	/* samples per audio buffer */
-static int det_agree = 3;	/* TunerTime.DET_AGREE; -a N */
+static int det_agree = 4;	/* TunerTime.DET_AGREE; -a N */
 #define LEN_WINDOW	1.0	/* pipelength.WINDOW */
 #define LEN_MIN_EST	5	/* pipelength.MIN_EST */
 #define STABLE_CENTS	1.0	/* pipelength.STABLE_CENTS */

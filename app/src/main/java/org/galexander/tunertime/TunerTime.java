@@ -355,7 +355,11 @@ public class TunerTime extends Activity
 	 * long press turns it off.  only note mode follows.  the state is
 	 * parms.auto_note and parms.auto_locked, kept across rotation */
 	private int det_semi = Integer.MIN_VALUE, det_count = 0;
-	private static final int DET_AGREE = 3;	/* estimates in a row */
+	/* estimates in a row.  4 rather than 3 (tools/sim_organ.c -a):
+	 * loud speech near the phone moves the note 3 times in 40 s
+	 * instead of 6, a Principal with speech around it never to a wrong
+	 * note (3 before), for about 0.09 s more latency */
+	private static final int DET_AGREE = 4;
 
 	/* Corrections while following.  If the user moves the note by hand
 	 * (semitone or octave buttons) while follow is on, within

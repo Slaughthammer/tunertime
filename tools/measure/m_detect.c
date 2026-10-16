@@ -22,7 +22,7 @@
 #include "siggen.h"
 
 #define BUF 1024		/* Listener.BUFSZ */
-#define DET_AGREE 3		/* TunerTime.DET_AGREE */
+#define DET_AGREE 4		/* TunerTime.DET_AGREE */
 #define LO_SEMI (-57)		/* C0, 32' C */
 #define HI_SEMI 39		/* C8 */
 
