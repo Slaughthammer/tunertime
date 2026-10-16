@@ -1,0 +1,86 @@
+# Known UI problems, reported by UiLayoutTest but not failing it.
+# One key per line: screen|language|orientation|fontscale|CHECK|element
+# "*" matches any field, "abc*" any field starting with abc.
+# Remove a line once it is fixed, so that it can't come back unnoticed.
+#
+# Baseline from the run of 2026-10-16 on main (v18.0-organ) on the
+# tt_fairphone4 and tt_galaxy_s25 emulators, en+de, font scale 1.0+1.3.
+
+# CLIPPED
+main*|*|port|*|CLIPPED|afreq_button
+organ*|*|port|*|CLIPPED|afreq_button
+preset_note|*|land|*|CLIPPED|Button"Speichern"
+preset_note|*|land|*|CLIPPED|Button"Ton löschen"
+preset_note|*|land|*|CLIPPED|Button"delete note"
+preset_note|*|land|*|CLIPPED|Button"save"
+
+# OVERLAP
+main*|*|port|*|OVERLAP|afreq_button~Button"Cent+"
+main*|*|port|*|OVERLAP|afreq_button~Button"Okt+"
+main*|*|port|*|OVERLAP|afreq_button~Button"Reset"
+main*|*|port|*|OVERLAP|afreq_button~Button"Ton+"
+main.afreq|*|port|*|OVERLAP|afreq_button~Button"+1"
+main.stretch|*|port|*|OVERLAP|afreq_button~Button"Spreizung+"
+organ*|*|port|*|OVERLAP|afreq_button~Button"Cent+"
+organ*|*|port|*|OVERLAP|afreq_button~Button"Okt+"
+organ*|*|port|*|OVERLAP|afreq_button~Button"Reset"
+organ*|*|port|*|OVERLAP|afreq_button~Button"Ton+"
+organ.afreq|*|port|*|OVERLAP|afreq_button~Button"+1"
+organ.length.mixture|*|port|*|OVERLAP|afreq_button~mixture_measure
+organ.mixture|*|port|*|OVERLAP|afreq_button~mixture_measure
+preset_note|*|land|*|OVERLAP|Button"+0.1c"~Button"Speichern"
+preset_note|*|land|*|OVERLAP|Button"+0.1c"~Button"save"
+preset_note|*|land|*|OVERLAP|Button"+1c"~Button"Speichern"
+preset_note|*|land|*|OVERLAP|Button"+1c"~Button"save"
+preset_note|*|land|*|OVERLAP|Button"-0.1c"~Button"Ton löschen"
+preset_note|*|land|*|OVERLAP|Button"-0.1c"~Button"delete note"
+preset_note|*|land|*|OVERLAP|Button"-1c"~Button"Ton löschen"
+preset_note|*|land|*|OVERLAP|Button"-1c"~Button"delete note"
+
+# TEXT_CUT_V
+preset_note|*|land|*|TEXT_CUT_V|Button"Speichern"
+preset_note|*|land|*|TEXT_CUT_V|Button"Ton löschen"
+preset_note|*|land|*|TEXT_CUT_V|Button"delete note"
+preset_note|*|land|*|TEXT_CUT_V|Button"save"
+
+# TEXT_ELLIPSIZED
+main*|*|port|*|TEXT_ELLIPSIZED|TextView"TunerTime Organ: Strobe "
+main*|*|port|*|TEXT_ELLIPSIZED|TextView"TunerTime Organ: strobe "
+organ*|*|port|*|TEXT_ELLIPSIZED|TextView"TunerTime Organ: Strobe "
+organ*|*|port|*|TEXT_ELLIPSIZED|TextView"TunerTime Organ: strobe "
+organ.length.mixture|*|port|*|TEXT_ELLIPSIZED|TextView"TunerTime Organ: Mixtur "
+organ.length.mixture|*|port|*|TEXT_ELLIPSIZED|TextView"TunerTime Organ: mixture"
+organ.mixture|*|port|*|TEXT_ELLIPSIZED|TextView"TunerTime Organ: Mixtur "
+organ.mixture|*|port|*|TEXT_ELLIPSIZED|TextView"TunerTime Organ: mixture"
+presets.context|*|*|*|TEXT_ELLIPSIZED|TextView#title"St. Marien Hauptwerk Mix"
+presets.menu|*|port|*|TEXT_ELLIPSIZED|TextView#title"Historische Stimmung hin"
+settings*|*|port|*|TEXT_ELLIPSIZED|TextView#title"12-Ton-Preset temperiert"
+settings*|*|port|*|TEXT_ELLIPSIZED|TextView#title"12-note preset tempers n"
+
+# TOUCH_TARGET
+main*|*|*|*|TOUCH_TARGET|OverflowMenuButton"More options"
+main*|*|*|*|TOUCH_TARGET|OverflowMenuButton"Weitere Optionen"
+main*|*|port|*|TOUCH_TARGET|auto_button
+main*|*|port|*|TOUCH_TARGET|mode_button
+main*|*|port|*|TOUCH_TARGET|tone_button
+organ*|*|*|*|TOUCH_TARGET|OverflowMenuButton"More options"
+organ*|*|*|*|TOUCH_TARGET|OverflowMenuButton"Weitere Optionen"
+organ*|*|port|*|TOUCH_TARGET|auto_button
+organ*|*|port|*|TOUCH_TARGET|mode_button
+organ*|*|port|*|TOUCH_TARGET|tone_button
+preset_note|*|land|*|TOUCH_TARGET|Button"Speichern"
+preset_note|*|land|*|TOUCH_TARGET|Button"Ton löschen"
+preset_note|*|land|*|TOUCH_TARGET|Button"delete note"
+preset_note|*|land|*|TOUCH_TARGET|Button"save"
+preset_note|*|port|*|TOUCH_TARGET|pn_oct_0
+preset_note|*|port|*|TOUCH_TARGET|pn_oct_1
+preset_note|*|port|*|TOUCH_TARGET|pn_oct_2
+preset_note|*|port|*|TOUCH_TARGET|pn_oct_3
+preset_note|*|port|*|TOUCH_TARGET|pn_oct_4
+preset_note|*|port|*|TOUCH_TARGET|pn_oct_5
+preset_note|*|port|*|TOUCH_TARGET|pn_oct_6
+preset_note|*|port|*|TOUCH_TARGET|pn_oct_7
+preset_note|*|port|*|TOUCH_TARGET|pn_oct_8
+presets*|*|*|*|TOUCH_TARGET|OverflowMenuButton"More options"
+presets*|*|*|*|TOUCH_TARGET|OverflowMenuButton"Weitere Optionen"
+presets.rename|*|*|*|TOUCH_TARGET|EditText"St. Marien Hauptwerk Mix"

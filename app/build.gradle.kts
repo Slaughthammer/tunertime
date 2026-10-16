@@ -36,7 +36,12 @@ android {
         versionCode = 18
         versionName = "18.0-organ"
         manifestPlaceholders["appLabel"] = "TunerTime Organ"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+    // UI layout tests (app/src/androidTest) run against their own build,
+    // which installs next to the Play Store and dev apps on a real phone
+    // and leaves their settings alone: ./gradlew connectedUitestAndroidTest
+    testBuildType = "uitest"
 
     buildTypes {
         getByName("release") {
@@ -54,6 +59,11 @@ android {
             applicationIdSuffix = ".dev"
             manifestPlaceholders["appLabel"] = "TunerTime Organ"
         }
+        create("uitest") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".uitest"
+            manifestPlaceholders["appLabel"] = "TunerTime UI test"
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -69,6 +79,13 @@ android {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.uiautomator)
+    androidTestImplementation(libs.accessibility.test.framework)
+    androidTestImplementation(libs.guava)
 /*
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

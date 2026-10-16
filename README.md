@@ -102,3 +102,56 @@ Traps when editing:
   in `Strobe.shown_labels()`.
 - Do not `git add app/src/main` wholesale, because it would commit the built
   `.so` files.
+
+## UI layout tests
+
+`app/src/androidTest` holds instrumented tests (`UiLayoutTest`) that open
+every screen, tab, menu and dialog in English and German, at font scale 1.0
+and 1.3, in portrait and landscape, in normal and organ mode, and check each view hierarchy
+generically (`UiCheck`): every button, text and the strobe surface must be
+inside the window, not cut by its parent, not under the status/navigation bar
+or the camera cutout, not overlapping another one, with text that fits;
+clickables need 48dp and a label. The Accessibility Test Framework runs
+on top (its warnings are only reported). They need Android 11 or later (13
+for the language switch) and run on their own `uitest` build
+(`org.galexander.tunertime.uitest`, next to the Play Store and dev apps), on an
+emulator or a phone:
+
+```sh
+./gradlew connectedUitestAndroidTest
+# one test, one language and font scale, a name for the output folder:
+./gradlew connectedUitestAndroidTest \
+  -Pandroid.testInstrumentationRunnerArguments.class=org.galexander.tunertime.UiLayoutTest#main_organ \
+  -Pandroid.testInstrumentationRunnerArguments.languages=de \
+  -Pandroid.testInstrumentationRunnerArguments.fontScales=1.3 \
+  -Pandroid.testInstrumentationRunnerArguments.device=fairphone4
+adb pull /data/local/tmp/tt-ui-tests     # screenshots and report.txt
+```
+
+With several devices attached, pick one with `ANDROID_SERIAL` (otherwise
+Gradle runs on all of them). The tests rotate the phone and change its font
+scale while they run (restored at the end). Gradle uninstalls the uitest app
+afterwards; to keep it, install both APKs (`assembleUitest
+assembleUitestAndroidTest`) and run `adb shell am instrument -w -e device NAME
+org.galexander.tunertime.uitest.test/androidx.test.runner.AndroidJUnitRunner`.
+
+A test fails only on problems not listed in
+`app/src/androidTest/assets/known_ui_issues.txt`, after going through all its
+states; the failure message and `report.txt` list them as
+`screen|language|orientation|fontscale|CHECK|element`. Remove a line there once the
+problem is fixed (`-e strict true` fails on the known ones too).
+
+Emulators matching the target phones (1080x2340; the Fairphone 4 at 420dpi
+with Android 13, the Galaxy S25 at 450dpi with Android 15), with a
+hole-punch cutout:
+
+```sh
+sdkmanager emulator "system-images;android-33;default;x86_64" \
+  "system-images;android-35;default;x86_64"
+avdmanager create avd -n tt_fairphone4 -d pixel_4 \
+  -k "system-images;android-33;default;x86_64"
+# in ~/.android/avd/tt_fairphone4.avd/config.ini: hw.lcd.height=2340,
+# hw.lcd.density=420 (450 for the S25 one), hw.ramSize=2048M
+emulator -avd tt_fairphone4 -no-window &
+adb shell cmd overlay enable com.android.internal.display.cutout.emulation.hole
+```
