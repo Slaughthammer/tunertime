@@ -251,8 +251,26 @@ public class TunerTime extends Activity
 	private void brighten_mode(Button b) {
 		b.setSelected(true);
 	}
+	/* the preset or temperament goes in the action bar's subtitle, so
+	 * that neither it nor the title is cut short.  only set when it
+	 * changes, because update_status() calls this all the time */
+	private String shown_title = null, shown_subtitle = null;
+	private void set_title(String title, String subtitle) {
+		if (!title.equals(shown_title)) {
+			setTitle(title);
+			shown_title = title;
+		}
+		if ((subtitle == null) ? (shown_subtitle != null)
+				       : !subtitle.equals(shown_subtitle)) {
+			if (getActionBar() != null) {
+				getActionBar().setSubtitle(subtitle);
+			}
+			shown_subtitle = subtitle;
+		}
+	}
+
 	private void set_mode(View buttons, boolean fft_mode_) {
-		String title = null;
+		String title = null, subtitle = null;
 		if (fft_mode_ == false) {
 			darken_mode(note_button);
 			darken_mode(afreq_button);
@@ -278,10 +296,10 @@ public class TunerTime extends Activity
 			}
 			if (parms.mixture_mode) {
 				/* the readout rounds to this temperament */
-				title = (parms.temper_offsets() != null)
-					? getString(R.string.title_mixture_with,
-						preset.find(parms.preset_id).name)
-					: getString(R.string.title_mixture);
+				title = getString(R.string.title_mixture);
+				if (parms.temper_offsets() != null) {
+					subtitle = preset.find(parms.preset_id).name;
+				}
 			} else if (parms.preset_mode) {
 				preset p = preset.find(parms.preset_id);
 				if (p == null) {
@@ -292,8 +310,8 @@ public class TunerTime extends Activity
 						parms.preset_id = p.id;
 					}
 				}
-				title = getString(R.string.title_strobe_with,
-					(p != null) ? p.name : "...");
+				title = getString(R.string.title_strobe);
+				subtitle = (p != null) ? p.name : "...";
 			} else {
 				title = getString(R.string.title_strobe);
 			}
@@ -310,7 +328,7 @@ public class TunerTime extends Activity
 		mode_holder.addView(parms.fft_mode ? fft_mode_buttons
 						   : strobe_mode_buttons);
 		parms.changed = true;
-		setTitle(title);
+		set_title(title, subtitle);
 		if (parms.fft_mode) ToneGenerator.stop_tone();
 
 		update_status();
@@ -954,9 +972,7 @@ public class TunerTime extends Activity
 		note_cent_display.setText(nn.cents_str);
 		if (!parms.fft_mode && !parms.preset_mode &&
 		    !parms.mixture_mode) {
-			setTitle((temper_str != null)
-				? getString(R.string.title_strobe_with, temper_str)
-				: getString(R.string.title_strobe));
+			set_title(getString(R.string.title_strobe), temper_str);
 		}
 
 		preset_semi_display.setText(n.name_oct + " " + n.cents_str);

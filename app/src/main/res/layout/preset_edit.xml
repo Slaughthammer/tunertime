@@ -32,13 +32,15 @@
 	android:layout_width="fill_parent"
 	android:layout_height="1dp"
 	android:layout_weight="1" />
+    <!-- wrap_content and a weight, not 1dp: room for longer text at
+	 larger font scales (ATF TextSizeCheck) -->
     <LinearLayout
 	android:orientation="horizontal"
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content">
 	<Button
 	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
+	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
 	    android:layout_weight="1"
 	    android:minHeight="56dp"
@@ -47,7 +49,7 @@
 	    android:onClick="do_delete" />
 	<Button
 	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
+	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
 	    android:layout_weight="1"
 	    android:minHeight="56dp"

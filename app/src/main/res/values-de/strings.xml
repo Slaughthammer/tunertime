@@ -8,16 +8,14 @@
 	<string name="title_preset_edit">Preset bearbeiten</string>
 	<string name="title_preset_note">Preset-Ton bearbeiten</string>
 	<string name="title_strobe">TunerTime Organ: Strobe</string>
-	<string name="title_strobe_with">TunerTime Organ: Strobe (%1$s)</string>
 	<string name="title_fft">TunerTime Organ: FFT</string>
 	<string name="title_mixture">TunerTime Organ: Mixtur</string>
-	<string name="title_mixture_with">TunerTime Organ: Mixtur (%1$s)</string>
 
 	<!-- Men&#252;s -->
 	<string name="menu_settings">Einstellungen</string>
 	<string name="menu_help">Hilfe</string>
 	<string name="menu_about">&#220;ber TunerTime Organ</string>
-	<string name="menu_add_temperament">Historische Stimmung hinzuf&#252;gen&#8230;</string>
+	<string name="menu_add_temperament">Stimmung hinzuf&#252;gen&#8230;</string>
 	<string name="menu_sort">Nach Namen sortieren</string>
 	<string name="menu_import">Importieren&#8230;</string>
 	<string name="menu_export_all">Alle exportieren&#8230;</string>
@@ -229,7 +227,7 @@
 	<string name="footages">Angezeigte Fu&#223;tonlagen</string>
 	<string name="footages_summary">%1$s: je eine Strobe-Zeile, 8\' ist der Ton selbst (h&#246;chstens 8)</string>
 	<string name="cat_presets">Presets</string>
-	<string name="note_temper">12-Ton-Preset temperiert den Ton-Modus</string>
+	<string name="note_temper">Ton-Modus temperieren</string>
 	<string name="note_temper_summary">Hat das gew&#228;hlte Preset je einen Ton f&#252;r die 12 Halbt&#246;ne, stimmt der Ton-Modus nach dessen Abweichungen (Temperatur)</string>
 	<string name="cat_debug">Debug</string>
 	<string name="debug_rec">Debug-Aufnahmen</string>

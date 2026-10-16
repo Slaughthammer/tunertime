@@ -35,13 +35,15 @@
 		style="@style/Tuner.Readout.Status"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
-		android:paddingRight="8dp"
+		android:paddingLeft="4dp"
+		android:paddingRight="12dp"
 		android:gravity="right" />
 	    <TextView android:id="@+id/stretch_display"
 		style="@style/Tuner.Readout.Status"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
-		android:paddingRight="8dp"
+		android:paddingLeft="4dp"
+		android:paddingRight="12dp"
 		android:gravity="right" />
 	    <FrameLayout android:id="@+id/mode_holder"
 		android:layout_width="fill_parent"
