@@ -17,14 +17,35 @@ import java.util.Arrays;
  * less than 0.2%.  The percentage is relative to the acoustic length
  * c/(n*f_target), i.e. f_target/f_actual - 1.
  *
- * The estimate is the median of the detector's pitches over the last
- * WINDOW ms that had sound, held after the pipe stops; the spread (median
- * absolute deviation) tells whether it has settled. */
+ * With a strobe row focused, the estimate is that row's drift over the last
+ * WINDOW ms that had sound (Strobe.focus_drift): it follows exactly the
+ * focused partial, against exactly the target, and resolves far below a
+ * cent.  The drift is unambiguous only up to about DRIFT_RANGE cents, so
+ * when the detector clearly hears the pipe further out, the detector wins.
+ *
+ * Otherwise it is the median of the detector's pitches over the last
+ * WINDOW ms that had sound; the spread (median absolute deviation) tells
+ * whether it has settled.  A pipe is not an octave out, so the detector's
+ * pitch is compared with the nearest octave of the target; a stopped pipe
+ * has hardly any even partials, and the detector may take its twelfth or
+ * seventeenth (3rd, 5th partial), so those are folded too.  Whatever is
+ * still more than UNCLEAR_CENTS off is shown as unclear, not as a length.
+ * Both are held after the pipe stops. */
 public class pipelength {
 	private static final long WINDOW = 1000;	/* ms */
 	private static final int MAX_EST = 64;
 	private static final double STABLE_CENTS = 1.0;
 	private static final int MIN_EST = 5;
+	private static final double UNCLEAR_CENTS = 150.0;
+		/* drift: the strobe pattern steps by up to half a stripe per
+		 * block of 8 periods (jni/strobe.c DRIFT_MAX_PERIODS), i.e.
+		 * up to freq/16 Hz or 105 cents; trusted a bit inside that */
+	private static final double DRIFT_RANGE = 90.0;
+	private static final double DRIFT_MIN_SECS = 0.3;	/* usable */
+	private static final int MAX_DRIFT = 256;	/* buffers */
+		/* partials the detector may take for the pipe's pitch */
+	private static final int[] OPEN_PARTIALS = { 1 };
+	private static final int[] STOPPED_PARTIALS = { 1, 3, 5 };
 
 	private final TunerTime ui;
 	private final TextView main_display, detail_display, temp_display;
@@ -63,6 +84,76 @@ public class pipelength {
 
 	public void clear() {
 		n_est = 0;
+		clear_drift();
+	}
+
+	/* the focused row's drift, one entry per buffer with usable
+	 * signal; fed from the strobe thread, read on the UI thread */
+	private final double[] d_cycles = new double[MAX_DRIFT];
+	private final double[] d_secs = new double[MAX_DRIFT];
+	private final long[] d_when = new long[MAX_DRIFT];
+	private int d_n = 0, d_head = 0;	/* d_head: next to write */
+	private double d_freq = 0.0d;
+
+	private synchronized void clear_drift() {
+		d_n = 0;
+	}
+
+	/* Strobe.focus_drift: the focused partial gained cycles on the row
+	 * frequency freq during secs of usable signal */
+	public synchronized void add_drift(double freq, double cycles,
+						double secs) {
+		if (freq != d_freq) {
+			d_freq = freq;
+			d_n = 0;
+		}
+		if (secs <= 0.0d) {
+			return;		/* silence: the reading is held */
+		}
+		d_cycles[d_head] = cycles;
+		d_secs[d_head] = secs;
+		d_when[d_head] = System.currentTimeMillis();
+		d_head = (d_head+1) % MAX_DRIFT;
+		d_n = Math.min(d_n+1, MAX_DRIFT);
+	}
+
+	/* the drift over the WINDOW up to the latest usable buffer, if it is
+	 * for target frequency f: { cents, spread, time of the latest }, or
+	 * null.  the spread is half the difference of the window's halves */
+	private synchronized double[] drift_reading(double f) {
+		if ((d_n == 0) || (Math.abs(d_freq - f) > 1e-6*f)) {
+			return null;
+		}
+		int last = (d_head - 1 + MAX_DRIFT) % MAX_DRIFT;
+		long latest = d_when[last];
+		double c0 = 0.0d, s0 = 0.0d, c1 = 0.0d, s1 = 0.0d;
+		for (int k = 0; k < d_n; k++) {
+			int i = (last - k + MAX_DRIFT) % MAX_DRIFT;
+			long age = latest - d_when[i];
+			if (age > WINDOW) {
+				break;
+			}
+			if (age > WINDOW/2) {
+				c0 += d_cycles[i];
+				s0 += d_secs[i];
+			} else {
+				c1 += d_cycles[i];
+				s1 += d_secs[i];
+			}
+		}
+		if (s0 + s1 < DRIFT_MIN_SECS) {
+			return null;
+		}
+		double spread = ((s0 > 0.0d) && (s1 > 0.0d)) ?
+			0.5d*Math.abs(drift_cents(f, c0, s0) -
+				      drift_cents(f, c1, s1)) :
+			Double.POSITIVE_INFINITY;
+		return new double[] { drift_cents(f, c0+c1, s0+s1), spread,
+					(double)latest };
+	}
+
+	private static double drift_cents(double f, double cycles, double secs) {
+		return 1200.0d * Math.log((f + cycles/secs)/f) / Math.log(2.0d);
 	}
 
 	/* one estimate from the detector; hz <= 0 is silence */
@@ -106,6 +197,7 @@ public class pipelength {
 			last_target = parms.strobe_cents;
 			last_focus = parms.focus_ratio;
 			n_est = 0;
+			clear_drift();
 		}
 		/* the note's pipe; a focused partial (4', 2 2/3', ...)
 		 * stands for its own rank */
@@ -123,23 +215,86 @@ public class pipelength {
 			}
 			c[n++] = 1200.0d * Math.log(hz[i]/f_base) / Math.log(2.0d);
 		}
-		if (n == 0) {
+		double det = Double.NaN, det_spread = 0.0d;
+		int det_oct = 0, det_part = 1;
+		if (n > 0) {
+			double med = median(c, n);
+			double[] dev = new double[n];
+			for (int i = 0; i < n; i++) {
+				dev[i] = Math.abs(c[i]-med);
+			}
+			det_spread = median(dev, n);
+			/* the nearest octave of the target, or of its
+			 * twelfth or seventeenth for a stopped pipe */
+			int[] parts = parms.pipe_stopped ? STOPPED_PARTIALS
+							 : OPEN_PARTIALS;
+			for (int p : parts) {
+				double m = med - 1200.0d*Math.log(p)/Math.log(2.0d);
+				int o = (int)Math.round(m/1200.0d);
+				double r = m - 1200.0d*o;
+				if (Double.isNaN(det) ||
+				    (Math.abs(r) < Math.abs(det))) {
+					det = r;
+					det_oct = o;
+					det_part = p;
+				}
+			}
+		}
+		/* the focused row's drift is measured against f_base itself */
+		double[] dr = (parms.focus_row() >= 0) ? drift_reading(f_base)
+						       : null;
+		boolean use_drift = (dr != null) &&
+			(Math.abs(dr[0]) < DRIFT_RANGE) &&
+			(Double.isNaN(det) || (Math.abs(det) < DRIFT_RANGE) ||
+			 (Math.abs(det - dr[0]) < DRIFT_RANGE/2.0d));
+
+		double cents, spread;
+		long t;
+		int oct = 0, part = 1;
+		boolean stable, unclear;
+		if (use_drift) {
+			cents = dr[0];
+			spread = dr[1];
+			t = (long)dr[2];
+			stable = (spread < STABLE_CENTS);
+			unclear = false;
+		} else if (!Double.isNaN(det)) {
+			cents = det;
+			spread = det_spread;
+			t = when[n_est-1];
+			oct = det_oct;
+			part = det_part;
+			stable = (n >= MIN_EST) && (spread < STABLE_CENTS);
+			unclear = (Math.abs(cents) > UNCLEAR_CENTS);
+		} else if (dr != null) {
+			/* only a drift beyond its range: could be aliased */
+			cents = dr[0];
+			spread = dr[1];
+			t = (long)dr[2];
+			stable = false;
+			unclear = true;
+		} else {
 			main_display.setText("listening...");
 			main_display.setTextColor(color(R.color.text_muted));
 			detail_display.setText(fmt("target %.2f Hz", f_base));
 			return;
 		}
-		double med = median(c, n);
-		double[] dev = new double[n];
-		for (int i = 0; i < n; i++) {
-			dev[i] = Math.abs(c[i]-med);
-		}
-		double spread = median(dev, n);
+		boolean recent = (System.currentTimeMillis() - t < WINDOW);
 
-		/* a pipe is not an octave out: that is the detector or
-		 * another rank, so compare with the nearest octave */
-		int oct = (int)Math.round(med/1200.0d);
-		double cents = med - 1200.0d*oct;
+		if (unclear) {
+			/* the detector heard something that is no partial
+			 * of the target: no length for that */
+			main_display.setText("unclear" +
+					(recent ? "" : " (held)"));
+			main_display.setTextColor(color(!recent ?
+					R.color.text_muted : R.color.warn));
+			detail_display.setText(fmt("%+.0f ct", cents) +
+					fmt("  target %.2f Hz", f_base));
+			return;
+		}
+
+		/* the pipe: the partial heard divided out, compared with the
+		 * nearest octave of the target */
 		double f_ref = f_base * Math.pow(2.0d, oct);
 		double f_act = f_ref * Math.pow(2.0d, cents/1200.0d);
 
@@ -157,9 +312,6 @@ public class pipelength {
 		} else {
 			s = amm + " mm " + ((mm > 0.0d) ? "too long" : "too short");
 		}
-		boolean recent = (System.currentTimeMillis() - when[n_est-1] <
-					WINDOW);
-		boolean stable = (n >= MIN_EST) && (spread < STABLE_CENTS);
 		if (!recent) {
 			s += " (held)";
 		}
@@ -168,9 +320,11 @@ public class pipelength {
 				stable ? R.color.accent : R.color.warn));
 		detail_display.setText(fmt("%+.2f %%", pct) +
 				fmt("  %+.1f ct", cents) +
-				fmt("  \u00b1%.1f ct", spread) +
+				(Double.isInfinite(spread) ? "  \u00b1--" :
+					fmt("  \u00b1%.1f ct", spread)) +
 				fmt("  L\u2248%.0f mm", len_ref) +
-				((oct != 0) ? fmt("  (%.0f Hz)", f_ref) : ""));
+				((oct != 0) ? fmt("  (%.0f Hz)", f_ref) : "") +
+				((part != 1) ? ("  (partial " + part + ")") : ""));
 	}
 
 	private int color(int id) {

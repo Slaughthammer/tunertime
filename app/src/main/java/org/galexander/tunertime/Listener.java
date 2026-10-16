@@ -16,6 +16,10 @@ public class Listener extends Thread {
 				/* bufs_r == bufs_w --> empty */
 	private volatile static int bufs_r = 0;
 	private volatile static int bufs_w = 0;
+		/* MicSelect.switches when each buffer was recorded, and for
+		 * the buffer read last */
+	private static final int[] gens = new int[NUMBUFS];
+	private volatile static int read_gen = 0;
 	
 
 	public static void start_recording() {
@@ -38,10 +42,17 @@ public class Listener extends Thread {
 				return n;
 			}
 			System.arraycopy(bufs[bufs_r], 0, dst, n, BUFSZ);
+			read_gen = gens[bufs_r];
 			bufs_r = (bufs_r + 1) % NUMBUFS;
 			n += BUFSZ;
 		}
 		return n;
+	}
+
+	/* changes when the samples read last came through another
+	 * microphone (or channel) than before; see mixture */
+	public static int buffer_gen() {
+		return read_gen;
 	}
 
 	public static int get_samplerate() {
@@ -92,6 +103,7 @@ public class Listener extends Thread {
 				if (!recorder.read(bufs[bufs_w], BUFSZ)) {
 					break;
 				}
+				gens[bufs_w] = MicSelect.switches;
 				bufs_w = (bufs_w + 1) % NUMBUFS;
 				if (bufs_w == bufs_r) {
 					System.out.println("Listener record buffer overflow");
