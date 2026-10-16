@@ -26,20 +26,19 @@ became v18.0.
   important step. Follow-mode corrections save WAV recordings (dev build) for
   tuning the detector.
 
-## Open questions (sent to Onno)
+## Onno's answers (branch `onno-answers`)
 
-Until they are answered the app keeps its current behaviour. The questionnaire
-is `C:\Users\Volker\tuner\TunerTime-Organ-Fragen.html`; its answer line looks
-like `1b 18 °C, 2c, 3b, 4ab, 5c, 6b`.
+The questions sent to the organ tuner (`C:\Users\Volker\tuner\TunerTime-Organ-Fragen.html`)
+are answered and implemented:
 
-| # | Topic | Now | Options |
-|---|---|---|---|
-| 1 | Length mode and temperature | a¹ = 440 Hz at the current air temperature. At 12 °C every pipe sounds ~17–18 c lower than at 18 °C, so pipes cut in winter are too short in summer. | a) keep · b) fixed reference temperature, length converted to it |
-| 2 | Octave correction in follow mode | Applies to the whole stop until auto is held or 10 s of silence. | a) whole stop · b) this pipe only · c) ask once |
-| 3 | Cent readout top right in organ mode | Measured offset of the tapped partial; empty when nothing is tapped. | a) keep · b) always the 8', tapped row when tapped |
-| 4 | Debug recordings | Only on note/octave corrections in follow mode. | also on: a) lock · b) auto off · c) tapping a row |
-| 5 | Wording for stopped pipes in length mode | "too long: cut off / too short: lengthen", also for stopped pipes. | a) keep · b) "cap lower / higher" · c) "shorten / lengthen" · d) own |
-| 6 | Mixture step by step | After Ton± the reference row must be tapped again. | a) keep · b) re-select the last measured reference row |
+| # | Topic | Decision |
+|---|---|---|
+| 1 | Length mode and temperature | No change. The tuner allows for the temperature by hand via the A frequency (~0.7 Hz/K); the T± setting only scales the speed of sound. |
+| 2 | Octave correction in follow mode | Current note only. After a hand correction, continuity: detections are taken in the octave nearest the note shown and move it only within a fourth (±500 c). Ends on auto off/on or 10 s of silence. `sim_organ -f old/new` compares. Mutations: focus their row. |
+| 3 | Cent readout top right in organ mode | Tapped row: its measured offset. No row: "target −05.9c", the set target's offset from equal temperament. |
+| 4 | Debug recordings | Same triggers; the .txt now has a timeline of estimates, strobe drift and UI events (`EventLog.java`), on the WAV's time base; `test_pitch -t` replays on the same base. |
+| 5 | Wording for stopped pipes | Unchanged. |
+| 6 | Mixture step by step | Ton± focuses the reference row last measured again. |
 
 Settled by the user: 4/5' (not 2/5') and 3 1/5' in the footage list, no other
 extra footages. Mixture ranks are muted by hand (abstecken). 2 s mixture
@@ -55,8 +54,8 @@ shows only the mm to cut or add.
 2. **Real recordings:** tune `MIN_CONF` (jni/pitch.c), the beat threshold
    `BEAT_SWING` 0.7 (mixture.java) and `STABLE_CENTS` (pipelength.java) on
    real organ WAVs (`tools/test_pitch file.wav`).
-3. **Octave shift plus a selected row can double the shift** (TunerTime
-   follow logic plus pitch.c focus). Decide together with question 2.
+3. ~~Octave shift plus a selected row can double the shift~~: gone with
+   question 2 (continuity folds, it does not shift).
 4. **Mixture: warn when the reference is more than about 1 semitone from the
    target,** where the strobe drift wraps.
 5. **Stop profiles** (larger): a preset per stop with its rows, open/stopped
@@ -116,9 +115,14 @@ Details in README "Building"; what is specific here:
   `app/src/androidTest/assets/known_ui_issues.txt`.
 - **Detector bench:** `tools/test_pitch.c` (537 synthetic cases; also replays
   WAVs).
-- **Realistic simulator:** `tools/sim_organ.c` (38 scenarios: reverb, wind,
-  speech, phone mic, mixtures). It mirrors the Java constants DET_AGREE,
-  mixture timing and length logic; keep it in sync when changing them.
+- **Realistic simulator:** `tools/sim_organ.c` (46 scenarios: reverb, wind,
+  speech, phone mic, mixtures, chromatic runs). It mirrors the Java constants
+  DET_AGREE, follow continuity (`-f new`), mixture timing and length logic;
+  keep it in sync when changing them.
+- **Gradle and the native library:** Gradle once packed a stale
+  `libstrobe-jni.so` after ndk-build (same file size). After native changes
+  delete `app/build/intermediates/{merged_jni_libs,merged_native_libs,stripped_native_libs}`
+  or check the APK (`unzip -l`, grep a new symbol).
 - **Measurements:** `CC=/c/Strawberry/c/bin/gcc sh tools/measure/run.sh`
   (about 35 min).
 - **Debug recordings from the phone:**
