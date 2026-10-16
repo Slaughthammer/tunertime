@@ -9,10 +9,8 @@
 	<string name="title_preset_edit">Edit preset</string>
 	<string name="title_preset_note">Edit preset note</string>
 	<string name="title_strobe">TunerTime Organ: strobe</string>
-	<string name="title_strobe_with">TunerTime Organ: strobe (%1$s)</string>
 	<string name="title_fft">TunerTime Organ: FFT</string>
 	<string name="title_mixture">TunerTime Organ: mixture</string>
-	<string name="title_mixture_with">TunerTime Organ: mixture (%1$s)</string>
 
 	<!-- menus -->
 	<string name="menu_settings">Settings</string>
@@ -238,7 +236,7 @@
 	<string name="footages">Footages shown</string>
 	<string name="footages_summary">%1$s: one strobe row each, 8\' being the note (up to 8)</string>
 	<string name="cat_presets">Presets</string>
-	<string name="note_temper">12-note preset tempers note mode</string>
+	<string name="note_temper">Temper note mode</string>
 	<string name="note_temper_summary">If the selected preset has one note for each of the 12 semitones, note mode tunes to its offsets</string>
 	<string name="cat_debug">Debug</string>
 	<string name="debug_rec">Debug recordings</string>

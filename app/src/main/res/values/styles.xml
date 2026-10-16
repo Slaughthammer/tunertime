@@ -14,6 +14,27 @@
 		<item name="android:statusBarColor">@color/bg</item>
 		<item name="android:navigationBarColor">@color/bg</item>
 		<item name="android:buttonStyle">@style/Tuner.Button</item>
+		<item name="android:editTextStyle">@style/Tuner.EditText</item>
+		<item name="android:actionOverflowButtonStyle">@style/Tuner.Overflow</item>
+		<item name="android:actionBarStyle">@style/Tuner.ActionBar</item>
+	</style>
+	<!-- 48dp touch targets: the platform's are 40dp wide (overflow "more
+	     options") and 45dp high (a text field at font scale 1.0) -->
+	<style name="Tuner.Overflow" parent="@android:style/Widget.Material.ActionButton.Overflow">
+		<item name="android:minWidth">48dp</item>
+		<item name="android:minHeight">48dp</item>
+	</style>
+	<style name="Tuner.EditText" parent="@android:style/Widget.Material.EditText">
+		<item name="android:minHeight">48dp</item>
+	</style>
+	<!-- the temperament or preset goes in the subtitle (TunerTime.set_title);
+	     smaller than the platform's 16sp so that title and subtitle
+	     still fit the bar at font scale 1.3 -->
+	<style name="Tuner.ActionBar" parent="@android:style/Widget.Material.ActionBar.Solid">
+		<item name="android:subtitleTextStyle">@style/Tuner.ActionBar.Subtitle</item>
+	</style>
+	<style name="Tuner.ActionBar.Subtitle" parent="@android:style/TextAppearance.Material.Widget.ActionBar.Subtitle">
+		<item name="android:textSize">13sp</item>
 	</style>
 	<style name="Tuner.Button" parent="@android:style/Widget.Material.Button">
 		<item name="android:textColor">@color/text</item>
@@ -79,7 +100,10 @@
 		<item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
 		<item name="android:textColor">@color/text_muted</item>
 		<item name="android:textStyle">normal</item>
-		<item name="android:autoSizeMaxTextSize">18sp</item>
+		<!-- two of these sit above the auto/tone/mode buttons in portrait:
+		     kept low so that those stay 48dp high at font scale 1.3 -->
+		<item name="android:includeFontPadding">false</item>
+		<item name="android:autoSizeMaxTextSize">16sp</item>
 	</style>
 	<!-- small captions: units, names of the +/- rows -->
 	<style name="Tuner.Caption">

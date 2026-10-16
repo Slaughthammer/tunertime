@@ -280,12 +280,10 @@ final class UiCheck {
 					new InputStreamReader(is, "UTF-8"));
 			String line;
 			while ((line = r.readLine()) != null) {
-				int h = line.indexOf('#');
-				if (h >= 0) {
-					line = line.substring(0, h);
-				}
+				/* only whole-line comments: keys contain '#'
+				 * (TextView#title) */
 				line = line.trim();
-				if (!line.isEmpty()) {
+				if (!line.isEmpty() && !line.startsWith("#")) {
 					rules.add(line.split("\\|", -1));
 				}
 			}
