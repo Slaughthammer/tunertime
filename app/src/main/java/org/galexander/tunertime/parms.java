@@ -42,6 +42,10 @@ public class parms {
 	static public int cents_per_octave = 0;       /* *10 */
 		/* organ mode (Settings): no stretch, organ-specific displays */
 	static public volatile boolean organ_mode = false;
+		/* partial the user focused on (organ mode): its frequency
+		 * divided by the note's 8' fundamental, e.g. 2.0 for 4',
+		 * 0.5 for 16'.  0 = none.  pitch detection prefers it */
+	static public volatile double focus_ratio = 0.0d;
 
 		/* stretch in effect, tenths of a cent per octave; organs are
 		 * tuned without stretch */
