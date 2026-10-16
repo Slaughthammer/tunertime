@@ -33,8 +33,8 @@ android {
         applicationId = "org.galexander.tunertime"
         minSdk = 21
         targetSdk = 36
-        versionCode = 18
-        versionName = "18.0-organ"
+        versionCode = 19
+        versionName = "18.1-organ"
         manifestPlaceholders["appLabel"] = "TunerTime Organ"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
