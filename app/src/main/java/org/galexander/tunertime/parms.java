@@ -71,6 +71,10 @@ public class parms {
 		 * tenths of a cent like strobe_cents */
 	static public boolean mixture_mode = false;
 	static public int mixture_cents = 48000;
+		/* the footage (row ratio, like focus_ratio) mixture_cents was
+		 * last measured on; 0 = not measured since the last reset or
+		 * change of note */
+	static public double mixture_ref = 0.0d;
 
 		/* frequency of strobe row i over the note's 8' (fundamental) */
 	public static double row_ratio(int i) {
@@ -176,6 +180,7 @@ public class parms {
 		mixture_mode = organ_mode &&
 				prefs.getBoolean("mixture_mode", false);
 		mixture_cents = prefs.getInt("mixture_cents10", strobe_cents);
+		mixture_ref = prefs.getFloat("mixture_ref", 0.0f);
 		/* TunerTime.organ_resume() drops it if the row is not shown */
 		focus_ratio = prefs.getFloat("focus_ratio", 0.0f);
 		if (organ_mode) {
@@ -276,6 +281,7 @@ public class parms {
 		editor.putInt("note_cents10", note_cents);
 		editor.putBoolean("mixture_mode", mixture_mode);
 		editor.putInt("mixture_cents10", mixture_cents);
+		editor.putFloat("mixture_ref", (float)mixture_ref);
 		/* FFT mode belongs to the normal tuner and length mode to
 		 * organ mode (TunerTime.onResume): each is kept while the
 		 * other mode is on, for when it is turned back */

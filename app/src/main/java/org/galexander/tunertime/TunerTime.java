@@ -648,6 +648,7 @@ public class TunerTime extends Activity
 	private void mixture_set(boolean on) {
 		if (on && !parms.mixture_mode) {
 			parms.mixture_cents = parms.strobe_cents;
+			parms.mixture_ref = 0.0d;
 			parms.mixture_mode = true;
 			mixture_measure(null);
 		} else if (!on) {
@@ -707,6 +708,7 @@ public class TunerTime extends Activity
 		mix.stop();
 		parms.mixture_cents = step_cents(nearest_step(
 						parms.mixture_cents));
+		parms.mixture_ref = 0.0d;
 		update_status();
 	}
 
@@ -735,6 +737,7 @@ public class TunerTime extends Activity
 				}
 				/* in tune where it was measured */
 				parms.mixture_cents += (int)Math.round(cents*U);
+				parms.mixture_ref = parms.focus_ratio;
 				update_status();
 			} });
 	}
@@ -787,9 +790,14 @@ public class TunerTime extends Activity
 			mixture_status.setText(getString(
 				R.string.mixture_measuring, f,
 				(int)Math.round(mix.progress()*100.0d)));
+		} else if (parms.mixture_ref > 0.0d) {
+			/* the rank the target was taken from, which need not
+			 * be the row focused now (the rank being tuned) */
+			mixture_status.setText(getString(
+				R.string.mixture_measured,
+				parms.footage_str(parms.mixture_ref)));
 		} else if (f != null) {
-			mixture_status.setText(getString(R.string.mixture_held,
-							 f));
+			mixture_status.setText(R.string.mixture_tap_measure);
 		} else {
 			mixture_status.setText(R.string.mixture_tap_row);
 		}

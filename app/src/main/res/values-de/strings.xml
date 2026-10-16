@@ -68,7 +68,8 @@
 	<!-- Orgelmodus: Mixtur -->
 	<string name="measure">Messen</string>
 	<string name="mixture_measuring">messe %1$s: %2$d %%</string>
-	<string name="mixture_held">%1$s gehalten</string>
+	<string name="mixture_measured">gemessen an %1$s</string>
+	<string name="mixture_tap_measure">Messen antippen</string>
 	<string name="mixture_tap_row">Strobe-Zeile antippen</string>
 
 	<!-- Orgelmodus: L&#228;nge (Pfeife zu lang / zu kurz) -->
