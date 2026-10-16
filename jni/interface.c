@@ -244,6 +244,7 @@ sound_input(jobject this)
 	} else if (num_read > 0) {
 		(*env)->GetShortArrayRegion(env, snd_readbuf, 0, num_read,
 				snd_buf);
+		record_feed(snd_buf, num_read);
 	}
 	snd_buflen = num_read;
 	return 1;
@@ -453,6 +454,7 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 	strobe_init();
 	fft_init();
 	pitch_init(sample_rate);
+	record_init(sample_rate);
 	pitch_expect = 0.0;
 
 	while (1) {

@@ -67,4 +67,9 @@ void fft_newdata(jint *bitmap_ptr);
 void fft_redraw(jint *bitmap_ptr);
 
 
+/* record.c: the last few seconds of input, for DebugRecorder.java */
+void record_init(int rate);
+void record_feed(const short *s, int n);
+
+
 #endif /* __INTERFACE_H */
