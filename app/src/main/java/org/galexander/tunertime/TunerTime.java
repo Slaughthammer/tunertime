@@ -564,6 +564,8 @@ public class TunerTime extends Activity
 			near = true;
 			show_near();
 		}
+		/* the silence that ends continuity counts from here */
+		last_heard = now;
 		DebugRecorder.intervention(this,
 			recent ? det_stable*100*U : DebugRecorder.NONE,
 			recent ? det_stable_hz : 0.0,
