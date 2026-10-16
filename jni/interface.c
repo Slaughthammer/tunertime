@@ -289,8 +289,8 @@ jni_init(JNIEnv *env_)
 	METHOD(st_do_draw, strobe, "do_draw", "([III)Z")
 	METHOD(st_time_to_die, strobe, "time_to_die", "()Z")
 	METHOD(st_check_surface, strobe, "check_surface", "()[I")
-	METHOD(st_pitch_detected, strobe, "pitch_detected", "(D)V")
-	METHOD(st_focus_drift, strobe, "focus_drift", "(DDDDD)V")
+	METHOD(st_pitch_detected, strobe, "pitch_detected", "(DDJ)V")
+	METHOD(st_focus_drift, strobe, "focus_drift", "(DDDDDJ)V")
 	METHOD(tt_cents_to_freq, tunertime, "cents_to_freq", "(II)D")
 	STMETHOD(li_read, listener, "read", "([SI)I")
 	STMETHOD(li_get_samplerate, listener, "get_samplerate", "()I")
@@ -380,7 +380,8 @@ focus_drift(jobject this, double freq, double cycles, double secs,
 		double buf_secs, double amp)
 {
 	(*env)->CallVoidMethod(env, this, mid_st_focus_drift,
-			freq, cycles, secs, buf_secs, amp);
+			freq, cycles, secs, buf_secs, amp,
+			(jlong)record_total());
 }
 
 
@@ -509,8 +510,13 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 			pitch_hint((*env)->GetStaticDoubleField(env, cl_parms,
 					fid_p_focus_ratio), pitch_expect);
 			if (pitch_feed(snd_buf, snd_buflen, &hz, &conf)) {
+				/* the sample the analysed window ended
+				 * on, for the debug recordings' timeline */
+				long long at = record_total() - snd_buflen +
+						pitch_last_at();
 				(*env)->CallVoidMethod(env, this,
-					mid_st_pitch_detected, hz);
+					mid_st_pitch_detected, hz, conf,
+					(jlong)at);
 			}
 		}
 

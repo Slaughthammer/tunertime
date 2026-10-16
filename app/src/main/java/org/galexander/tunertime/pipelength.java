@@ -81,6 +81,8 @@ public class pipelength {
 		kind_button.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				parms.pipe_stopped = !parms.pipe_stopped;
+				EventLog.ui("length: " + (parms.pipe_stopped ?
+						"stopped" : "open") + " pipe");
 				update();
 			} });
 		((Button)panel.findViewById(R.id.temp_plus)).setOnClickListener(
@@ -94,6 +96,7 @@ public class pipelength {
 	private void incr_temp(int d) {
 		parms.temperature += d;
 		update();
+		EventLog.ui("length: temperature " + parms.temperature + " C");
 	}
 
 	public void clear() {

@@ -25,6 +25,7 @@ import android.app.Activity;
 import androidx.core.content.ContextCompat;
 import androidx.core.app.ActivityCompat;
 import java.text.DecimalFormat;
+import java.util.Locale;
 
 
 public class TunerTime extends Activity
@@ -115,7 +116,7 @@ public class TunerTime extends Activity
 			.setOnLongClickListener(new View.OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {
-				incr_cents(700*U);
+				incr_cents(700*U, "fifth+");
 				return true;
 			}
 		});
@@ -123,7 +124,7 @@ public class TunerTime extends Activity
 			.setOnLongClickListener(new View.OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {
-				incr_cents(-700*U);
+				incr_cents(-700*U, "fifth-");
 				return true;
 			}
 		});
@@ -173,6 +174,7 @@ public class TunerTime extends Activity
 		preset_button.setOnLongClickListener(
 				new View.OnLongClickListener() {
 			public boolean onLongClick(View v) {
+				EventLog.ui("preset select (long press)");
 				do_preset_select(v);
 				return true;
 			} });
@@ -191,6 +193,7 @@ public class TunerTime extends Activity
 		auto_button.setOnLongClickListener(
 				new View.OnLongClickListener() {
 			public boolean onLongClick(View v) {
+				cause = "auto long press";
 				auto_off();
 				return true;
 			} });
@@ -212,6 +215,8 @@ public class TunerTime extends Activity
 		wakelock.acquire();
 		stop_strobe();
 		parms.load();
+		EventLog.on = DebugRecorder.enabled(this);
+		cause = "resume";
 		if (parms.organ_mode) {
 			parms.fft_mode = false;	/* length mode replaces it */
 		} else {
@@ -271,6 +276,7 @@ public class TunerTime extends Activity
 
 	private void set_mode(View buttons, boolean fft_mode_) {
 		String title = null, subtitle = null;
+		String why = cause;	/* entering mixture mode logs too */
 		if (fft_mode_ == false) {
 			darken_mode(note_button);
 			darken_mode(afreq_button);
@@ -331,6 +337,7 @@ public class TunerTime extends Activity
 		set_title(title, subtitle);
 		if (parms.fft_mode) ToneGenerator.stop_tone();
 
+		cause = why;
 		update_status();
 	}
 
@@ -354,6 +361,7 @@ public class TunerTime extends Activity
 	}
 
 	public void do_mode(View v) {
+		cause = parms.organ_mode ? "length button" : "fft button";
 		if (parms.organ_mode) {
 			/* organ mode toggles length mode instead of FFT */
 			parms.length_mode = !parms.length_mode;
@@ -439,6 +447,7 @@ public class TunerTime extends Activity
 		if (!auto_applies()) {
 			return;
 		}
+		cause = "auto tap";
 		if (!parms.auto_note && !parms.auto_locked) {
 			parms.auto_note = true;
 			near = false;
@@ -497,6 +506,8 @@ public class TunerTime extends Activity
 		} else if (near && (now - last_heard > NEAR_SILENCE)) {
 			near = false;
 			show_near();
+			cause = "10 s silence";
+			log_changes();
 		}
 		if (!parms.auto_note || !auto_applies() ||
 		    ToneGenerator.playing || (hz <= 0.0)) {
@@ -532,6 +543,11 @@ public class TunerTime extends Activity
 		}
 		if ((t != cur) && (t >= 0) && (t*semi + off <= 9600*U)) {
 			parms.note_cents = t*semi + off;
+			if (EventLog.on) {
+				cause = String.format(Locale.US,
+					"follow (heard %.2f Hz%s)", hz,
+					near ? ", near" : "");
+			}
 			update_status();
 		}
 	}
@@ -573,6 +589,7 @@ public class TunerTime extends Activity
 	}
 
 	public void do_tone(View v) {
+		cause = "tone button";
 		if (ToneGenerator.playing) {
 			ToneGenerator.stop_tone();
 		} else {
@@ -582,7 +599,8 @@ public class TunerTime extends Activity
 		update_status();
 	}
 
-	private void incr_cents(int delta) {
+	private void incr_cents(int delta, String what) {
+		cause = what;
 		int semi = 100*U;
 		int before = (parms.note_cents + semi/2) / semi;
 		parms.note_cents += delta;
@@ -594,63 +612,75 @@ public class TunerTime extends Activity
 		update_status();
 	}
 
-	public void semi_incr(View v) { incr_cents(  100*U); }
-	public void semi_decr(View v) { incr_cents( -100*U); }
-	public void oct_incr(View v)  { incr_cents( 1200*U); }
-	public void oct_decr(View v)  { incr_cents(-1200*U); }
-	public void cent_incr(View v) { incr_cents(    1*U); }
-	public void cent_decr(View v) { incr_cents(   -1*U); }
+	public void semi_incr(View v) { incr_cents(  100*U, "semi+"); }
+	public void semi_decr(View v) { incr_cents( -100*U, "semi-"); }
+	public void oct_incr(View v)  { incr_cents( 1200*U, "oct+"); }
+	public void oct_decr(View v)  { incr_cents(-1200*U, "oct-"); }
+	public void cent_incr(View v) { incr_cents(    1*U, "cent+"); }
+	public void cent_decr(View v) { incr_cents(   -1*U, "cent-"); }
 
 	public void A_incrp1(View v) {
+		cause = "A +0.1";
 		parms.A_freq++;
 		update_status();
 	}
 	public void A_incr1(View v) {
+		cause = "A +1";
 		parms.A_freq+=10;
 		update_status();
 	}
 	public void A_decrp1(View v) {
+		cause = "A -0.1";
 		parms.A_freq--;
 		update_status();
 	}
 	public void A_decr1(View v) {
+		cause = "A -1";
 		parms.A_freq-=10;
 		update_status();
 	}
 	public void reset_afreq(View v) {
+		cause = "A reset";
 		parms.A_freq = 4400;
 		update_status();
 	}
 
 	public void stretch_incr(View v) {
+		cause = "stretch+";
 		parms.cents_per_octave++;
 		update_status();
 	}
 	public void stretch_decr(View v) {
+		cause = "stretch-";
 		parms.cents_per_octave--;
 		update_status();
 	}
 	public void reset_stretch(View v) {
+		cause = "stretch reset";
 		parms.cents_per_octave = 0;
 		update_status();
 	}
 
 	public void preset_incr(View v) {
+		cause = "preset note+";
 		parms.preset_note++;
 		update_status();
 	}
 
 	public void preset_decr(View v) {
+		cause = "preset note-";
 		parms.preset_note--;
 		update_status();
 	}
 
 	public void preset_oct_incr(View v) {
+		cause = "preset oct+";
 		parms.preset_oct++;
 		update_status();
 	}
 
 	public void preset_oct_decr(View v) {
+		cause = "preset oct-";
 		parms.preset_oct--;
 		update_status();
 	}
@@ -676,12 +706,16 @@ public class TunerTime extends Activity
 	}
 
 	public void note_clicked(View v) {
+		cause = "tab note";
 		set_mode(note_buttons, false);
 	}
 	public void afreq_clicked(View v) {
+		cause = "tab A";
 		set_mode(afreq_buttons, false);
 	}
 	public void stretch_clicked(View v) {
+		cause = !parms.organ_mode ? "tab stretch" : parms.mixture_mode ?
+			"tab mixture again (measure)" : "tab mixture";
 		if (!parms.organ_mode) {
 			set_mode(stretch_buttons, false);
 		} else if (parms.mixture_mode) {
@@ -721,6 +755,9 @@ public class TunerTime extends Activity
 	}
 
 	public void mixture_measure(View v) {
+		if (cause == null) {
+			cause = "measure";
+		}
 		int fr = parms.focus_row();
 		if ((fr >= 0) && Strobe.row_too_high(this, fr)) {
 			/* the target moved up since it was focused */
@@ -773,8 +810,14 @@ public class TunerTime extends Activity
 	 * The reference row last measured is focused again (decided with
 	 * the organ tuner), so that each key takes just "Ton+", then
 	 * "measure" with the reference rank sounding */
-	public void mixture_semi_incr(View v) { mixture_move(1); }
-	public void mixture_semi_decr(View v) { mixture_move(-1); }
+	public void mixture_semi_incr(View v) {
+		cause = "mixture key+";
+		mixture_move(1);
+	}
+	public void mixture_semi_decr(View v) {
+		cause = "mixture key-";
+		mixture_move(-1);
+	}
 	private double mixture_last_ref = 0.0d;	/* row last measured on */
 	private void mixture_move(int d) {
 		int semi = 100*U;
@@ -803,6 +846,7 @@ public class TunerTime extends Activity
 		for (int i = 0; i < parms.num_strobes; i++) {
 			if (parms.row_ratio(i) == r) {
 				if (!Strobe.row_too_high(this, i)) {
+					cause = "mixture: back to the reference";
 					parms.focus_ratio = r;
 					update_status();
 				}
@@ -814,6 +858,7 @@ public class TunerTime extends Activity
 	/* back to the nearest note (of the temperament, if one is in
 	 * effect), with no offset */
 	public void mixture_reset(View v) {
+		cause = "mixture reset";
 		mix.stop();
 		parms.mixture_cents = step_cents(nearest_step(
 						parms.mixture_cents));
@@ -846,6 +891,7 @@ public class TunerTime extends Activity
 					return;
 				}
 				/* in tune where it was measured */
+				cause = "mixture measured";
 				parms.mixture_cents += (int)Math.round(cents*U);
 				parms.mixture_ref = parms.focus_ratio;
 				update_status();
@@ -866,6 +912,7 @@ public class TunerTime extends Activity
 			too_high_toast();
 			return;
 		}
+		cause = "tap row " + parms.footage_str(r);
 		parms.focus_ratio = (parms.focus_ratio == r) ? 0.0d : r;
 		if (parms.focus_ratio == 0.0d) {
 			mix.stop();
@@ -918,6 +965,7 @@ public class TunerTime extends Activity
 		}
 	}
 	public void preset_clicked(View v) {
+		cause = "tab preset";
 		set_mode(preset_buttons, false);
 	}
 
@@ -1088,6 +1136,182 @@ public class TunerTime extends Activity
 		if (parms.length_mode) {
 			length.update();
 		}
+		log_changes();
+	}
+
+	/* Debug recordings (EventLog): what changed since the last call and
+	 * why.  The handlers set cause before they change anything; called
+	 * at the end of update_status(), and where continuity ends.  Only a
+	 * few values are compared each time, strings are made only when
+	 * something changed or a cause was given */
+	private String cause = null;
+	private boolean lg_first = true;
+	private int lg_note, lg_target, lg_A, lg_stretch, lg_preset, lg_auto;
+	private int lg_mix;
+	private boolean lg_near, lg_length, lg_organ, lg_tone, lg_paused;
+	private boolean lg_pmode, lg_mmode;
+	private double lg_focus, lg_mixref;
+	private View lg_tab;
+	private String lg_src, lg_mic;
+
+	private void log_changes() {
+		String why = cause;
+		cause = null;
+		if (!EventLog.on) {
+			lg_first = true;
+			return;
+		}
+		int auto = parms.auto_note ? 1 : (parms.auto_locked ? 2 : 0);
+		View tab = (buttons_holder.getChildCount() > 0) ?
+				buttons_holder.getChildAt(0) : null;
+		boolean paused = (strobe != null) && strobe.paused;
+		boolean ch = lg_first || (parms.note_cents != lg_note) ||
+			(parms.strobe_cents != lg_target) ||
+			(parms.A_freq != lg_A) ||
+			(parms.cents_per_octave != lg_stretch) ||
+			(parms.preset_id != lg_preset) || (auto != lg_auto) ||
+			(near != lg_near) || (parms.length_mode != lg_length) ||
+			(parms.organ_mode != lg_organ) ||
+			(ToneGenerator.playing != lg_tone) ||
+			(paused != lg_paused) || (tab != lg_tab) ||
+			(parms.preset_mode != lg_pmode) ||
+			(parms.mixture_mode != lg_mmode) ||
+			(parms.focus_ratio != lg_focus) ||
+			(parms.mixture_cents != lg_mix) ||
+			(parms.mixture_ref != lg_mixref) ||
+			!parms.audio_source.equals(lg_src) ||
+			!parms.microphone.equals(lg_mic);
+		if (!ch && (why == null)) {
+			return;
+		}
+		StringBuilder sb = new StringBuilder((why != null) ? why : "?");
+		if (ch) {
+			String sep = ": ";
+			if (lg_first) {
+				sb.append(sep).append("state ").append(state_str());
+			} else {
+				if (parms.note_cents != lg_note) {
+					sb.append(sep).append("note ").append(
+						new note(lg_note).full_str).append(
+						" -> ").append(new note(
+						parms.note_cents).full_str);
+					sep = ", ";
+				}
+				if (parms.strobe_cents != lg_target) {
+					sb.append(sep).append("target ").append(
+						new note(lg_target).full_str).append(
+						" -> ").append(new note(
+						parms.strobe_cents).full_str);
+					sep = ", ";
+				}
+				if ((auto != lg_auto) || (near != lg_near)) {
+					sb.append(sep).append("auto ").append(
+						auto_str(auto, near));
+					sep = ", ";
+				}
+				if (parms.focus_ratio != lg_focus) {
+					sb.append(sep).append("focus ").append(
+						focus_str());
+					sep = ", ";
+				}
+				if ((tab != lg_tab) ||
+				    (parms.preset_mode != lg_pmode) ||
+				    (parms.mixture_mode != lg_mmode) ||
+				    (parms.length_mode != lg_length) ||
+				    (parms.organ_mode != lg_organ)) {
+					sb.append(sep).append(mode_str());
+					sep = ", ";
+				}
+				if ((parms.mixture_cents != lg_mix) ||
+				    (parms.mixture_ref != lg_mixref)) {
+					sb.append(sep).append(mixture_log_str());
+					sep = ", ";
+				}
+				if ((parms.A_freq != lg_A) ||
+				    (parms.cents_per_octave != lg_stretch) ||
+				    (parms.preset_id != lg_preset)) {
+					sb.append(sep).append(tuning_str());
+					sep = ", ";
+				}
+				if ((ToneGenerator.playing != lg_tone) ||
+				    (paused != lg_paused)) {
+					sb.append(sep).append("tone ").append(
+						ToneGenerator.playing ? "on" : "off")
+						.append(paused ? ", paused" : "");
+					sep = ", ";
+				}
+				if (!parms.audio_source.equals(lg_src) ||
+				    !parms.microphone.equals(lg_mic)) {
+					sb.append(sep).append(mic_str());
+				}
+			}
+			EventLog.state = state_str();
+		}
+		EventLog.ui(sb.toString());
+		lg_first = false;
+		lg_note = parms.note_cents;
+		lg_target = parms.strobe_cents;
+		lg_A = parms.A_freq;
+		lg_stretch = parms.cents_per_octave;
+		lg_preset = parms.preset_id;
+		lg_auto = auto;
+		lg_near = near;
+		lg_length = parms.length_mode;
+		lg_organ = parms.organ_mode;
+		lg_tone = ToneGenerator.playing;
+		lg_paused = paused;
+		lg_tab = tab;
+		lg_pmode = parms.preset_mode;
+		lg_mmode = parms.mixture_mode;
+		lg_focus = parms.focus_ratio;
+		lg_mix = parms.mixture_cents;
+		lg_mixref = parms.mixture_ref;
+		lg_src = parms.audio_source;
+		lg_mic = parms.microphone;
+	}
+
+	private static String auto_str(int auto, boolean near) {
+		return ((auto == 1) ? "follow" : (auto == 2) ? "lock" : "off") +
+			(near ? " near" : "");
+	}
+	private static String focus_str() {
+		return (parms.focus_ratio > 0.0d) ?
+			parms.footage_str(parms.focus_ratio) : "none";
+	}
+	private String mode_str() {
+		View tab = (buttons_holder.getChildCount() > 0) ?
+				buttons_holder.getChildAt(0) : null;
+		String t = (tab == note_buttons) ? "note" :
+			(tab == afreq_buttons) ? "A" :
+			(tab == stretch_buttons) ? "stretch" :
+			(tab == mixture_buttons) ? "mixture" :
+			(tab == preset_buttons) ? "preset" :
+			(tab == fft_buttons) ? "fft" : "?";
+		return "tab " + t + (parms.organ_mode ? ", organ" : "") +
+			(parms.length_mode ? ", length" : "");
+	}
+	private static String mixture_log_str() {
+		return "mixture " + new note(parms.mixture_cents).full_str +
+			((parms.mixture_ref > 0.0d) ? (" measured on " +
+				parms.footage_str(parms.mixture_ref)) : "");
+	}
+	private static String tuning_str() {
+		preset p = preset.find(parms.preset_id);
+		return "A " + string_int10(parms.A_freq) + ", stretch " +
+			parms.cents_per_octave/10.0d + ", preset " +
+			((p != null) ? p.name : "none");
+	}
+	private static String mic_str() {
+		return "mic " + parms.audio_source + "/" + parms.microphone;
+	}
+	private String state_str() {
+		return "note " + new note(parms.note_cents).full_str +
+			", target " + new note(parms.strobe_cents).full_str +
+			", auto " + auto_str(parms.auto_note ? 1 :
+				(parms.auto_locked ? 2 : 0), near) +
+			", focus " + focus_str() + ", " + mode_str() + ", " +
+			mixture_log_str() + ", " + tuning_str() + ", " +
+			mic_str();
 	}
 
 		/* cents in tenths of a cent (preset.UNITS_PER_CENT), 48000=A4.
@@ -1280,6 +1504,7 @@ public class TunerTime extends Activity
 					tap_row(y1, height);
 				} else if (could_be_click && (strobe != null)) {
 					strobe.toggle_pause();
+					cause = "tap strobe";
 					update_status();
 				}
 				return true;

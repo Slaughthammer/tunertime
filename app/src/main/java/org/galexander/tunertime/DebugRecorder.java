@@ -30,7 +30,8 @@ import java.util.Locale;
  * Only the newest MAX_FILES are kept.
  *
  * The last seconds of input are kept natively (jni/record.c), fed from
- * the strobe thread's audio reads. */
+ * the strobe thread's audio reads.  The .txt also has a timeline of what
+ * the detector heard and the app did during the recording (EventLog). */
 public class DebugRecorder {
 	private static final int PRE_MS = 5000;
 	private static final int POST_MS = 2000;
@@ -46,8 +47,9 @@ public class DebugRecorder {
 	private static boolean near;
 	private static double det_hz;
 
-	/* copies the newest samples, oldest first; returns how many */
-	private static native int grab(short[] dst);
+	/* copies the newest samples, oldest first; returns how many.
+	 * end[0]: the input position just after them (EventLog's base) */
+	private static native int grab(short[] dst, long[] end);
 
 	public static boolean enabled(Context ctx) {
 		SharedPreferences prefs =
@@ -86,12 +88,15 @@ public class DebugRecorder {
 		pending = false;
 		int rate = Listener.get_samplerate();
 		short[] buf = new short[(int)((long)rate*(PRE_MS+POST_MS)/1000)];
+		long[] end = new long[1];
 		int n;
 		try {
-			n = grab(buf);
+			n = grab(buf, end);
 		} catch (UnsatisfiedLinkError e) {
 			return;
 		}
+		long start = end[0] - n;
+		double t_est = EventLog.first_estimate(start, end[0], rate);
 		if (n < rate/2) {
 			return;		/* the strobe was not running */
 		}
@@ -124,9 +129,15 @@ public class DebugRecorder {
 			"stretch " + (parms.stretch()/10.0) + " c/oct\n" +
 			"organ_mode " + parms.organ_mode + "\n" +
 			"focus_ratio " + parms.focus_ratio + "\n" +
-			"replay: test_pitch " + base + ".wav" +
+			"state_now " + EventLog.state + "\n" +
+			"replay: test_pitch " +
+				((t_est >= 0.0) ? String.format(Locale.US,
+					"-t %.5f ", t_est) : "") +
+				base + ".wav" +
 				((parms.focus_ratio > 0.0) ?
-				 (" " + parms.focus_ratio) : "") + "\n";
+				 (" " + parms.focus_ratio) : "") + "\n" +
+			"\n" + EventLog.HEADER +
+			EventLog.timeline(start, end[0], rate);
 		final File dir_ = dir;
 		final int rate_ = rate;
 		new Thread() {

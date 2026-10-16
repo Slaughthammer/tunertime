@@ -1,10 +1,15 @@
 /* bench test for jni/pitch.c: synthetic tones in, detected note out.
  *
  *   test_pitch                   runs the synthetic cases, prints a score
- *   test_pitch file.wav [focus_ratio [expect_hz]]
+ *   test_pitch [-t secs] file.wav [focus_ratio [expect_hz]]
  *                                replays a recording (16-bit PCM WAV, e.g.
  *                                one saved by the app's debug recording)
- *                                and prints every estimate over time
+ *                                and prints every estimate over time,
+ *                                in seconds and samples from its start
+ *                                like the timeline in the app's .txt;
+ *                                -t secs: analyse at the same samples
+ *                                as the app's estimate at secs (the
+ *                                .txt's "replay:" line gives it)
  *
  * Build with any C compiler, e.g.
  *   gcc -O2 -Ijni -o test_pitch tools/test_pitch.c jni/pitch.c -lm
@@ -114,8 +119,15 @@ static void name(int s, char *out) {
 	sprintf(out, "%s%d", names[((k%12)+12)%12], (int)floor((k+9)/12.0));
 }
 
-/* replays a WAV file through the detector, one line per estimate */
-static int replay(const char *path, double focus, double expect)
+/* replays a WAV file through the detector, one line per estimate: the
+ * time in seconds from the start of the file and the sample at which the
+ * analysed window ended, as the timeline in a debug recording's .txt
+ * (EventLog.java) has them.  align >= 0: the time of one of the app's
+ * estimates in that timeline; the replay's analyses are then made at the
+ * same samples as the app's (every PITCH_STEP samples), by feeding a few
+ * samples of silence first, so that both lists line up */
+static int replay(const char *path, double focus, double expect,
+		double align)
 {
 	FILE *f = fopen(path, "rb");
 	unsigned char hdr[12], ck[8];
@@ -163,21 +175,35 @@ static int replay(const char *path, double focus, double expect)
 
 	printf("# %s: %d Hz, %ld samples (%.2f s), focus %.3f, expect %.2f Hz\n",
 		path, rate, frames, (double)frames/rate, focus, expect);
-	printf("#  time      Hz  note    cents  conf\n");
+	printf("#     time   sample        Hz  note    cents  conf\n");
 	pitch_init(rate);
 	pitch_hint(focus, expect);
+	if (align >= 0.0) {
+		/* analyses at samples = align (mod PITCH_STEP) */
+		static const short zero[PITCH_STEP];
+		long a = lround(align*rate) % PITCH_STEP;
+		long pad = (PITCH_STEP - a) % PITCH_STEP;
+		double hz, c;
+		pitch_feed(zero, (int)pad, &hz, &c);	/* < PITCH_STEP: no
+							 * estimate */
+		printf("# aligned with the app's estimate at %.5f s: %ld "
+			"samples of silence first\n", align, pad);
+	}
 	for (i = 0; i + 1024 <= frames; i += 1024) {
 		double hz, c;
 		if (pitch_feed(buf+i, 1024, &hz, &c)) {
-			double t = (double)(i+1024)/rate;
+			long at = i + pitch_last_at();
+			double t = (double)at/rate;
 			if (hz > 0.0) {
 				char nm[8];
 				int s = semis_from_a4(hz);
 				name(s, nm);
-				printf("%7.3f %8.2f  %-5s %+6.1f  %.2f\n", t, hz, nm,
+				printf("%9.5f %8ld  est   %8.2f  %-5s %+6.1f  "
+					"%.2f\n", t, at, hz, nm,
 					1200.0*log2(hz/440.0) - 100.0*s, c);
 			} else {
-				printf("%7.3f        -  -              %.2f\n", t, c);
+				printf("%9.5f %8ld  est          -  -              "
+					"%.2f\n", t, at, c);
 			}
 		}
 	}
@@ -187,9 +213,19 @@ static int replay(const char *path, double focus, double expect)
 
 int main(int argc, char **argv)
 {
+	if ((argc > 2) && !strcmp(argv[1], "-t")) {
+		double align = atof(argv[2]);
+		if (argc < 4) {
+			fprintf(stderr, "usage: test_pitch [-t secs] file.wav "
+				"[focus_ratio [expect_hz]]\n");
+			return 1;
+		}
+		return replay(argv[3], (argc > 4) ? atof(argv[4]) : 0.0,
+				(argc > 5) ? atof(argv[5]) : 0.0, align);
+	}
 	if (argc > 1) {
 		return replay(argv[1], (argc > 2) ? atof(argv[2]) : 0.0,
-					(argc > 3) ? atof(argv[3]) : 0.0);
+				(argc > 3) ? atof(argv[3]) : 0.0, -1.0);
 	}
 
 	static const double full[8]   = { 1, .6, .4, .3, .2, .15, .1, .08 };

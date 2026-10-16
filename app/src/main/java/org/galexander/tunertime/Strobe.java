@@ -56,8 +56,10 @@ public class Strobe extends Thread {
 		return ret;
 	}
 
-	/* called from the native loop with each new pitch estimate */
-	public void pitch_detected(double hz) {
+	/* called from the native loop with each new pitch estimate, at
+	 * input sample pos (jni/record.c) */
+	public void pitch_detected(double hz, double conf, long pos) {
+		EventLog.estimate(pos, hz, conf);
 		ui.pitch_detected(hz);
 	}
 
@@ -73,9 +75,11 @@ public class Strobe extends Thread {
 	private volatile double focus_str_ratio = 0.0d;	/* focus_str is for */
 
 	/* amp: the mean amplitude of the buffer's usable drift blocks, 0 if
-	 * none (jni strobe_drift_amp), for mixture mode's beat warning */
+	 * none (jni strobe_drift_amp), for mixture mode's beat warning.
+	 * pos: the input sample at the end of the buffer (jni/record.c) */
 	public void focus_drift(double freq, double cycles, double secs,
-				double buf_secs, double amp) {
+				double buf_secs, double amp, long pos) {
+		EventLog.drift(pos, parms.focus_ratio, freq, cycles, secs);
 		if (freq != focus_freq) {
 			focus_freq = freq;
 			focus_cycles = 0.0d;
