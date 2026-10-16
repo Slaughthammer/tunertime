@@ -273,7 +273,19 @@ public class Strobe extends Thread {
 			/* share the baseline of the first label */
 			y = Math.max(y, -(int)label_p.getFontMetrics().ascent);
 		}
-		c.drawText(s, width-1, y, p);
+		c.drawText(s, width - right_margin(), y, p);
+	}
+
+	/* keeps the right-aligned texts clear of the screen edge: the fake
+	 * bold and the shadow reach past the advance width */
+	private float right_margin_px = -1.0f;
+	private float right_margin() {
+		if (right_margin_px < 0.0f) {
+			right_margin_px = TypedValue.applyDimension(
+				TypedValue.COMPLEX_UNIT_DIP, 8.0f,
+				ui.getResources().getDisplayMetrics());
+		}
+		return right_margin_px;
 	}
 
 	/* the focused partial's offset is what the organ tuner reads, from
@@ -287,15 +299,25 @@ public class Strobe extends Thread {
 				ui.getResources().getColor(R.color.accent));
 			focus_read_p.setShadowLayer(4.0f, 0.0f, 0.0f, 0xff000000);
 		}
-		float lo = height/24.0f, hi = height/10.0f;
-		float avail = width - 1.0f;
+		float hi = height/10.0f;
+		float avail = width - right_margin();
 		if ((label_p != null) && (labels != null) && (labels.length > 0)) {
-			avail -= label_p.measureText(labels[0]) +
+			/* the label as drawn (translated), a gap of one
+			 * character, and no taller than 3/5 of the row, so
+			 * that it stays in the first row */
+			String[] shown = shown_labels();
+			avail -= label_p.measureText(shown[0]) +
 					label_p.getTextSize();
+			hi = Math.min(hi, 0.6f*height/labels.length);
 		}
+		/* fake bold and shadow widen it beyond measureText() */
+		avail -= 0.06f*hi + 4.0f;
 		focus_read_p.setTextSize(hi);
 		float w = focus_read_p.measureText(s);
-		float sz = ((w > avail) && (w > 0.0f)) ? (hi*avail/w) : hi;
+		float sz = ((w > avail) && (w > 0.0f) && (avail > 0.0f)) ?
+						(hi*avail/w) : hi;
+		float lo = Math.min(hi, (label_p != null) ?
+				label_p.getTextSize() : height/24.0f);
 		focus_read_p.setTextSize(Math.max(lo, sz));
 		return focus_read_p;
 	}
