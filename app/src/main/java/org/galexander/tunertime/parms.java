@@ -46,6 +46,11 @@ public class parms {
 		 * divided by the note's 8' fundamental, e.g. 2.0 for 4',
 		 * 0.5 for 16'.  0 = none.  pitch detection prefers it */
 	static public volatile double focus_ratio = 0.0d;
+		/* Settings "Audio", see MicSelect: auto, unprocessed,
+		 * voice_recognition, mic, camcorder */
+	static public volatile String audio_source = "auto";
+		/* auto, default, or an input device key */
+	static public volatile String microphone = "auto";
 
 		/* stretch in effect, tenths of a cent per octave; organs are
 		 * tuned without stretch */
@@ -81,6 +86,7 @@ public class parms {
 
 	public static void init(Activity a) {
 		prefs = PreferenceManager.getDefaultSharedPreferences(a);
+		MicSelect.init(a);
 		check_for_legacy(a);
 	}
 	public static void load() {
@@ -102,6 +108,8 @@ public class parms {
 		note_temper = prefs.getBoolean("note_temper", true);
 		auto_note = prefs.getBoolean("auto_note", false);
 		organ_mode = prefs.getBoolean("organ_mode", false);
+		audio_source = prefs.getString("audio_source", "auto");
+		microphone = prefs.getString("microphone", "auto");
 		load_harmonics();
 		strobe_color = prefs.getString("strobe_color", "batlow");
 		fft_mode = prefs.getBoolean("fft_mode", false);

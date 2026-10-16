@@ -7,6 +7,22 @@
 		android:summary="Tuning organ pipes: no stretch, organ-specific displays"
 		android:defaultValue="false" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="Audio">
+	<ListPreference
+		android:key="audio_source"
+		android:title="Audio source"
+		android:summary="%s"
+		android:entries="@array/audio_source_name"
+		android:entryValues="@array/audio_source_value"
+		android:defaultValue="auto" />
+	<ListPreference
+		android:key="microphone"
+		android:title="Microphone"
+		android:summary="%s"
+		android:entries="@array/microphone_name"
+		android:entryValues="@array/microphone_value"
+		android:defaultValue="auto" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="Strobe">
 	<ListPreference
 		android:key="strobe_color"
