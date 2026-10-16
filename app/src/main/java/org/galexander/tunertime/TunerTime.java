@@ -167,6 +167,15 @@ public class TunerTime extends Activity
 				R.id.stretch_button);
 		preset_button = (Button)strobe_buttons.findViewById(
 				R.id.preset_button);
+		/* long press: choose a preset (a temperament for note mode)
+		 * without leaving the current mode, so following goes on at
+		 * the note it was at */
+		preset_button.setOnLongClickListener(
+				new View.OnLongClickListener() {
+			public boolean onLongClick(View v) {
+				do_preset_select(v);
+				return true;
+			} });
 
 		PowerManager pm = (PowerManager)getSystemService(
 						Context.POWER_SERVICE);
