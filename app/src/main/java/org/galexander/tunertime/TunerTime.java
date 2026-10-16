@@ -167,6 +167,15 @@ public class TunerTime extends Activity
 				R.id.stretch_button);
 		preset_button = (Button)strobe_buttons.findViewById(
 				R.id.preset_button);
+		/* long press: choose a preset (a temperament for note mode)
+		 * without leaving the current mode, so following goes on at
+		 * the note it was at */
+		preset_button.setOnLongClickListener(
+				new View.OnLongClickListener() {
+			public boolean onLongClick(View v) {
+				do_preset_select(v);
+				return true;
+			} });
 
 		PowerManager pm = (PowerManager)getSystemService(
 						Context.POWER_SERVICE);
@@ -268,7 +277,11 @@ public class TunerTime extends Activity
 					parms.temper_offset(parms.strobe_cents);
 			}
 			if (parms.mixture_mode) {
-				title = getString(R.string.title_mixture);
+				/* the readout rounds to this temperament */
+				title = (parms.temper_offsets() != null)
+					? getString(R.string.title_mixture_with,
+						preset.find(parms.preset_id).name)
+					: getString(R.string.title_mixture);
 			} else if (parms.preset_mode) {
 				preset p = preset.find(parms.preset_id);
 				if (p == null) {
@@ -644,6 +657,7 @@ public class TunerTime extends Activity
 	private void mixture_set(boolean on) {
 		if (on && !parms.mixture_mode) {
 			parms.mixture_cents = parms.strobe_cents;
+			parms.mixture_ref = 0.0d;
 			parms.mixture_mode = true;
 			mixture_measure(null);
 		} else if (!on) {
@@ -674,12 +688,57 @@ public class TunerTime extends Activity
 		update_status();
 	}
 
-	/* back to the nearest note, with no offset */
-	public void mixture_reset(View v) {
+	/* the note-mode step nearest to c (tenths of a cent): the semitone
+	 * k (k*100*U is its untempered pitch) whose pitch in note mode,
+	 * k*100*U plus the temperament's offset if one is in effect, is
+	 * closest to c.  the offsets are within half a semitone, so the
+	 * nearest equal-tempered semitone or a neighbour */
+	private static int nearest_step(int c) {
 		int semi = 100*U;
+		int k0 = (c + semi/2) / semi;
+		int best = k0;
+		for (int k = k0-1; k <= k0+1; k++) {
+			if ((k >= 0) && (Math.abs(c - step_cents(k)) <
+					 Math.abs(c - step_cents(best)))) {
+				best = k;
+			}
+		}
+		return best;
+	}
+	/* pitch of note-mode step k, with the temperament */
+	private static int step_cents(int k) {
+		int c = k*100*U;
+		return c + parms.temper_offset(c);
+	}
+
+	/* the next key, without leaving mixture mode: the target moves by
+	 * a step of note mode and keeps its offset from the step (the
+	 * organ's pitch is much the same from key to key), until measure
+	 * is tapped with the reference rank sounding.  note mode moves
+	 * along, so that it is at the same key when going back to it */
+	public void mixture_semi_incr(View v) { mixture_move(1); }
+	public void mixture_semi_decr(View v) { mixture_move(-1); }
+	private void mixture_move(int d) {
+		int semi = 100*U;
+		int k = nearest_step(parms.mixture_cents);
+		if ((k+d < 0) || ((k+d)*semi > 9600*U)) {
+			return;
+		}
 		mix.stop();
-		parms.mixture_cents = ((parms.mixture_cents + semi/2) / semi) *
-						semi;
+		parms.mixture_cents += step_cents(k+d) - step_cents(k);
+		parms.mixture_ref = 0.0d;
+		int nk = (parms.note_cents + semi/2) / semi;
+		parms.note_cents += (k+d-nk)*semi;
+		update_status();
+	}
+
+	/* back to the nearest note (of the temperament, if one is in
+	 * effect), with no offset */
+	public void mixture_reset(View v) {
+		mix.stop();
+		parms.mixture_cents = step_cents(nearest_step(
+						parms.mixture_cents));
+		parms.mixture_ref = 0.0d;
 		update_status();
 	}
 
@@ -708,6 +767,7 @@ public class TunerTime extends Activity
 				}
 				/* in tune where it was measured */
 				parms.mixture_cents += (int)Math.round(cents*U);
+				parms.mixture_ref = parms.focus_ratio;
 				update_status();
 			} });
 	}
@@ -740,19 +800,34 @@ public class TunerTime extends Activity
 				Toast.LENGTH_SHORT).show();
 	}
 
+	/* the measured pitch, rounded to the nearest step of note mode
+	 * (with its temperament), and the offset from that step */
+	private String mixture_str() {
+		int k = nearest_step(parms.mixture_cents);
+		return new note(k*100*U).name_oct + " " +
+			note.cents_str(parms.mixture_cents - step_cents(k));
+	}
+	private String mixture_offset_str() {
+		return note.cents_str(parms.mixture_cents -
+				step_cents(nearest_step(parms.mixture_cents)));
+	}
+
 	private void update_mixture_status() {
-		note n = new note(parms.mixture_cents);
-		/* Helmholtz names carry the octave already */
-		mixture_display.setText(n.name_oct + " " + n.cents_str);
+		mixture_display.setText(mixture_str());
 		String f = (parms.focus_row() >= 0) ?
 				parms.footage_str(parms.focus_ratio) : null;
 		if (mix.measuring()) {
 			mixture_status.setText(getString(
 				R.string.mixture_measuring, f,
 				(int)Math.round(mix.progress()*100.0d)));
+		} else if (parms.mixture_ref > 0.0d) {
+			/* the rank the target was taken from, which need not
+			 * be the row focused now (the rank being tuned) */
+			mixture_status.setText(getString(
+				R.string.mixture_measured,
+				parms.footage_str(parms.mixture_ref)));
 		} else if (f != null) {
-			mixture_status.setText(getString(R.string.mixture_held,
-							 f));
+			mixture_status.setText(R.string.mixture_tap_measure);
 		} else {
 			mixture_status.setText(R.string.mixture_tap_row);
 		}
@@ -897,7 +972,8 @@ public class TunerTime extends Activity
 		if (parms.organ_mode) {
 			/* no stretch: the mixture offset, if any */
 			stretch_display.setText(parms.mixture_mode ?
-				getString(R.string.status_mix, n.cents_str) :
+				getString(R.string.status_mix,
+					  mixture_offset_str()) :
 				getString(R.string.status_organ));
 			update_mixture_status();
 		}

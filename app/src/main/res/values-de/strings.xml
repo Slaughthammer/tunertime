@@ -11,6 +11,7 @@
 	<string name="title_strobe_with">TunerTime Organ: Strobe (%1$s)</string>
 	<string name="title_fft">TunerTime Organ: FFT</string>
 	<string name="title_mixture">TunerTime Organ: Mixtur</string>
+	<string name="title_mixture_with">TunerTime Organ: Mixtur (%1$s)</string>
 
 	<!-- Men&#252;s -->
 	<string name="menu_settings">Einstellungen</string>
@@ -67,7 +68,8 @@
 	<!-- Orgelmodus: Mixtur -->
 	<string name="measure">Messen</string>
 	<string name="mixture_measuring">messe %1$s: %2$d %%</string>
-	<string name="mixture_held">%1$s gehalten</string>
+	<string name="mixture_measured">gemessen an %1$s</string>
+	<string name="mixture_tap_measure">Messen antippen</string>
 	<string name="mixture_tap_row">Strobe-Zeile antippen</string>
 
 	<!-- Orgelmodus: L&#228;nge (Pfeife zu lang / zu kurz) -->
@@ -153,6 +155,7 @@
 
 	<!-- historische Stimmungen, Reihenfolge wie temperaments.java -->
 	<string-array name="temperament_names">
+		<item>Gleichstufig</item>
 		<item>Pythagoreisch</item>
 		<item>Mittelt&#246;nig 1/4 Komma</item>
 		<item>Mittelt&#246;nig 1/6 Komma</item>
@@ -165,6 +168,7 @@
 	<!-- Tonnamen hier englisch (G#, Eb); mit deutschen Tonnamen werden
 	     sie als Gis, Es angezeigt -->
 	<string-array name="temperament_about">
+		<item>alle Halbt&#246;ne gleich; zum Zur&#252;ckwechseln von einer historischen Stimmung</item>
 		<item>reine Quinten, Wolf G#-Eb</item>
 		<item>reine gro&#223;e Terzen, Wolf G#-Eb; Renaissance/Fr&#252;hbarock</item>
 		<item>Barockorgeln, milder Wolf G#-Eb</item>

@@ -12,6 +12,7 @@
 	<string name="title_strobe_with">TunerTime Organ: strobe (%1$s)</string>
 	<string name="title_fft">TunerTime Organ: FFT</string>
 	<string name="title_mixture">TunerTime Organ: mixture</string>
+	<string name="title_mixture_with">TunerTime Organ: mixture (%1$s)</string>
 
 	<!-- menus -->
 	<string name="menu_settings">Settings</string>
@@ -71,7 +72,8 @@
 	<!-- organ mode: mixture panel -->
 	<string name="measure">measure</string>
 	<string name="mixture_measuring">measuring %1$s: %2$d%%</string>
-	<string name="mixture_held">%1$s held</string>
+	<string name="mixture_measured">measured on %1$s</string>
+	<string name="mixture_tap_measure">tap measure</string>
 	<string name="mixture_tap_row">tap a strobe row</string>
 
 	<!-- organ mode: length panel (pipe too long / too short) -->
@@ -158,6 +160,7 @@
 
 	<!-- historical temperaments, in the order of temperaments.java -->
 	<string-array name="temperament_names">
+		<item>Equal temperament</item>
 		<item>Pythagorean</item>
 		<item>Meantone 1/4 comma</item>
 		<item>Meantone 1/6 comma</item>
@@ -170,6 +173,7 @@
 	<!-- note names in these are English (G#, Eb); they are shown in
 	     German if German note names are on -->
 	<string-array name="temperament_about">
+		<item>all semitones equal; to switch back from a historical one</item>
 		<item>pure fifths, wolf G#-Eb</item>
 		<item>pure major thirds, wolf G#-Eb; Renaissance/early Baroque</item>
 		<item>Baroque organs, mild wolf G#-Eb</item>
