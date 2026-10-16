@@ -423,6 +423,15 @@ final class UiCheck {
 			add(screen, "NO_WINDOW", "-", "no window shown");
 			return;
 		}
+		/* a test that checks the wrong orientation is broken */
+		android.content.res.Configuration conf =
+			root.getResources().getConfiguration();
+		boolean land = (conf.orientation ==
+			android.content.res.Configuration.ORIENTATION_LANDSCAPE);
+		if (land != orient.equals("land")) {
+			add(screen, "WRONG_ORIENTATION", "-", "the screen is " +
+				(land ? "landscape" : "portrait"));
+		}
 		inst.runOnMainSync(new Runnable() {
 			public void run() {
 				check_window(screen, root);

@@ -118,6 +118,9 @@ public class UiLayoutTest {
 	private void launch(Class<? extends Activity> c) {
 		scenario = ActivityScenario.launch(c);
 		ui.settle(800);
+		/* rotating with no activity of ours on top doesn't always
+		 * stick (Android 15) */
+		ui.set_orientation(ui.orient);
 	}
 
 	/* runs per() in every language, font scale and orientation */
