@@ -87,6 +87,7 @@
 	<!-- auf dem Strobe -->
 	<string name="paused">Pause</string>
 	<string name="row_too_high">zu hoch</string>
+	<string name="readout_target">Soll %1$s</string>
 	<!-- Teiltonzeilen: "2." statt "2nd" -->
 	<string name="ordinal_suffix">.</string>
 
@@ -94,8 +95,7 @@
 	<string name="toast_auto">Auto: Tippen fixiert, Halten schaltet aus</string>
 	<string name="toast_row_too_high">Diese Zeile ist f&#252;r die Abtastrate zu hoch</string>
 	<string name="follow_as_detected">Folgen: T&#246;ne wie erkannt</string>
-	<string name="follow_shift_oct">Folgen: %1$s%2$d Okt. gegen&#252;ber erkannt (Auto halten hebt es auf)</string>
-	<string name="follow_shift_semi">Folgen: %1$s%2$d Halbt&#246;ne gegen&#252;ber erkannt (Auto halten hebt es auf)</string>
+	<string name="follow_near">Folgen: nur innerhalb einer Quarte um diesen Ton (Auto halten hebt es auf)</string>
 	<string name="ok">OK</string>
 	<string name="cancel">Abbrechen</string>
 	<string name="about_title">&#220;ber TunerTime Organ</string>

@@ -56,8 +56,10 @@ public class Strobe extends Thread {
 		return ret;
 	}
 
-	/* called from the native loop with each new pitch estimate */
-	public void pitch_detected(double hz) {
+	/* called from the native loop with each new pitch estimate, at
+	 * input sample pos (jni/record.c) */
+	public void pitch_detected(double hz, double conf, long pos) {
+		EventLog.estimate(pos, hz, conf);
 		ui.pitch_detected(hz);
 	}
 
@@ -73,9 +75,11 @@ public class Strobe extends Thread {
 	private volatile double focus_str_ratio = 0.0d;	/* focus_str is for */
 
 	/* amp: the mean amplitude of the buffer's usable drift blocks, 0 if
-	 * none (jni strobe_drift_amp), for mixture mode's beat warning */
+	 * none (jni strobe_drift_amp), for mixture mode's beat warning.
+	 * pos: the input sample at the end of the buffer (jni/record.c) */
 	public void focus_drift(double freq, double cycles, double secs,
-				double buf_secs, double amp) {
+				double buf_secs, double amp, long pos) {
+		EventLog.drift(pos, parms.focus_ratio, freq, cycles, secs);
 		if (freq != focus_freq) {
 			focus_freq = freq;
 			focus_cycles = 0.0d;
@@ -235,16 +239,33 @@ public class Strobe extends Thread {
 	/* like "A49" for A-4.  the native side sets pianoname once the
 	 * strobe is set up, but the text is formatted here so that it
 	 * follows the note-names setting.  in organ mode, the focused
-	 * partial's offset in place of the piano key, like "4' +01.5c" */
+	 * partial's measured offset in place of the piano key, like
+	 * "4' +01.5c"; with no row focused, the target's offset from equal
+	 * temperament (note, temperament and cents set by hand), like
+	 * "target -05.9c" for a Werckmeister note */
 	private int pn_cents = -1;
 	private boolean pn_german = false;
 	private String pn_str = null;
+	private int tgt_cents = Integer.MIN_VALUE;
+	private String tgt_str = null;
+	private String target_str() {
+		int cents = parms.strobe_cents;
+		if ((cents != tgt_cents) || (tgt_str == null)) {
+			tgt_str = ui.getString(R.string.readout_target,
+					note.cents_str(new note(cents).cents));
+			tgt_cents = cents;
+		}
+		return tgt_str;
+	}
 	private void draw_pianoname(Canvas c) {
 		String s = pianoname;
 		if (parms.organ_mode) {
-			s = ((parms.focus_ratio > 0.0d) &&
-			     (focus_str_ratio == parms.focus_ratio)) ?
-						focus_str : null;
+			if (parms.focus_ratio <= 0.0d) {
+				s = target_str();
+			} else {
+				s = (focus_str_ratio == parms.focus_ratio) ?
+							focus_str : null;
+			}
 		}
 		if (parms.fft_mode || (s == null)) {
 			return;

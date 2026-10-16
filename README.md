@@ -23,19 +23,36 @@ this fork.
   off. In organ mode a focused partial (`parms.focus_ratio`) makes the note
   that partial's peak / ratio. Tested in the field with a ukulele only.
 - **Corrections while following** (`TunerTime.on_pitch`): moving the note by
-  hand while following remembers the interval from the detected note (e.g.
-  an octave for a 4' stop) and applies it to later detections, until auto is
-  turned off, 10 s of silence, or the correction is undone.
+  hand while following applies to that note only, and turns on continuity:
+  later detections are taken in the octave nearest the note shown, and move
+  it only within a fourth (500 cents) either way, as a stop is tuned key by
+  key. So a 4' stop corrected down an octave once follows in the 8' octave.
+  It ends when auto is turned off or on afresh, or after 10 s of silence.
+  Mutations (Quinte, Terz) are followed by focusing their row instead.
+  `tools/sim_organ -f old|new` compares the v18.1 rule with this one.
 - **Debug recordings** (`DebugRecorder.java`, `jni/record.c`; Settings →
   "Debug recordings", on in the dev build): each hand correction while
   following saves 5 s before and 2 s after as a 16-bit mono WAV plus a .txt
   with the detected and the corrected note. Get them with
   `adb pull /sdcard/Android/data/org.galexander.tunertime.dev/files/recordings`.
+  The .txt also holds a timeline of the recorded 7 s (`EventLog.java`), one
+  line per event, in seconds and samples from the start of the WAV: every
+  detector estimate (`est`: Hz, note, cents, confidence), the focused row's
+  strobe drift per audio buffer (`drift`), and what the app did and why
+  (`ui`: note changes with their cause, follow, which button, auto
+  follow/lock/off, focus taps, tabs, mixture, length mode, A, stretch,
+  presets, microphone switches). The `replay:` line in the .txt runs
+  `test_pitch -t secs file.wav`, which prints its estimates in the same
+  columns and analyses at the same samples as the app did, so the two lists
+  can be compared line by line. UI events are stamped when the app handled
+  them; the audio input latency (a few buffers) is not taken off.
 - **Bench test for the detector** (`tools/test_pitch.c`): synthetic tones from
   A0 to C8 (harmonic, missing fundamental, piano inharmonicity, sine, noisy)
   and organ pipes (Gedackt, Quintadena, Principal, reeds, 16'/32' through a
-  phone mic, mixtures, focused partials). `test_pitch file.wav [focus_ratio
-  [expect_hz]]` replays a recording and prints the estimates over time. It
+  phone mic, mixtures, focused partials). `test_pitch [-t secs] file.wav
+  [focus_ratio [expect_hz]]` replays a recording and prints the estimates
+  over time, in seconds and samples from the start of the file (`-t`: at
+  the same samples as the app's estimate at secs, see above). It
   is plain C, so build it with any compiler, together with `jni/pitch.c`.
 - **Realistic organ bench** (`tools/sim_organ.c`): simulated pipes (speech
   transients, chiff, reed onset, wind, tremulant, celeste, mixtures, 32'

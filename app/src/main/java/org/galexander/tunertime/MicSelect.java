@@ -135,6 +135,7 @@ public class MicSelect {
 	}
 
 	private static void toast(final String msg) {
+		EventLog.ui("mic: " + msg);
 		if (ui == null) {
 			return;
 		}

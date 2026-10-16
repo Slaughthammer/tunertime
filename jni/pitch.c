@@ -78,6 +78,10 @@ static float hb_x[2*HB_M+1];	/* input history, circular */
 static int hb_pos;
 static int odd;			/* the next input sample makes no output */
 static double focus_ratio, expect_hz;	/* pitch_hint() */
+static int last_at;		/* pitch_last_at() */
+#if 2*HOP != PITCH_STEP
+#error PITCH_STEP in pitch.h must be 2*HOP
+#endif
 
 static double re[N], im[N], win[N], mag[N/2];
 static double tw_r[N/2], tw_i[N/2];
@@ -451,8 +455,15 @@ pitch_feed(const short *s, int len, double *hz, double *conf)
 		if (++fresh >= HOP) {
 			fresh = 0;
 			*hz = analyse(conf);
+			last_at = i+1;
 			ret = 1;
 		}
 	}
 	return ret;
+}
+
+int
+pitch_last_at(void)
+{
+	return last_at;
 }

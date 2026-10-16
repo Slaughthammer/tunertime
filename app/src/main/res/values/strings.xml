@@ -91,6 +91,10 @@
 	<!-- drawn on the strobe -->
 	<string name="paused">paused</string>
 	<string name="row_too_high">too high</string>
+	<!-- organ mode, top right with no row focused: the target's offset
+	     from equal temperament (temperament and cents set by hand),
+	     %1$s like -05.9c -->
+	<string name="readout_target">target %1$s</string>
 	<!-- harmonic row labels: the native code writes English ordinals
 	     ("2nd"); if this is not empty it replaces the suffix -->
 	<string name="ordinal_suffix"></string>
@@ -99,8 +103,7 @@
 	<string name="toast_auto">auto: tap to lock, hold to turn off</string>
 	<string name="toast_row_too_high">This row is too high for the sample rate</string>
 	<string name="follow_as_detected">follow: notes as detected</string>
-	<string name="follow_shift_oct">follow: %1$s%2$d oct from detected (hold auto to clear)</string>
-	<string name="follow_shift_semi">follow: %1$s%2$d semitones from detected (hold auto to clear)</string>
+	<string name="follow_near">follow: only within a fourth of this note (hold auto to clear)</string>
 	<string name="ok">OK</string>
 	<string name="cancel">Cancel</string>
 	<string name="about_title">About</string>

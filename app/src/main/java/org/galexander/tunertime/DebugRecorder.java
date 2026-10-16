@@ -30,7 +30,8 @@ import java.util.Locale;
  * Only the newest MAX_FILES are kept.
  *
  * The last seconds of input are kept natively (jni/record.c), fed from
- * the strobe thread's audio reads. */
+ * the strobe thread's audio reads.  The .txt also has a timeline of what
+ * the detector heard and the app did during the recording (EventLog). */
 public class DebugRecorder {
 	private static final int PRE_MS = 5000;
 	private static final int POST_MS = 2000;
@@ -42,11 +43,13 @@ public class DebugRecorder {
 				new Handler(Looper.getMainLooper());
 	private static boolean pending = false;
 	private static Date when;
-	private static int det_cents, from_cents, user_cents, shift;
+	private static int det_cents, from_cents, user_cents;
+	private static boolean near;
 	private static double det_hz;
 
-	/* copies the newest samples, oldest first; returns how many */
-	private static native int grab(short[] dst);
+	/* copies the newest samples, oldest first; returns how many.
+	 * end[0]: the input position just after them (EventLog's base) */
+	private static native int grab(short[] dst, long[] end);
 
 	public static boolean enabled(Context ctx) {
 		SharedPreferences prefs =
@@ -60,12 +63,12 @@ public class DebugRecorder {
 	 * 48000 = A4.  UI thread only */
 	public static void intervention(Context ctx, int det_cents_,
 			double det_hz_, int from_cents_, int user_cents_,
-			int shift_) {
+			boolean near_) {
 		if (!enabled(ctx)) {
 			return;
 		}
 		user_cents = user_cents_;	/* the latest change wins */
-		shift = shift_;
+		near = near_;
 		if (pending) {
 			return;
 		}
@@ -85,12 +88,15 @@ public class DebugRecorder {
 		pending = false;
 		int rate = Listener.get_samplerate();
 		short[] buf = new short[(int)((long)rate*(PRE_MS+POST_MS)/1000)];
+		long[] end = new long[1];
 		int n;
 		try {
-			n = grab(buf);
+			n = grab(buf, end);
 		} catch (UnsatisfiedLinkError e) {
 			return;
 		}
+		long start = end[0] - n;
+		double t_est = EventLog.first_estimate(start, end[0], rate);
 		if (n < rate/2) {
 			return;		/* the strobe was not running */
 		}
@@ -117,14 +123,21 @@ public class DebugRecorder {
 				 " Hz")) + "\n" +
 			"note_before " + name(from_cents) + "\n" +
 			"user_note " + name(user_cents) + "\n" +
-			"follow_shift " + shift + " semitones\n" +
+			"follow_near " + near + " (continuity: detections " +
+				"taken within a fourth of the note shown)\n" +
 			"A_freq " + (parms.A_freq/10.0) + "\n" +
 			"stretch " + (parms.stretch()/10.0) + " c/oct\n" +
 			"organ_mode " + parms.organ_mode + "\n" +
 			"focus_ratio " + parms.focus_ratio + "\n" +
-			"replay: test_pitch " + base + ".wav" +
+			"state_now " + EventLog.state + "\n" +
+			"replay: test_pitch " +
+				((t_est >= 0.0) ? String.format(Locale.US,
+					"-t %.5f ", t_est) : "") +
+				base + ".wav" +
 				((parms.focus_ratio > 0.0) ?
-				 (" " + parms.focus_ratio) : "") + "\n";
+				 (" " + parms.focus_ratio) : "") + "\n" +
+			"\n" + EventLog.HEADER +
+			EventLog.timeline(start, end[0], rate);
 		final File dir_ = dir;
 		final int rate_ = rate;
 		new Thread() {

@@ -15,6 +15,14 @@ import java.util.Arrays;
  * whatever e is; positive means too long (flat).  c follows the
  * temperature, c = 331.3*sqrt(1+T/273.15) m/s; a degree off moves dL by
  * less than 0.2%.  Only dL is shown, as the length to cut off or to add.
+ * The temperature setting only scales c; it does not move the target.
+ * The pipes' pitch changes with the air temperature (about 3 c, or
+ * 0.7 Hz at a = 440, per degree), and the tuner allows for that by
+ * hand through the A frequency, as decided with the organ tuner: no
+ * automatic temperature compensation anywhere.
+ * Stopped pipes get the same "too long: cut off / too short: lengthen"
+ * wording as open ones (also decided with the tuner): length mode is for
+ * setting up a pipe's range, not for fine tuning at the cap.
  *
  * With a strobe row focused, the estimate is that row's drift over the last
  * WINDOW ms that had sound (Strobe.focus_drift): it follows exactly the
@@ -73,6 +81,8 @@ public class pipelength {
 		kind_button.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				parms.pipe_stopped = !parms.pipe_stopped;
+				EventLog.ui("length: " + (parms.pipe_stopped ?
+						"stopped" : "open") + " pipe");
 				update();
 			} });
 		((Button)panel.findViewById(R.id.temp_plus)).setOnClickListener(
@@ -86,6 +96,7 @@ public class pipelength {
 	private void incr_temp(int d) {
 		parms.temperature += d;
 		update();
+		EventLog.ui("length: temperature " + parms.temperature + " C");
 	}
 
 	public void clear() {
