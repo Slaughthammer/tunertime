@@ -41,10 +41,12 @@ The repository build configuration itself was not changed for this workaround.
 Verification this session: `git diff --check` passed and `assembleDev`
 completed. No automated test suite was run. Keep the `.dev`, `.local`, and
 Play Store packages distinct; the installed Play Store app remains untouched.
-The changes are committed locally on `main` as `Add organ temperament
-workbench and tuning updates`. The push is still pending: this environment has
-no GitHub HTTPS credentials, and its existing SSH key is not authorized for
-this repository.
+The changes are committed on `main` as `Add organ temperament workbench and
+tuning updates` and pushed to Onno's fork at
+https://github.com/Slaughthammer/tunertime. The upstream repository is
+`Vollesocke/tunertime`; the active GitHub account does not have write access
+there, so send a pull request from the fork when upstream integration is
+wanted.
 
 ## Where things stand
 
