@@ -1,8 +1,50 @@
 # Handoff: TunerTime Organ
 
-Status as of 16 Oct 2026, release **v18.2-organ**. Everything is on `main`
+Status as of 19 Oct 2026, release **v18.2-organ**. Everything is on `main`
 (GitHub Vollesocke/tunertime); `organ` is the older integration branch that
 became v18.0.
+
+## Onno session update (19 Oct 2026)
+
+Implemented in the working tree and installed on Onno's Fairphone 4 local app
+(`org.galexander.tunertime.local`, version 18.2-organ):
+
+- Reworked the Preset tab into the Temperierung workbench: temperament name,
+  note/deviation table, temporary wolf-fifth selection for Pythagorean and
+  meantone presets, and the navigation bar along the bottom. The wolf choice
+  lasts until a different temperament is selected. The first four built-in
+  temperaments retain their special positions; the rest of the selection list
+  is alphabetized using the active locale.
+- Added the remaining tunings from Orgelbau Rohlf's list, including the
+  Neidhardt village (1732), small-town (1732), large-town (1724), and modified
+  temperaments. Existing equivalent entries were not duplicated.
+- Removed the optional “Temper note mode” setting. A selected temperament now
+  always affects note mode.
+- Mixture mode now follows detected notes like tone mode, displays the detected
+  pitch, has octave-step buttons, and rejects detections more than 20 cents
+  from the nearest expected mixture note. The focus still controls the tuning
+  offset reference rather than note recognition.
+- Updated organ note labels, length-mode controls, strobe partial-selection
+  long-press shortcut, and detector debug recordings/replay hints.
+
+The offline `assembleDev` build succeeded and the APK updated the existing
+`.local` package without clearing its data. In this environment the repository
+`keystore.properties` symlink points to a missing `/home/greg` file and the
+checked-in build type uses the `.dev` suffix. To make the local update, the
+source was copied to `/tmp/tunertime-localbuild`, the temporary copy's dev
+suffix was changed to `.local`, and it was signed with
+`/home/onno/.android/debug.keystore` (SHA-256
+`a99683ada5e58b0ff9a1047ed37cf416632407e798eed4ae48be62685581d20c`). The
+installed local APK was checked to use that same certificate before updating.
+The repository build configuration itself was not changed for this workaround.
+
+Verification this session: `git diff --check` passed and `assembleDev`
+completed. No automated test suite was run. Keep the `.dev`, `.local`, and
+Play Store packages distinct; the installed Play Store app remains untouched.
+The changes are committed locally on `main` as `Add organ temperament
+workbench and tuning updates`. The push is still pending: this environment has
+no GitHub HTTPS credentials, and its existing SSH key is not authorized for
+this repository.
 
 ## Where things stand
 

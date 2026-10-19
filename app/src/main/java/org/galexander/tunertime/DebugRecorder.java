@@ -135,7 +135,8 @@ public class DebugRecorder {
 					"-t %.5f ", t_est) : "") +
 				base + ".wav" +
 				((parms.focus_ratio > 0.0) ?
-				 (" " + parms.focus_ratio) : "") + "\n" +
+				 (" " + parms.focus_ratio) : "") +
+				 " --hints " + base + ".txt\n" +
 			"\n" + EventLog.HEADER +
 			EventLog.timeline(start, end[0], rate);
 		final File dir_ = dir;

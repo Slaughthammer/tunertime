@@ -22,7 +22,7 @@ import java.util.Locale;
  * events carry a String.  Kept only while debug recordings are on. */
 public class EventLog {
 	private static final int MAX = 8192;
-	private static final byte EST = 1, DRIFT = 2, UI = 3;
+	private static final byte EST = 1, DRIFT = 2, UI = 3, HINT = 4;
 	private static final long[] pos = new long[MAX];
 	private static final byte[] kind = new byte[MAX];
 	private static final double[] va = new double[MAX];
@@ -55,6 +55,13 @@ public class EventLog {
 			double c = 1200.0d * Math.log((freq + cycles/secs)/freq) /
 					Math.log(2.0d);
 			add(p, DRIFT, r, c, secs, null);
+		}
+	}
+
+	/* strobe thread: the exact detector hints used for this audio buffer */
+	public static void hint(long p, double focus, double expect) {
+		if (on) {
+			add(p, HINT, focus, expect, 0.0d, null);
 		}
 	}
 
@@ -92,6 +99,8 @@ public class EventLog {
 		"#        (as tools/test_pitch -t prints them)\n" +
 		"#  drift the focused row's strobe drift in one audio buffer: " +
 			"row, cents, seconds of usable signal\n" +
+		"#  hint  detector hints for following samples: focus ratio, " +
+			"expected note in Hz\n" +
 		"#  ui    what the app did and why (stamped when it was " +
 			"handled, input latency not taken off)\n";
 
@@ -123,6 +132,9 @@ public class EventLog {
 					"drift %s %+.2fc %.3fs\n",
 					parms.footage_str(va[i]).trim(), vb[i],
 					vc[i]));
+			} else if (kind[i] == HINT) {
+				sb.append(String.format(Locale.US,
+					"hint %.4f %.3f\n", va[i], vb[i]));
 			} else {
 				sb.append("ui    ").append(text[i]).append('\n');
 			}

@@ -22,6 +22,9 @@ public class mixture {
 		/* after a change of microphone, usable seconds ignored: the
 		 * drift blocks (jni/strobe.c) that straddle the change */
 	private static final double SWITCH_SKIP = 0.25d;
+	private static final double STABLE_CENTS = 0.15d;
+	private static final int STABLE_BUFFERS = 3;
+	private static final int MAX_WINDOW = 64;
 		/* the swing (hi-lo)/(hi+lo) of the drift's amplitude over a
 		 * measurement (jni/strobe.c strobe_drift_amp) above which the
 		 * partial is taken to beat: a second pipe sounds on it
@@ -40,7 +43,12 @@ public class mixture {
 
 	private boolean active = false;
 	private double freq = 0.0d;		/* row frequency measured on */
-	private double cycles = 0.0d, secs = 0.0d;
+	private double cycles = 0.0d, secs = 0.0d, elapsed = 0.0d;
+	private final double[] cycle_buf = new double[MAX_WINDOW];
+	private final double[] sec_buf = new double[MAX_WINDOW];
+	private int head = 0, count = 0;
+	private double window = MEASURE_SECONDS, previous_cents = Double.NaN;
+	private int stable_count = 0;
 	private int gen = 0;			/* Listener.buffer_gen() */
 	private double skip = 0.0d;
 	private double need = MEASURE_SECONDS;	/* for the focused row */
@@ -54,15 +62,28 @@ public class mixture {
 							 : MEASURE_SECONDS;
 	}
 
+	/* A trailing average follows high pipes quickly, while the lower rows
+	 * keep the longer window that makes their sparse drift reliable. */
+	private static double window_seconds(double f) {
+		return (f >= 500.0d) ? 0.65d : (f >= 250.0d) ? 1.0d :
+			measure_seconds(parms.focus_ratio);
+	}
+
+	private void clear_window() {
+		cycles = secs = elapsed = 0.0d;
+		head = count = stable_count = 0;
+		previous_cents = Double.NaN;
+	}
+
 	public synchronized void start() {
 		active = true;
 		busy = false;
 		freq = 0.0d;
-		cycles = 0.0d;
-		secs = 0.0d;
+		clear_window();
 		gen = Listener.buffer_gen();
 		skip = 0.0d;
 		need = measure_seconds(parms.focus_ratio);
+		window = need;
 		amp_lo = amp_hi = 0.0d;
 		beating = false;
 	}
@@ -102,10 +123,11 @@ public class mixture {
 			 * wait): start over, past the jump */
 			gen = g;
 			freq = freq_;
-			cycles = 0.0d;
-			secs = 0.0d;
+			clear_window();
 			amp_lo = amp_hi = 0.0d;
 			skip = SWITCH_SKIP;
+			window = window_seconds(freq_);
+			need = measure_seconds(parms.focus_ratio);
 			busy = false;
 			return Double.NaN;
 		}
@@ -116,13 +138,35 @@ public class mixture {
 		if (freq_ != freq) {
 			/* other row, or the target moved: start over */
 			freq = freq_;
-			cycles = 0.0d;
-			secs = 0.0d;
+			clear_window();
 			need = measure_seconds(parms.focus_ratio);
+			window = window_seconds(freq_);
 			amp_lo = amp_hi = 0.0d;
 		}
+		if (secs_ <= 0.0d) return Double.NaN;
+		elapsed += secs_;
+		cycle_buf[head] = cycles_;
+		sec_buf[head] = secs_;
+		head = (head + 1) % MAX_WINDOW;
+		if (count < MAX_WINDOW) count++;
 		cycles += cycles_;
 		secs += secs_;
+		while ((secs > window) && (count > 1)) {
+			int oldest = (head - count + MAX_WINDOW) % MAX_WINDOW;
+			double excess = secs - window;
+			if (sec_buf[oldest] <= excess) {
+				secs -= sec_buf[oldest];
+				cycles -= cycle_buf[oldest];
+				count--;
+			} else {
+				double keep = (sec_buf[oldest] - excess) / sec_buf[oldest];
+				secs -= excess;
+				cycles -= cycle_buf[oldest] * (1.0d - keep);
+				sec_buf[oldest] *= keep;
+				cycle_buf[oldest] *= keep;
+				break;
+			}
+		}
 		if (amp > 0.0d) {
 			if ((amp_lo == 0.0d) || (amp < amp_lo)) {
 				amp_lo = amp;
@@ -132,14 +176,23 @@ public class mixture {
 			}
 		}
 		busy = (secs > 0.0d);
-		if (secs < need) {
+		if (secs < window) return Double.NaN;
+		double cents = 1200.0d * Math.log((freq + cycles/secs)/freq) /
+				Math.log(2.0d);
+		if (!Double.isNaN(previous_cents) &&
+		    Math.abs(cents - previous_cents) < STABLE_CENTS) {
+			stable_count++;
+		} else {
+			stable_count = 0;
+		}
+		previous_cents = cents;
+		if ((stable_count < STABLE_BUFFERS) && (elapsed < need)) {
 			return Double.NaN;
 		}
 		active = false;
 		busy = false;
 		beating = (amp_hi > 0.0d) &&
 			((amp_hi - amp_lo)/(amp_hi + amp_lo) > BEAT_SWING);
-		return 1200.0d * Math.log((freq + cycles/secs)/freq) /
-				Math.log(2.0d);
+		return cents;
 	}
 }
