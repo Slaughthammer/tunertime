@@ -71,9 +71,29 @@ this fork.
 - **Presets in tenths of a cent** (`preset.UNITS_PER_CENT`, 48000 = A4), with
   ±1c / ±0.1c buttons and a ± key in the note editor. Existing whole-cent
   presets and settings are migrated.
-- **A 12-note preset can temper note mode** (Settings toggle, on by default).
-  The action bar's subtitle shows the active temperament and offset (the
-  preset in preset and mixture mode).
+- **Temperament workbench for organ builders**: the Preset tab is now the
+  Temperierung screen, with a note/deviation table and the temperament menu
+  along the bottom. The first four special entries stay fixed; the remaining
+  choices are alphabetized in the active language. A selected temperament
+  always affects note mode. For Pythagorean and meantone tunings, tap the
+  temperament name to choose a temporary wolf fifth; that choice resets when
+  another temperament is selected.
+- **Historical temperaments** (`temperaments.java`): in addition to equal,
+  Pythagorean, ¼- and ⅙-comma meantone, Werckmeister III, Kirnberger III,
+  Vallotti, Young II and Kellner, the list includes the Rohlf charts for
+  Young-Sorge, near-equal, Gräf-Sorge, modified Vallotti, Wegscheider/Reinfeld,
+  Johannes Lang, Thomas Rothert, Frischknecht II, and modified Neidhardt,
+  Werckmeister IV/V and modified Werckmeister 1691. Neidhardt's village (1732),
+  small-town (1732) and large-town (1724) tunings are included as well.
+  Tables are normalized to A = 0 so the A-frequency setting still means the A
+  you hear. Equivalent entries already in the app are not duplicated.
+- **Mixture mode follows detected notes** like tone mode, displays the detected
+  pitch and has octave-step buttons. Focus sets the offset reference, while
+  note recognition is independent of the focused partial. Detections more than
+  20 cents from the nearest expected mixture note are rejected.
+- **Organ display refinements**: German organ note labels use Cs/Ds/Fs/Gs;
+  length mode presents the cut/add distance in millimetres with the
+  stopped/open reference.
 - **Preset management** (`PresetIO.java`): long-press for
   edit/rename/duplicate/move/export/delete, sort, import and export all.
   Plain-text, hand-editable format, described in the header of every
@@ -92,6 +112,12 @@ this fork.
 - **`dev` build type**: `org.galexander.tunertime.dev`, labelled
   "TunerTime dev", which installs next to the Play Store app with its own
   settings and presets.
+
+The latest Onno build is published in the fork's
+[v18.2-organ-onno.1 release](https://github.com/Slaughthammer/tunertime/releases/tag/v18.2-organ-onno.1).
+Its APK uses the package `org.galexander.tunertime.local` and the local
+Android debug key; it updates local builds signed with that key and installs
+alongside the Play Store version.
 
 Open ideas from users, in `NOTES`: octave advance when stepping past the end
 of a preset, and CSV import/export.
